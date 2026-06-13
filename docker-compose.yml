@@ -1,0 +1,33 @@
+services:
+  # ----------------------------------------------------------------------------
+  # 1. Application Layer (Next.js Node Server)
+  # ----------------------------------------------------------------------------
+  web:
+    image: ghcr.io/pullprep/pullprep-website:latest
+    container_name: pullprep-web
+    restart: unless-stopped
+    ports:
+      # Exposes Next.js port 3000 to the host for local validation/access
+      - "3000:3000"
+    networks:
+      - pullprep_network
+
+  # ----------------------------------------------------------------------------
+  # 2. Delivery Layer (Cloudflare Zero-Trust Tunnel)
+  # ----------------------------------------------------------------------------
+  tunnel:
+    image: cloudflare/cloudflared:latest
+    container_name: pullprep-tunnel
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN}
+    depends_on:
+      - web
+    networks:
+      - pullprep_network
+
+networks:
+  pullprep_network:
+    name: pullprep_network
+    driver: bridge
