@@ -104,17 +104,19 @@ export default function Train() {
   const [lastPressResult, setLastPressResult] = useState<{ key: string; status: string } | null>(null);
   const [finalStats, setFinalStats] = useState<SessionStats | null>(null);
 
+  const [lastCastTime, setLastCastTime] = useState<number | null>(null);
+
   // Active key pressed tracking for UI visualizer
   const [pressedKeys, setPressedKeys] = useState<Record<string, boolean>>({});
 
   const synthRef = useRef<SoundSynthesizer | null>(null);
   const gameIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const stateRef = useRef({ gameState, elapsedTime, activeStepIndex, activeSpell, activePromptTime, casts, combo });
+  const stateRef = useRef({ gameState, elapsedTime, activeStepIndex, activeSpell, activePromptTime, casts, combo, lastCastTime });
 
   // Update ref to read latest states inside timers/listeners
   useEffect(() => {
-    stateRef.current = { gameState, elapsedTime, activeStepIndex, activeSpell, activePromptTime, casts, combo };
-  }, [gameState, elapsedTime, activeStepIndex, activeSpell, activePromptTime, casts, combo]);
+    stateRef.current = { gameState, elapsedTime, activeStepIndex, activeSpell, activePromptTime, casts, combo, lastCastTime };
+  }, [gameState, elapsedTime, activeStepIndex, activeSpell, activePromptTime, casts, combo, lastCastTime]);
 
   // Lazy initialize Synthesizer
   useEffect(() => {
@@ -141,6 +143,7 @@ export default function Train() {
     setActiveSpell(null);
     setActivePromptTime(null);
     setFinalStats(null);
+    setLastCastTime(null);
 
     const countInterval = setInterval(() => {
       setCountdown((prev) => {
@@ -269,6 +272,7 @@ export default function Train() {
     setCombo(0);
     setFinalStats(null);
     setLastPressResult(null);
+    setLastCastTime(null);
   };
 
   // Listen to keyboard events
@@ -279,7 +283,14 @@ export default function Train() {
       // Update visualizer state
       setPressedKeys((prev) => ({ ...prev, [key.toLowerCase()]: true }));
 
-      const { gameState: currentGameState, activeSpell: currentSpell, activeStepIndex: currentIndex, activePromptTime: currentPromptTime, casts: currentCasts } = stateRef.current;
+      const {
+        gameState: currentGameState,
+        activeSpell: currentSpell,
+        activeStepIndex: currentIndex,
+        activePromptTime: currentPromptTime,
+        casts: currentCasts,
+        lastCastTime: currentLastCastTime
+      } = stateRef.current;
 
       if (currentGameState !== "running") return;
 
@@ -289,25 +300,75 @@ export default function Train() {
 
       e.preventDefault();
 
-      if (currentSpell && currentIndex !== null) {
+      const elapsed = stateRef.current.elapsedTime;
+      const steps = selectedScenario.steps;
+      const gcdDuration = 1.5;
+      const queueWindow = 0.25; // 250ms
+
+      // Determine if GCD is active
+      let isGcdActive = false;
+      let isQueued = false;
+      let actualCastTime = elapsed;
+
+      if (currentLastCastTime !== null) {
+        const gcdEndTime = currentLastCastTime + gcdDuration;
+        const remainingGcd = gcdEndTime - elapsed;
+        if (remainingGcd > 0) {
+          if (remainingGcd <= queueWindow) {
+            isQueued = true;
+            actualCastTime = gcdEndTime;
+          } else {
+            isGcdActive = true;
+          }
+        }
+      }
+
+      // 1. Identify which step/spell is being targeted
+      let targetStepIndex = currentIndex;
+      let targetSpell = currentSpell;
+      let targetPromptTime = currentPromptTime;
+
+      const nextStepIndex = currentIndex === null ? 0 : currentIndex + 1;
+
+      // Check if user is queueing the next step ahead of schedule (only for fixed rotations)
+      if (!selectedScenario.isProcReaction && nextStepIndex < steps.length) {
+        const nextStep = steps[nextStepIndex];
+        const timeUntilNext = nextStep.time - elapsed;
+        if (timeUntilNext > 0 && timeUntilNext <= queueWindow) {
+          targetStepIndex = nextStepIndex;
+          targetSpell = DEMON_HUNTER_SPELLS[nextStep.spellId];
+          targetPromptTime = nextStep.time;
+        }
+      }
+
+      // 2. Handle GCD lockout
+      if (isGcdActive) {
+        // If they pressed the correct target keybind during lockout, ignore (allow spamming)
+        // If they pressed an incorrect keybind, register as incorrect
+        if (targetSpell && key !== targetSpell.keybind) {
+          registerIncorrectPress(key);
+        }
+        return;
+      }
+
+      // 3. Evaluate the cast
+      if (targetSpell && targetStepIndex !== null) {
         // Check if this step was already responded to
-        const alreadyResponded = currentCasts.some((c) => c.stepIndex === currentIndex);
+        const alreadyResponded = currentCasts.some((c) => c.stepIndex === targetStepIndex);
         if (alreadyResponded) {
-          // If they already hit it, treat further keys as extra incorrect inputs
           registerIncorrectPress(key);
           return;
         }
 
-        const elapsed = stateRef.current.elapsedTime;
-        const timeDiff = elapsed - (currentPromptTime || 0);
-        const { status, reactionTimeMs } = evaluatePress(currentSpell, key, timeDiff);
+        const timeDiff = actualCastTime - (targetPromptTime || 0);
+        const { status, reactionTimeMs } = evaluatePress(targetSpell, key, timeDiff);
 
         const newRecord: CastRecord = {
-          stepIndex: currentIndex,
-          expectedSpellId: currentSpell.id,
+          stepIndex: targetStepIndex,
+          expectedSpellId: targetSpell.id,
           actualSpellId: Object.values(DEMON_HUNTER_SPELLS).find((s) => s.keybind === key)?.id || null,
-          expectedTime: selectedScenario.steps[currentIndex]?.time || 0,
-          actualTime: elapsed,
+          expectedTime: !selectedScenario.isProcReaction ? steps[targetStepIndex]?.time : (targetPromptTime || 0),
+          actualTime: actualCastTime,
           reactionTime: reactionTimeMs,
           status,
         };
@@ -318,15 +379,16 @@ export default function Train() {
         if (status === "perfect") {
           setCombo((prev) => prev + 1);
           playSound("perfect");
+          setLastCastTime(actualCastTime);
         } else if (status === "early" || status === "late") {
           setCombo((prev) => prev + 1);
           playSound("correct");
+          setLastCastTime(actualCastTime);
         } else {
           setCombo(0);
           playSound("incorrect");
         }
       } else {
-        // Pressed a key when nothing was prompted (Downtime/spamming error)
         registerIncorrectPress(key);
       }
     };
@@ -368,6 +430,12 @@ export default function Train() {
   const currentAccuracy = totalStepsEvaluated > 0 ? Math.round((correctCasts / totalStepsEvaluated) * 100) : 100;
   const validReactions = casts.filter((c) => c.reactionTime !== null).map((c) => c.reactionTime as number);
   const currentAvgReaction = validReactions.length > 0 ? Math.round(validReactions.reduce((a, b) => a + b, 0) / validReactions.length) : 0;
+
+  // GCD calculations
+  const gcdDuration = 1.5;
+  const timeSinceLastCast = lastCastTime !== null ? elapsedTime - lastCastTime : Infinity;
+  const isGcdActive = gameState === "running" && timeSinceLastCast < gcdDuration;
+  const gcdPercent = isGcdActive ? ((gcdDuration - timeSinceLastCast) / gcdDuration) * 100 : 0;
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col relative">
@@ -736,6 +804,18 @@ export default function Train() {
                   <span className="absolute bottom-1 right-1.5 font-mono text-[9px] font-black text-zinc-500">
                     {spell.keybind}
                   </span>
+
+                  {/* GCD Swipe Overlay */}
+                  {isGcdActive && (
+                    <div
+                      className="absolute inset-0 pointer-events-none"
+                      style={{
+                        background: `conic-gradient(rgba(9, 9, 11, 0.75) ${gcdPercent}%, transparent ${gcdPercent}%)`,
+                        transform: 'rotate(-90deg)',
+                        borderRadius: 'inherit',
+                      }}
+                    />
+                  )}
                 </div>
               );
             })}
