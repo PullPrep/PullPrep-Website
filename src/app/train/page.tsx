@@ -233,7 +233,7 @@ export default function Train() {
     setGameState("finished");
     
     // Evaluate final stats
-    const { casts: finalCasts, selectedScenario: activeScenario } = stateRef.current;
+    const { casts: finalCasts } = stateRef.current;
     
     // Calculate total downtime
     // Downtime = elapsed time spent while a key prompt was active, minus the reaction time
