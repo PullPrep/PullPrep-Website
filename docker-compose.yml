@@ -4,6 +4,7 @@ services:
   # ----------------------------------------------------------------------------
   web:
     image: ghcr.io/pullprep/pullprep-website:latest
+    build: .
     container_name: pullprep-web
     restart: unless-stopped
     ports:
