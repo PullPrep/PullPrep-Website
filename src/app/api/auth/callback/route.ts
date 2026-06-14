@@ -4,6 +4,13 @@ import { LocalDb } from "@/lib/db";
 
 export async function GET(request: NextRequest) {
   const code = request.nextUrl.searchParams.get("code");
+  const state = request.nextUrl.searchParams.get("state");
+  const cookieState = request.cookies.get("pullprep_auth_state")?.value;
+
+  if (!state || state !== cookieState) {
+    return NextResponse.json({ error: "Invalid or missing state parameter" }, { status: 400 });
+  }
+
   if (!code) {
     return NextResponse.json({ error: "Missing authorization code" }, { status: 400 });
   }
@@ -14,7 +21,10 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "Client credentials not configured" }, { status: 500 });
   }
 
-  const origin = request.nextUrl.origin;
+  // Use proxy headers to detect the public domain
+  const host = request.headers.get("x-forwarded-host") || request.headers.get("host") || "www.pullprep.com";
+  const proto = request.headers.get("x-forwarded-proto") || "https";
+  const origin = `${proto}://${host}`;
   const redirectUri = `${origin}/api/auth/callback`;
 
   try {
@@ -78,6 +88,13 @@ export async function GET(request: NextRequest) {
       secure: origin.startsWith("https"),
       sameSite: "lax",
       maxAge: 60 * 60 * 24 * 7, // 1 week
+      path: "/",
+    });
+
+    // Clear temporary auth state cookie
+    response.cookies.set("pullprep_auth_state", "", {
+      httpOnly: true,
+      maxAge: 0,
       path: "/",
     });
 
