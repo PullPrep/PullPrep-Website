@@ -12,6 +12,9 @@ services:
       - "3000:3000"
     volumes:
       - pullprep_data:/app/data
+    environment:
+      - BLIZZARD_CLIENT_ID=${BLIZZARD_CLIENT_ID}
+      - BLIZZARD_CLIENT_SECRET=${BLIZZARD_CLIENT_SECRET}
     networks:
       - pullprep_network
 
