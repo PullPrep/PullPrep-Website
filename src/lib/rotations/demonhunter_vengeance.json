@@ -1,0 +1,103 @@
+{
+  "class": "DemonHunter",
+  "spec": "Vengeance",
+  "coreSpells": [
+    {
+      "id": 187827,
+      "name": "Metamorphosis"
+    },
+    {
+      "id": 212084,
+      "name": "Fel Devastation"
+    },
+    {
+      "id": 228477,
+      "name": "Soul Cleave"
+    },
+    {
+      "id": 247454,
+      "name": "Spirit Bomb"
+    },
+    {
+      "id": 207407,
+      "name": "Soul Carver"
+    },
+    {
+      "id": 203720,
+      "name": "Demon Spikes"
+    },
+    {
+      "id": 204021,
+      "name": "Fiery Brand"
+    },
+    {
+      "id": 227084,
+      "name": "Fracture"
+    },
+    {
+      "id": 225919,
+      "name": "Shear"
+    }
+  ],
+  "cooldowns": [
+    187827,
+    212084,
+    204021
+  ],
+  "interrupts": [
+    202137,
+    183752
+  ],
+  "defensives": [
+    187827,
+    203720,
+    204021
+  ],
+  "healthRecovery": [
+    5512,
+    191380,
+    228477
+  ],
+  "apl": [
+    {
+      "spellId": 204021,
+      "name": "Fiery Brand",
+      "condition": "off_cooldown"
+    },
+    {
+      "spellId": 187827,
+      "name": "Metamorphosis",
+      "condition": "off_cooldown"
+    },
+    {
+      "spellId": 212084,
+      "name": "Fel Devastation",
+      "condition": "off_cooldown"
+    },
+    {
+      "spellId": 247454,
+      "name": "Spirit Bomb",
+      "condition": "off_cooldown"
+    },
+    {
+      "spellId": 207407,
+      "name": "Soul Carver",
+      "condition": "off_cooldown"
+    },
+    {
+      "spellId": 228477,
+      "name": "Soul Cleave",
+      "condition": "off_cooldown"
+    },
+    {
+      "spellId": 227084,
+      "name": "Fracture",
+      "condition": "always"
+    },
+    {
+      "spellId": 225919,
+      "name": "Shear",
+      "condition": "always"
+    }
+  ]
+}

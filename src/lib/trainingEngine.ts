@@ -1,3 +1,6 @@
+import havocRotation from "./rotations/demonhunter_havoc.json";
+import vengeanceRotation from "./rotations/demonhunter_vengeance.json";
+
 export interface Spell {
   id: number;
   name: string;
@@ -31,6 +34,20 @@ export interface CastRecord {
   status: "perfect" | "early" | "late" | "missed" | "incorrect";
 }
 
+export interface ModifierDelayDetails {
+  baseAvg: number;
+  modAvg: number;
+  shiftAvg: number;
+  ctrlAvg: number;
+  altAvg: number;
+}
+
+export interface TransitionFatigue {
+  fromSpell: string;
+  toSpell: string;
+  delayMs: number;
+}
+
 export interface SessionStats {
   accuracy: number;
   totalPressed: number;
@@ -45,9 +62,38 @@ export interface SessionStats {
   worstReactionTime: number; // in ms
   totalDowntime: number; // in seconds
   feedback: string[];
+  modifierDelays?: ModifierDelayDetails;
+  transitionFatigues?: TransitionFatigue[];
+  keybindAudits?: string[];
 }
 
-// Predefined WoW spells for Demon Hunter
+export interface ImportedButton {
+  slot: number;
+  type: string;
+  id: number;
+  name: string;
+  key: string;
+  icon: number;
+}
+
+export interface ImportedBar {
+  barName: string;
+  buttons: ImportedButton[];
+}
+
+export interface ImportedBuild {
+  class: string;
+  spec: string;
+  actionBars: ImportedBar[];
+}
+
+// Database of spec JSON profiles
+export const ROTATIONS_DB: Record<string, any> = {
+  "demonhunter_havoc": havocRotation,
+  "demonhunter_vengeance": vengeanceRotation,
+};
+
+// Predefined WoW spells for Demon Hunter (fallback database)
 export const DEMON_HUNTER_SPELLS: Record<number, Spell> = {
   162794: {
     id: 162794,
@@ -82,6 +128,106 @@ export const DEMON_HUNTER_SPELLS: Record<number, Spell> = {
     description: "Leap into the air and transform into a demon, empowering your abilities.",
   },
 };
+
+// Mutually exclusive spells or alternate IDs (e.g. Fracture vs Shear)
+const SPELL_GROUP_MAPPINGS: Record<number, number[]> = {
+  227084: [227084, 225919, 263642, 203782], // Fracture/Shear group
+  225919: [227084, 225919, 263642, 203782],
+  263642: [227084, 225919, 263642, 203782],
+  203782: [227084, 225919, 263642, 203782]
+};
+
+// Scan character layout for missing core spells
+export function checkMissingCoreSpells(
+  importedBuild: ImportedBuild | null,
+  specKey: string
+): { id: number; name: string }[] {
+  if (!importedBuild) return [];
+  const rotationData = ROTATIONS_DB[specKey];
+  if (!rotationData || !rotationData.coreSpells) return [];
+
+  // Get all bound spell IDs in the player's bars
+  const boundSpellIds = new Set<number>();
+  importedBuild.actionBars.forEach((bar) => {
+    bar.buttons.forEach((btn) => {
+      if (btn.type !== "empty" && btn.id) {
+        boundSpellIds.add(btn.id);
+      }
+    });
+  });
+
+  const missing: { id: number; name: string }[] = [];
+
+  rotationData.coreSpells.forEach((core: { id: number; name: string }) => {
+    const alternates = SPELL_GROUP_MAPPINGS[core.id];
+    if (alternates) {
+      const isAnyBound = alternates.some((altId) => boundSpellIds.has(altId));
+      if (!isAnyBound) {
+        if (!missing.some(m => SPELL_GROUP_MAPPINGS[m.id]?.includes(core.id))) {
+          missing.push(core);
+        }
+      }
+    } else {
+      if (!boundSpellIds.has(core.id)) {
+        missing.push(core);
+      }
+    }
+  });
+
+  return missing;
+}
+
+// Audit keybind layout to detect awkward placements
+export function auditKeybindLayout(
+  importedBuild: ImportedBuild | null,
+  specKey: string
+): string[] {
+  if (!importedBuild) return [];
+  const rotationData = ROTATIONS_DB[specKey];
+  if (!rotationData || !rotationData.coreSpells) return [];
+
+  const audits: string[] = [];
+  const awkwardKeys = ["8", "9", "0", "-", "=", "[", "]", "F9", "F10", "F11", "F12"];
+
+  importedBuild.actionBars.forEach((bar) => {
+    bar.buttons.forEach((btn) => {
+      if (btn.type !== "empty" && btn.key) {
+        const keyUpper = btn.key.toUpperCase();
+        const isAwkward = awkwardKeys.some(awk => keyUpper.includes(awk));
+        
+        // Find if this button is a core spell
+        const isCore = rotationData.coreSpells.some((core: any) => 
+          core.id === btn.id || SPELL_GROUP_MAPPINGS[core.id]?.includes(btn.id)
+        );
+
+        if (isCore && isAwkward) {
+          audits.push(
+            `Core spell '${btn.name}' is bound to '${btn.key}'. Consider placing highly active rotational spells closer to WASD (keys 1-5, Q, E, R, F) for better uptime.`
+          );
+        }
+
+        // Check Interrupts
+        const isInterrupt = rotationData.interrupts?.includes(btn.id) || 
+          btn.name.toLowerCase().includes("disrupt") || 
+          btn.name.toLowerCase().includes("kick") || 
+          btn.name.toLowerCase().includes("pummel");
+          
+        if (isInterrupt) {
+          const hasMultipleModifiers = (btn.key.includes("CTRL") && btn.key.includes("ALT")) || 
+                                       (btn.key.includes("CTRL") && btn.key.includes("SHIFT")) ||
+                                       (btn.key.includes("ALT") && btn.key.includes("SHIFT"));
+          if (hasMultipleModifiers || isAwkward) {
+            audits.push(
+              `Interrupt '${btn.name}' is bound to '${btn.key}'. For fast reaction to boss casts, consider a single key close to WASD or a mouse button.`
+            );
+          }
+        }
+      }
+    });
+  });
+
+  return audits;
+}
 
 // Predefined Training Scenarios
 export const TRAINING_SCENARIOS: Scenario[] = [
@@ -147,7 +293,8 @@ export function evaluatePress(
 export function compileStats(
   casts: CastRecord[],
   scenario: Scenario,
-  totalDowntime: number
+  totalDowntime: number,
+  importedBuild?: ImportedBuild | null
 ): SessionStats {
   const totalSteps = scenario.isProcReaction ? casts.length : scenario.steps.length;
   
@@ -204,6 +351,105 @@ export function compileStats(
   
   const worstReactionTime =
     validReactionTimes.length > 0 ? Math.max(...validReactionTimes) : 0;
+
+  // Generate Modifier Timing Averages
+  let baseSum = 0, baseCount = 0;
+  let modSum = 0, modCount = 0;
+  let shiftSum = 0, shiftCount = 0;
+  let ctrlSum = 0, ctrlCount = 0;
+  let altSum = 0, altCount = 0;
+
+  const getSpellKey = (spellId: number): string => {
+    if (importedBuild) {
+      for (const bar of importedBuild.actionBars) {
+        for (const btn of bar.buttons) {
+          if (btn.id === spellId && btn.key) {
+            return btn.key;
+          }
+        }
+      }
+    }
+    return DEMON_HUNTER_SPELLS[spellId]?.keybind || "";
+  };
+
+  casts.forEach((c) => {
+    if (c.reactionTime !== null && c.status !== "incorrect") {
+      const key = getSpellKey(c.expectedSpellId).toUpperCase();
+      const hasShift = key.includes("SHIFT");
+      const hasCtrl = key.includes("CTRL");
+      const hasAlt = key.includes("ALT");
+      const hasMod = hasShift || hasCtrl || hasAlt;
+
+      if (hasMod) {
+        modSum += c.reactionTime;
+        modCount++;
+        if (hasShift) { shiftSum += c.reactionTime; shiftCount++; }
+        if (hasCtrl) { ctrlSum += c.reactionTime; ctrlCount++; }
+        if (hasAlt) { altSum += c.reactionTime; altCount++; }
+      } else {
+        baseSum += c.reactionTime;
+        baseCount++;
+      }
+    }
+  });
+
+  const modifierDelays: ModifierDelayDetails = {
+    baseAvg: baseCount > 0 ? Math.round(baseSum / baseCount) : 0,
+    modAvg: modCount > 0 ? Math.round(modSum / modCount) : 0,
+    shiftAvg: shiftCount > 0 ? Math.round(shiftSum / shiftCount) : 0,
+    ctrlAvg: ctrlCount > 0 ? Math.round(ctrlSum / ctrlCount) : 0,
+    altAvg: altCount > 0 ? Math.round(altSum / altCount) : 0,
+  };
+
+  // Generate Transition Fatigue Diagnostics
+  const getSpellName = (spellId: number): string => {
+    if (importedBuild) {
+      for (const bar of importedBuild.actionBars) {
+        for (const btn of bar.buttons) {
+          if (btn.id === spellId && btn.name) {
+            return btn.name;
+          }
+        }
+      }
+    }
+    return DEMON_HUNTER_SPELLS[spellId]?.name || `Spell ${spellId}`;
+  };
+
+  const transitionDelays: Record<string, { sum: number; count: number; fromName: string; toName: string }> = {};
+
+  for (let i = 1; i < casts.length; i++) {
+    const prev = casts[i-1];
+    const curr = casts[i];
+    if (prev.reactionTime !== null && curr.reactionTime !== null && curr.status !== "incorrect" && prev.status !== "incorrect") {
+      const key = `${prev.expectedSpellId}->${curr.expectedSpellId}`;
+      if (!transitionDelays[key]) {
+        transitionDelays[key] = {
+          sum: 0,
+          count: 0,
+          fromName: getSpellName(prev.expectedSpellId),
+          toName: getSpellName(curr.expectedSpellId)
+        };
+      }
+      transitionDelays[key].sum += curr.reactionTime;
+      transitionDelays[key].count++;
+    }
+  }
+
+  const transitionFatigues: TransitionFatigue[] = [];
+  Object.entries(transitionDelays).forEach(([key, d]) => {
+    const avg = Math.round(d.sum / d.count);
+    if (avg > avgReactionTime * 1.25 && d.count >= 2) {
+      transitionFatigues.push({
+        fromSpell: d.fromName,
+        toSpell: d.toName,
+        delayMs: avg
+      });
+    }
+  });
+
+  // Keybind audits list
+  const specKey = importedBuild ? `${importedBuild.class.toLowerCase().replace(' ', '')}_${importedBuild.spec.toLowerCase().replace(' ', '')}` : "";
+  const keybindAudits = specKey ? auditKeybindLayout(importedBuild, specKey) : [];
 
   // Generate Personalized Feedback
   const feedback: string[] = [];
@@ -268,5 +514,8 @@ export function compileStats(
     worstReactionTime,
     totalDowntime: parseFloat(totalDowntime.toFixed(1)),
     feedback,
+    modifierDelays,
+    transitionFatigues,
+    keybindAudits
   };
 }

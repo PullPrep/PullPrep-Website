@@ -11,6 +11,11 @@ import {
   TRAINING_SCENARIOS,
   evaluatePress,
   compileStats,
+  ROTATIONS_DB,
+  checkMissingCoreSpells,
+  ImportedBuild,
+  ImportedBar,
+  ImportedButton
 } from "@/lib/trainingEngine";
 
 // Web Audio API Synthesizer for premium instant feedback
@@ -88,31 +93,18 @@ class SoundSynthesizer {
   }
 }
 
-interface ImportedButton {
-  slot: number;
-  type: string;
-  id: number;
-  name: string;
+interface EncounterAlert {
+  type: "interrupt" | "health" | "defensive";
+  prompt: string;
   key: string;
-  icon: number;
-}
-
-interface ImportedBar {
-  barName: string;
-  buttons: ImportedButton[];
-}
-
-interface ImportedBuild {
-  class: string;
-  spec: string;
-  actionBars: ImportedBar[];
+  expiresAt: number;
 }
 
 const getSpellColor = (name: string): string => {
   const lowercase = name.toLowerCase();
-  if (lowercase.includes("chaos strike")) return "#ef4444";
-  if (lowercase.includes("blade dance")) return "#10b981";
-  if (lowercase.includes("eye beam")) return "#8b5cf6";
+  if (lowercase.includes("chaos strike") || lowercase.includes("fracture") || lowercase.includes("shear")) return "#ef4444";
+  if (lowercase.includes("blade dance") || lowercase.includes("soul cleave")) return "#10b981";
+  if (lowercase.includes("eye beam") || lowercase.includes("fel devastation") || lowercase.includes("spirit bomb")) return "#8b5cf6";
   if (lowercase.includes("metamorphosis")) return "#eab308";
   return "#a855f7"; // default purple
 };
@@ -126,7 +118,7 @@ const getSpellIconSVG = (name: string) => {
       </svg>
     );
   }
-  if (lowercase.includes("eye beam")) {
+  if (lowercase.includes("eye beam") || lowercase.includes("fel devastation")) {
     return (
       <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-7">
         <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
@@ -134,14 +126,14 @@ const getSpellIconSVG = (name: string) => {
       </svg>
     );
   }
-  if (lowercase.includes("blade dance")) {
+  if (lowercase.includes("blade dance") || lowercase.includes("soul cleave") || lowercase.includes("spirit bomb")) {
     return (
       <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-7">
         <path strokeLinecap="round" strokeLinejoin="round" d="m9 9 6-6m0 0 6 6m-6-6v12m0 3.75a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" />
       </svg>
     );
   }
-  if (lowercase.includes("chaos strike")) {
+  if (lowercase.includes("chaos strike") || lowercase.includes("fracture") || lowercase.includes("shear")) {
     return (
       <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-7">
         <path strokeLinecap="round" strokeLinejoin="round" d="M15.362 5.214A8.252 8.252 0 0 1 12 21 8.25 8.25 0 0 1 6.038 7.047 8.287 8.287 0 0 0 9 9.601a8.983 8.983 0 0 1 3.361-6.867 8.21 8.21 0 0 0 3 2.48Z" />
@@ -180,12 +172,41 @@ export default function Train() {
 
   const synthRef = useRef<SoundSynthesizer | null>(null);
   const gameIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const stateRef = useRef({ gameState, elapsedTime, activeStepIndex, activeSpell, activePromptTime, casts, combo, lastCastTime });
+
+  // Hardcore & Alerts states
+  const [isHardcore, setIsHardcore] = useState<boolean>(false);
+  const [activeAlert, setActiveAlert] = useState<EncounterAlert | null>(null);
+  const [wipedReason, setWipedReason] = useState<string | null>(null);
+  const nextAlertTimeRef = useRef<number>(Infinity);
+
+  const stateRef = useRef({ 
+    gameState, 
+    elapsedTime, 
+    activeStepIndex, 
+    activeSpell, 
+    activePromptTime, 
+    casts, 
+    combo, 
+    lastCastTime,
+    activeAlert,
+    isHardcore
+  });
 
   // Update ref to read latest states inside timers/listeners
   useEffect(() => {
-    stateRef.current = { gameState, elapsedTime, activeStepIndex, activeSpell, activePromptTime, casts, combo, lastCastTime };
-  }, [gameState, elapsedTime, activeStepIndex, activeSpell, activePromptTime, casts, combo, lastCastTime]);
+    stateRef.current = { 
+      gameState, 
+      elapsedTime, 
+      activeStepIndex, 
+      activeSpell, 
+      activePromptTime, 
+      casts, 
+      combo, 
+      lastCastTime,
+      activeAlert,
+      isHardcore
+    };
+  }, [gameState, elapsedTime, activeStepIndex, activeSpell, activePromptTime, casts, combo, lastCastTime, activeAlert, isHardcore]);
 
   // Lazy initialize Synthesizer
   useEffect(() => {
@@ -349,6 +370,90 @@ export default function Train() {
     else if (type === "incorrect") synthRef.current.playIncorrect();
   };
 
+  const triggerRandomAlert = (currentElapsed: number) => {
+    if (!activeBuild) return;
+
+    // Scan bar keys to check which reactive spells are available
+    const availableCategories: ("interrupt" | "health" | "defensive")[] = [];
+    const bindMap: Record<string, { key: string; name: string }> = {};
+
+    activeBuild.actionBars.forEach((bar) => {
+      bar.buttons.forEach((btn) => {
+        if (btn.type !== "empty" && btn.key) {
+          const nameLower = btn.name.toLowerCase();
+          
+          // Interrupts
+          const isInterrupt = nameLower.includes("disrupt") || nameLower.includes("kick") || nameLower.includes("pummel") || nameLower.includes("mind freeze") || nameLower.includes("wind shear") || nameLower.includes("silence");
+          if (isInterrupt && !availableCategories.includes("interrupt")) {
+            availableCategories.push("interrupt");
+            bindMap["interrupt"] = { key: btn.key, name: btn.name };
+          }
+
+          // Health stones/pots
+          const isHealth = nameLower.includes("healthstone") || nameLower.includes("potion") || nameLower.includes("exhilaration");
+          if (isHealth && !availableCategories.includes("health")) {
+            availableCategories.push("health");
+            bindMap["health"] = { key: btn.key, name: btn.name };
+          }
+
+          // Defensives
+          const isDefensive = nameLower.includes("metamorphosis") || nameLower.includes("blur") || nameLower.includes("divine shield") || nameLower.includes("ice block") || nameLower.includes("barkskin") || nameLower.includes("astral shift") || nameLower.includes("survival instincts") || nameLower.includes("fiery brand");
+          if (isDefensive && !availableCategories.includes("defensive")) {
+            availableCategories.push("defensive");
+            bindMap["defensive"] = { key: btn.key, name: btn.name };
+          }
+        }
+      });
+    });
+
+    if (availableCategories.length === 0) {
+      nextAlertTimeRef.current = currentElapsed + 6;
+      return;
+    }
+
+    const category = availableCategories[Math.floor(Math.random() * availableCategories.length)];
+    const bind = bindMap[category];
+
+    const prompts = {
+      interrupt: `Spell Cast! Interrupt with ${bind.name}!`,
+      health: `LOW HEALTH (1%)! Use ${bind.name}!`,
+      defensive: `Incoming Big Damage! Cast ${bind.name}!`
+    };
+
+    setActiveAlert({
+      type: category,
+      prompt: prompts[category],
+      key: bind.key.toUpperCase(),
+      expiresAt: currentElapsed + 1.2
+    });
+  };
+
+  const registerAlertMissed = (alert: EncounterAlert) => {
+    setActiveAlert(null);
+    playSound("incorrect");
+    setCombo(0);
+
+    const elapsed = stateRef.current.elapsedTime;
+    const newRecord: CastRecord = {
+      stepIndex: -1,
+      expectedSpellId: 0,
+      actualSpellId: null,
+      expectedTime: elapsed,
+      actualTime: elapsed,
+      reactionTime: null,
+      status: "missed",
+    };
+    setCasts((prev) => [...prev, newRecord]);
+    setLastPressResult({ key: alert.key, status: "missed" });
+
+    if (isHardcore) {
+      setWipedReason("mechanic");
+      endGame();
+    } else {
+      nextAlertTimeRef.current = elapsed + 10 + Math.random() * 8;
+    }
+  };
+
   const startCountdown = () => {
     setGameState("countdown");
     setCountdown(3);
@@ -360,6 +465,9 @@ export default function Train() {
     setActivePromptTime(null);
     setFinalStats(null);
     setLastCastTime(null);
+    setActiveAlert(null);
+    setWipedReason(null);
+    nextAlertTimeRef.current = 8 + Math.random() * 6; // first alert around 8-14s
 
     const countInterval = setInterval(() => {
       setCountdown((prev) => {
@@ -385,11 +493,10 @@ export default function Train() {
       const numSteps = Math.floor(selectedScenario.duration / 2);
       let currTime = 1.0;
       for (let i = 0; i < numSteps; i++) {
-        // Random spell: CS, BD, EB
         const spellIds = [162794, 188499, 198013];
         const randomId = spellIds[Math.floor(Math.random() * spellIds.length)];
         steps.push({ time: currTime, spellId: randomId });
-        currTime += 1.8 + Math.random() * 1.5; // spaced 1.8s to 3.3s
+        currTime += 1.8 + Math.random() * 1.5;
       }
       setSelectedScenario({
         ...selectedScenario,
@@ -408,18 +515,30 @@ export default function Train() {
         return;
       }
 
-      // Check if we need to show the next step
+      // 1. Tick mechanic alerts
+      const { activeAlert: curAlert } = stateRef.current;
+      if (curAlert) {
+        if (currentElapsed >= curAlert.expiresAt) {
+          registerAlertMissed(curAlert);
+          return;
+        }
+      } else {
+        const nextAlertTime = nextAlertTimeRef.current;
+        if (currentElapsed >= nextAlertTime) {
+          triggerRandomAlert(currentElapsed);
+        }
+      }
+
+      // 2. Check regular rotation steps
       const { activeStepIndex: curIdx, casts: currentCasts } = stateRef.current;
       const nextStepIndex = curIdx === null ? 0 : curIdx + 1;
 
       if (nextStepIndex < steps.length) {
         const nextStep = steps[nextStepIndex];
         if (currentElapsed >= nextStep.time) {
-          // Check if previous step was missed
           if (curIdx !== null) {
             const wasHit = currentCasts.some((c) => c.stepIndex === curIdx);
             if (!wasHit) {
-              // Register missed press
               const prevStep = steps[curIdx];
               setCasts((prev) => [
                 ...prev,
@@ -435,6 +554,13 @@ export default function Train() {
               ]);
               setCombo(0);
               playSound("incorrect");
+              
+              if (stateRef.current.isHardcore) {
+                setWipedReason("mechanic");
+                endGame();
+                return;
+              }
+
               setLastPressResult({ key: getMappedSpell(prevStep.spellId).keybind, status: "missed" });
             }
           }
@@ -444,22 +570,19 @@ export default function Train() {
           setActivePromptTime(currentElapsed);
         }
       }
-    }, 20); // 50 ticks per second
+    }, 20);
   };
 
   const endGame = () => {
     if (gameIntervalRef.current) clearInterval(gameIntervalRef.current);
     setGameState("finished");
+    setActiveSpell(null);
+    setActiveStepIndex(null);
     
     // Evaluate final stats
     const { casts: finalCasts } = stateRef.current;
     
-    // Calculate total downtime
-    // Downtime = elapsed time spent while a key prompt was active, minus the reaction time
     let totalDowntime = 0;
-    const promptWindow = 1.0; // 1 second window to respond
-    
-    // Simple downtime representation: sum up gaps of inactivity
     const maxReaction = 1.0;
     finalCasts.forEach(c => {
       if (c.status === "missed") {
@@ -467,15 +590,13 @@ export default function Train() {
       } else if (c.reactionTime !== null) {
         const reactionSeconds = c.reactionTime / 1000;
         if (reactionSeconds > 0.45) {
-          totalDowntime += (reactionSeconds - 0.45); // delays beyond perfect window
+          totalDowntime += (reactionSeconds - 0.45);
         }
       }
     });
 
-    const stats = compileStats(finalCasts, selectedScenario, totalDowntime);
+    const stats = compileStats(finalCasts, selectedScenario, totalDowntime, activeBuild);
     setFinalStats(stats);
-    setActiveSpell(null);
-    setActiveStepIndex(null);
   };
 
   const resetGame = () => {
@@ -489,12 +610,13 @@ export default function Train() {
     setFinalStats(null);
     setLastPressResult(null);
     setLastCastTime(null);
+    setActiveAlert(null);
+    setWipedReason(null);
   };
 
-  // Listen to keyboard events
+  // Keyboard events
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Ignore standalone modifier presses
       if (["Shift", "Control", "Alt"].includes(e.key)) return;
 
       const pressedWoWKey = getWoWKeyString(e);
@@ -502,8 +624,6 @@ export default function Train() {
       if (!validBinds.has(pressedWoWKey)) return;
 
       e.preventDefault();
-      
-      // Update visualizer state
       setPressedKeys((prev) => ({ ...prev, [pressedWoWKey]: true }));
 
       const {
@@ -512,17 +632,56 @@ export default function Train() {
         activeStepIndex: currentIndex,
         activePromptTime: currentPromptTime,
         casts: currentCasts,
-        lastCastTime: currentLastCastTime
+        lastCastTime: currentLastCastTime,
+        activeAlert: curAlert,
+        isHardcore: hcActive
       } = stateRef.current;
 
       if (currentGameState !== "running") return;
 
       const elapsed = stateRef.current.elapsedTime;
       const steps = selectedScenario.steps;
-      const gcdDuration = 1.5;
-      const queueWindow = 0.25; // 250ms
+      
+      // Stress Tempo Accelerator: GCD speeds up with combo streak (up to 20% speedup at 50 combo)
+      const baseGcd = 1.5;
+      const gcdDuration = baseGcd * (1 - Math.min(0.2, (combo / 50) * 0.2));
+      const queueWindow = 0.25;
 
-      // Determine if GCD is active
+      // 1. Handle Mechanic Alerts press
+      if (curAlert) {
+        if (pressedWoWKey === curAlert.key) {
+          // Success resolve
+          setActiveAlert(null);
+          playSound("perfect");
+          setCombo((prev) => prev + 1);
+          setLastCastTime(elapsed);
+          setLastPressResult({ key: pressedWoWKey, status: "perfect" });
+
+          const newRecord: CastRecord = {
+            stepIndex: -1,
+            expectedSpellId: 999999, // alert success
+            actualSpellId: null,
+            expectedTime: elapsed,
+            actualTime: elapsed,
+            reactionTime: 300,
+            status: "perfect"
+          };
+          setCasts((prev) => [...prev, newRecord]);
+          nextAlertTimeRef.current = elapsed + 10 + Math.random() * 8;
+        } else {
+          // Wrong key on alert
+          if (hcActive) {
+            setWipedReason("incorrect");
+            endGame();
+          } else {
+            playSound("incorrect");
+            setCombo(0);
+          }
+        }
+        return;
+      }
+
+      // 2. Normal Rotational check
       let isGcdActive = false;
       let isQueued = false;
       let actualCastTime = elapsed;
@@ -540,14 +699,12 @@ export default function Train() {
         }
       }
 
-      // 1. Identify which step/spell is being targeted
       let targetStepIndex = currentIndex;
       let targetSpell = currentSpell;
       let targetPromptTime = currentPromptTime;
 
       const nextStepIndex = currentIndex === null ? 0 : currentIndex + 1;
 
-      // Check if user is queueing the next step ahead of schedule (only for fixed rotations)
       if (!selectedScenario.isProcReaction && nextStepIndex < steps.length) {
         const nextStep = steps[nextStepIndex];
         const timeUntilNext = nextStep.time - elapsed;
@@ -560,28 +717,31 @@ export default function Train() {
 
       const expectedKeybind = targetSpell ? targetSpell.keybind : "";
 
-      // 2. Handle GCD lockout
       if (isGcdActive) {
-        // If they pressed the correct target keybind during lockout, ignore (allow spamming)
-        // If they pressed an incorrect keybind, register as incorrect
         if (targetSpell && pressedWoWKey !== expectedKeybind) {
-          registerIncorrectPress(pressedWoWKey);
+          if (hcActive) {
+            setWipedReason("incorrect");
+            endGame();
+          } else {
+            registerIncorrectPress(pressedWoWKey);
+          }
         }
         return;
       }
 
-      // 3. Evaluate the cast
       if (targetSpell && targetStepIndex !== null) {
-        // Check if this step was already responded to
         const alreadyResponded = currentCasts.some((c) => c.stepIndex === targetStepIndex);
         if (alreadyResponded) {
-          registerIncorrectPress(pressedWoWKey);
+          if (hcActive) {
+            setWipedReason("incorrect");
+            endGame();
+          } else {
+            registerIncorrectPress(pressedWoWKey);
+          }
           return;
         }
 
         const timeDiff = actualCastTime - (targetPromptTime || 0);
-
-        // Override targetSpell keybind with dynamic keybind before passing to evaluatePress
         const spellWithCustomBind = {
           ...targetSpell,
           keybind: expectedKeybind
@@ -615,11 +775,21 @@ export default function Train() {
           playSound("correct");
           setLastCastTime(actualCastTime);
         } else {
-          setCombo(0);
-          playSound("incorrect");
+          if (hcActive) {
+            setWipedReason("incorrect");
+            endGame();
+          } else {
+            setCombo(0);
+            playSound("incorrect");
+          }
         }
       } else {
-        registerIncorrectPress(pressedWoWKey);
+        if (hcActive) {
+          setWipedReason("incorrect");
+          endGame();
+        } else {
+          registerIncorrectPress(pressedWoWKey);
+        }
       }
     };
 
@@ -636,7 +806,7 @@ export default function Train() {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };
-  }, [selectedScenario, activeBuild]);
+  }, [selectedScenario, activeBuild, combo]);
 
   const registerIncorrectPress = (key: string) => {
     const elapsed = stateRef.current.elapsedTime;
@@ -645,7 +815,7 @@ export default function Train() {
       : (Object.values(DEMON_HUNTER_SPELLS).find((s) => s.keybind === key)?.id || null);
 
     const newRecord: CastRecord = {
-      stepIndex: -1, // Penalty
+      stepIndex: -1,
       expectedSpellId: 0,
       actualSpellId,
       expectedTime: elapsed,
@@ -659,21 +829,47 @@ export default function Train() {
     setLastPressResult({ key, status: "incorrect" });
   };
 
-  // Stats for real-time dashboard
   const totalStepsEvaluated = casts.length;
   const correctCasts = casts.filter((c) => ["perfect", "early", "late"].includes(c.status)).length;
   const currentAccuracy = totalStepsEvaluated > 0 ? Math.round((correctCasts / totalStepsEvaluated) * 100) : 100;
   const validReactions = casts.filter((c) => c.reactionTime !== null).map((c) => c.reactionTime as number);
   const currentAvgReaction = validReactions.length > 0 ? Math.round(validReactions.reduce((a, b) => a + b, 0) / validReactions.length) : 0;
 
-  // GCD calculations
-  const gcdDuration = 1.5;
+  // Stress GCD Duration
+  const currentGcdMax = 1.5 * (1 - Math.min(0.2, (combo / 50) * 0.2));
   const timeSinceLastCast = lastCastTime !== null ? elapsedTime - lastCastTime : Infinity;
-  const isGcdActive = gameState === "running" && timeSinceLastCast < gcdDuration;
-  const gcdPercent = isGcdActive ? ((gcdDuration - timeSinceLastCast) / gcdDuration) * 100 : 0;
+  const isGcdActive = gameState === "running" && timeSinceLastCast < currentGcdMax;
+  const gcdPercent = isGcdActive ? ((currentGcdMax - timeSinceLastCast) / currentGcdMax) * 100 : 0;
+
+  // Spell Auditing Setup
+  const specKey = activeBuild ? `${activeBuild.class.toLowerCase().replace(' ', '')}_${activeBuild.spec.toLowerCase().replace(' ', '')}` : "demonhunter_havoc";
+  const missingSpells = checkMissingCoreSpells(activeBuild, specKey);
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col relative">
+      <style>{`
+        @keyframes shake {
+          0%, 100% { transform: translate(0, 0); }
+          10%, 30%, 50%, 70%, 90% { transform: translate(-3px, 2px); }
+          20%, 40%, 60%, 80% { transform: translate(3px, -2px); }
+        }
+        .animate-shake {
+          animation: shake 0.25s infinite;
+        }
+        @keyframes goldenGlow {
+          0%, 100% { box-shadow: 0 0 4px #fbbf24; border-color: #fbbf24; }
+          50% { box-shadow: 0 0 16px #fbbf24; border-color: #f59e0b; }
+        }
+        .proc-glow {
+          animation: goldenGlow 1.2s infinite;
+        }
+      `}</style>
+
+      {/* Low-health screen vignette alert filter */}
+      {gameState === "running" && activeAlert?.type === "health" && (
+        <div className="absolute inset-0 pointer-events-none border-[12px] border-rose-600/80 animate-pulse z-40" style={{ boxShadow: "inset 0 0 80px rgba(225,29,72,0.45)" }} />
+      )}
+
       {/* Background Gradients */}
       <div className="absolute top-0 left-0 w-[500px] h-[500px] rounded-full bg-violet-900/5 blur-[120px] pointer-events-none" />
       
@@ -697,30 +893,15 @@ export default function Train() {
             >
               Dashboard
             </Link>
-            <button
-              onClick={() => setIsMuted(!isMuted)}
-              className="p-2 text-zinc-400 hover:text-zinc-100 transition-colors"
-              title={isMuted ? "Unmute Sounds" : "Mute Sounds"}
-            >
-              {isMuted ? (
-                <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M17.25 9.75 19.5 12m0 0 2.25 2.25M19.5 12l2.25-2.25M19.5 12l-2.25 2.25m-10.5-6 4.72-4.72a.75.75 0 0 1 1.28.53v15.88a.75.75 0 0 1-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.009 9.009 0 0 1 2.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75Z" />
-                </svg>
-              ) : (
-                <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M19.114 5.636a9 9 0 0 1 0 12.728M16.463 8.288a5.25 5.25 0 0 1 0 7.424M6.75 8.25l4.72-4.72a.75.75 0 0 1 1.28.53v15.88a.75.75 0 0 1-1.28.53l-4.72-4.72H4.51c-.88 0-1.704-.507-1.938-1.354A9.009 9.009 0 0 1 2.25 12c0-.83.112-1.633.322-2.396C2.806 8.756 3.63 8.25 4.51 8.25H6.75Z" />
-                </svg>
-              )}
-            </button>
           </nav>
         </div>
       </header>
 
-      {/* Simulator Workspace */}
-      <main className="flex-grow max-w-5xl mx-auto px-4 py-8 w-full flex flex-col justify-between items-center relative z-10 space-y-8">
+      {/* Content wrapper */}
+      <div className="flex-grow flex flex-col justify-between max-w-5xl mx-auto w-full px-4 sm:px-6 py-6 space-y-6">
         
-        {/* Top Header Panel: Real-time HUD */}
-        <div className="w-full grid grid-cols-2 sm:grid-cols-4 gap-4 bg-zinc-900/40 border border-zinc-850 p-4 rounded-2xl backdrop-blur-sm">
+        {/* Real-time feedback bar */}
+        <div className="grid grid-cols-4 gap-2 sm:gap-4 bg-zinc-900/25 border border-zinc-900 p-3 rounded-2xl backdrop-blur-sm">
           <div className="text-center sm:border-r border-zinc-850 py-1">
             <span className="text-[10px] text-zinc-500 font-extrabold uppercase tracking-widest block">Timer</span>
             <span className="text-xl font-mono font-black text-white">
@@ -753,13 +934,32 @@ export default function Train() {
         </div>
 
         {/* Center Panel: Active Prompt & Target Indicator */}
-        <div className="w-full flex-grow flex flex-col justify-center items-center py-12 min-h-[240px]">
+        <div className={`w-full flex-grow flex flex-col justify-center items-center py-12 min-h-[240px] ${
+          activeAlert ? "animate-shake" : ""
+        }`}>
           {gameState === "idle" && (
-            <div className="text-center space-y-6 max-w-md">
+            <div className="text-center space-y-6 max-w-md w-full">
               <div className="space-y-2">
                 <h2 className="text-2xl font-black text-white">Select Drill & Launch</h2>
-                <p className="text-zinc-400 text-sm">Choose a practice drill. Place your fingers on keys 1, 2, 3, and 4. Press Start when ready.</p>
+                <p className="text-zinc-400 text-sm">Choose a practice drill. Place your fingers on your bindings and hit Start.</p>
               </div>
+
+              {/* Spell Audit Warning Card */}
+              {missingSpells.length > 0 && (
+                <div className="p-4 rounded-xl border border-amber-900/50 bg-amber-950/20 text-left space-y-2 max-w-md mx-auto">
+                  <div className="flex items-center space-x-2 text-amber-400 font-extrabold text-xs uppercase tracking-wider">
+                    <svg fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" className="size-4 text-amber-500">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+                    </svg>
+                    <span>Missing Core Action Bar Spells</span>
+                  </div>
+                  <p className="text-[11px] text-zinc-400 leading-relaxed">
+                    Your imported WoW action bar is missing the following essential rotational spells: 
+                    <span className="text-amber-200 font-bold ml-1">{missingSpells.map(s => s.name).join(", ")}</span>.
+                    We recommend placing them in-game and re-importing.
+                  </p>
+                </div>
+              )}
 
               <div className="flex flex-col space-y-2">
                 {TRAINING_SCENARIOS.map((scen) => (
@@ -783,6 +983,29 @@ export default function Train() {
                 ))}
               </div>
 
+              {/* Hardcore switch */}
+              <div className="flex items-center justify-between p-4 rounded-xl border border-zinc-850 bg-zinc-900/20 max-w-md w-full select-none mx-auto">
+                <div className="text-left space-y-0.5">
+                  <div className="flex items-center space-x-1.5">
+                    <span className="font-extrabold text-xs text-white uppercase tracking-wider">Hardcore Mode</span>
+                    <span className="px-1.5 py-0.5 rounded text-[8px] font-black bg-rose-950/60 border border-rose-900 text-rose-400 uppercase tracking-widest">High Stakes</span>
+                  </div>
+                  <span className="text-[10px] text-zinc-500 block leading-tight">Hides action bars and keybind helps. Any mistake is fatal.</span>
+                </div>
+                <button
+                  onClick={() => setIsHardcore(!isHardcore)}
+                  className={`w-11 h-6 rounded-full p-1 transition-colors duration-200 focus:outline-none ${
+                    isHardcore ? "bg-rose-600" : "bg-zinc-800"
+                  }`}
+                >
+                  <div
+                    className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform duration-200 ${
+                      isHardcore ? "translate-x-5" : "translate-x-0"
+                    }`}
+                  />
+                </button>
+              </div>
+
               <button
                 onClick={startCountdown}
                 className="w-full py-4 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-extrabold rounded-xl shadow-lg shadow-violet-500/25 active:scale-98 transition-all"
@@ -803,7 +1026,69 @@ export default function Train() {
             </div>
           )}
 
-          {gameState === "running" && (
+          {gameState === "running" && activeAlert && (
+            <div className="flex flex-col items-center justify-center space-y-8">
+              <div className={`w-32 h-32 rounded-2xl bg-zinc-950 border-4 ${
+                activeAlert.type === "interrupt" ? "border-amber-500 shadow-amber-500/20" :
+                activeAlert.type === "health" ? "border-rose-600 shadow-rose-600/20" :
+                "border-indigo-500 shadow-indigo-500/20"
+              } flex flex-col items-center justify-center relative shadow-2xl transition-all`}>
+                
+                <div className="w-16 h-16 flex items-center justify-center text-white">
+                  {activeAlert.type === "interrupt" && (
+                    <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-14 text-amber-500">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+                    </svg>
+                  )}
+                  {activeAlert.type === "health" && (
+                    <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-14 text-rose-500 animate-pulse">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12Z" />
+                    </svg>
+                  )}
+                  {activeAlert.type === "defensive" && (
+                    <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-14 text-indigo-400">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" />
+                    </svg>
+                  )}
+                </div>
+
+                {!isHardcore && (
+                  <span className="absolute top-2 right-2 px-1.5 py-0.5 rounded bg-zinc-950 border border-zinc-800 text-[10px] font-mono font-black text-zinc-300">
+                    Key: {activeAlert.key}
+                  </span>
+                )}
+              </div>
+
+              {activeAlert.type === "interrupt" && (
+                <div className="w-56 h-3.5 bg-zinc-900 border border-zinc-800 rounded-full overflow-hidden relative">
+                  <div 
+                    className="h-full bg-gradient-to-r from-amber-600 to-amber-400 transition-all duration-75"
+                    style={{ width: `${Math.max(0, ((activeAlert.expiresAt - elapsedTime) / 1.2) * 100)}%` }}
+                  />
+                  <span className="absolute inset-0 flex items-center justify-center font-mono text-[9px] font-bold text-white uppercase tracking-widest">
+                    Boss Cast
+                  </span>
+                </div>
+              )}
+
+              <div className="text-center space-y-1">
+                <span className={`text-xs font-bold uppercase tracking-widest ${
+                  activeAlert.type === "health" ? "text-rose-500 animate-pulse" :
+                  activeAlert.type === "interrupt" ? "text-amber-500" :
+                  "text-indigo-400"
+                }`}>
+                  {activeAlert.type === "health" ? "SURVIVAL ALERT!" :
+                   activeAlert.type === "interrupt" ? "INTERRUPT MECHANIC!" :
+                   "DEFENSIVE NEEDED!"}
+                </span>
+                <h3 className="text-2xl font-black text-white">
+                  {activeAlert.prompt}
+                </h3>
+              </div>
+            </div>
+          )}
+
+          {gameState === "running" && !activeAlert && (
             <div className="flex flex-col items-center justify-center space-y-8">
               {activeSpell ? (
                 <div className="flex flex-col items-center space-y-4">
@@ -849,13 +1134,15 @@ export default function Train() {
                     <span className="text-[10px] font-black mt-2 uppercase tracking-widest text-zinc-300">
                       {activeSpell.name}
                     </span>
-                    <span className={`absolute top-1.5 right-2 px-1.5 py-0.5 rounded-md font-mono text-[10px] font-black border transition-all ${
-                      pressedKeys[activeSpell.keybind]
-                        ? "bg-violet-600 border-violet-500 text-white scale-95 shadow-md shadow-violet-500/20"
-                        : "bg-zinc-950/90 border-zinc-800 text-zinc-200"
-                    }`}>
-                      Key: {activeSpell.keybind}
-                    </span>
+                    {!isHardcore && (
+                      <span className={`absolute top-1.5 right-2 px-1.5 py-0.5 rounded-md font-mono text-[10px] font-black border transition-all ${
+                        pressedKeys[activeSpell.keybind]
+                          ? "bg-violet-600 border-violet-500 text-white scale-95 shadow-md shadow-violet-500/20"
+                          : "bg-zinc-950/90 border-zinc-800 text-zinc-200"
+                      }`}>
+                        Key: {activeSpell.keybind}
+                      </span>
+                    )}
                   </div>
 
                   <div className="text-center space-y-1">
@@ -863,7 +1150,11 @@ export default function Train() {
                       Simulated Prompt
                     </span>
                     <h3 className="text-2xl font-black text-white">
-                      Press Key: <span className="text-violet-400 font-mono text-3xl px-2 py-0.5 rounded bg-violet-950/40 border border-violet-900">{activeSpell.keybind}</span>
+                      {isHardcore ? (
+                        <span className="text-rose-500 font-extrabold uppercase tracking-widest text-lg animate-pulse">HARDCORE MEMORY TEST</span>
+                      ) : (
+                        <>Press Key: <span className="text-violet-400 font-mono text-3xl px-2 py-0.5 rounded bg-violet-950/40 border border-violet-900">{activeSpell.keybind}</span></>
+                      )}
                     </h3>
                   </div>
                 </div>
@@ -897,7 +1188,31 @@ export default function Train() {
             </div>
           )}
 
-          {gameState === "finished" && finalStats && (
+          {gameState === "finished" && wipedReason && (
+            <div className="max-w-xl mx-auto px-4 py-16 text-center space-y-6 flex-grow flex flex-col justify-center items-center select-none">
+              <div className="w-24 h-24 rounded-full bg-rose-950/60 border-2 border-rose-500 flex items-center justify-center shadow-2xl shadow-rose-500/20 text-rose-500 animate-bounce">
+                <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-14">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12v-.008Z" />
+                </svg>
+              </div>
+              <div className="space-y-2">
+                <h2 className="text-4xl font-black text-rose-500 tracking-wider">YOU WIPED THE RAID</h2>
+                <p className="text-zinc-400 text-sm max-w-sm mx-auto">
+                  {wipedReason === "mechanic" 
+                    ? "You failed to respond to a critical encounter mechanic in time. Boss mechanics are fatal on Hardcore!"
+                    : "You pressed the incorrect keybind. Mistakes are fatal on Hardcore!"}
+                </p>
+              </div>
+              <button
+                onClick={resetGame}
+                className="px-6 py-3 bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-sm rounded-xl transition-all hover:scale-105 shadow-lg shadow-rose-500/20 uppercase tracking-wider"
+              >
+                Release Spirit & Retry
+              </button>
+            </div>
+          )}
+
+          {gameState === "finished" && finalStats && !wipedReason && (
             <div className="w-full max-w-2xl bg-zinc-900/50 border border-zinc-850 p-8 rounded-3xl space-y-8 backdrop-blur-sm relative overflow-hidden">
               <div className="absolute top-0 right-0 w-44 h-44 bg-violet-500/5 rounded-full blur-3xl pointer-events-none" />
               
@@ -943,44 +1258,78 @@ export default function Train() {
                 </ul>
               </div>
 
-              {/* Detailed Breakdown Tables */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-                <div className="bg-zinc-950/30 p-4 rounded-xl border border-zinc-850 space-y-2">
-                  <span className="font-bold text-zinc-400 block uppercase tracking-wider">Pressed Distribution</span>
+              {/* Modifier Reaction Speed Averages */}
+              {finalStats.modifierDelays && (
+                <div className="bg-zinc-950/30 p-4 rounded-xl border border-zinc-850 space-y-2 text-xs">
+                  <span className="font-bold text-zinc-400 block uppercase tracking-wider">Modifier Key Delays</span>
                   <div className="space-y-1.5 font-semibold text-zinc-300">
                     <div className="flex justify-between">
-                      <span>Perfect Time (150-450ms)</span>
-                      <span className="text-violet-400">{finalStats.perfectPressed}</span>
+                      <span>Base Keys (No Modifier)</span>
+                      <span className="text-zinc-200 font-mono">{finalStats.modifierDelays.baseAvg}ms</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span>Early Cast (&lt;150ms)</span>
-                      <span className="text-amber-400">{finalStats.earlyPressed}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Late Cast (450-850ms)</span>
-                      <span className="text-zinc-400">{finalStats.latePressed}</span>
-                    </div>
+                    {finalStats.modifierDelays.shiftAvg > 0 && (
+                      <div className="flex justify-between">
+                        <span>Shift Key Modifier</span>
+                        <span className="text-violet-400 font-mono">{finalStats.modifierDelays.shiftAvg}ms</span>
+                      </div>
+                    )}
+                    {finalStats.modifierDelays.ctrlAvg > 0 && (
+                      <div className="flex justify-between">
+                        <span>Ctrl Key Modifier</span>
+                        <span className="text-violet-400 font-mono">{finalStats.modifierDelays.ctrlAvg}ms</span>
+                      </div>
+                    )}
+                    {finalStats.modifierDelays.altAvg > 0 && (
+                      <div className="flex justify-between">
+                        <span>Alt Key Modifier</span>
+                        <span className="text-violet-400 font-mono">{finalStats.modifierDelays.altAvg}ms</span>
+                      </div>
+                    )}
+                    {finalStats.modifierDelays.modAvg > 0 && (
+                      <div className="flex justify-between font-bold text-zinc-400 border-t border-zinc-850 pt-1.5">
+                        <span>All Modifiers Average</span>
+                        <span className="text-violet-400 font-mono">{finalStats.modifierDelays.modAvg}ms</span>
+                      </div>
+                    )}
                   </div>
                 </div>
+              )}
 
-                <div className="bg-zinc-950/30 p-4 rounded-xl border border-zinc-850 space-y-2">
-                  <span className="font-bold text-zinc-400 block uppercase tracking-wider">Errors and Speed</span>
+              {/* Transition Fatigue Warnings */}
+              {finalStats.transitionFatigues && finalStats.transitionFatigues.length > 0 && (
+                <div className="bg-zinc-950/30 p-4 rounded-xl border border-zinc-850 space-y-2 text-xs">
+                  <span className="font-bold text-rose-400 block uppercase tracking-wider">Transition Fatigue Warning</span>
+                  <p className="text-[10px] text-zinc-500">You consistently delayed the following spell transitions by more than 25% of your average speed:</p>
                   <div className="space-y-1.5 font-semibold text-zinc-300">
-                    <div className="flex justify-between">
-                      <span>Incorrect Key Pressed</span>
-                      <span className="text-rose-500">{finalStats.incorrectPressed}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Missed GCD Triggers</span>
-                      <span className="text-rose-500">{finalStats.missedPressed}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Fastest Reaction Time</span>
-                      <span className="text-emerald-400 font-mono">{finalStats.bestReactionTime}ms</span>
-                    </div>
+                    {finalStats.transitionFatigues.map((t, idx) => (
+                      <div key={idx} className="flex justify-between border-b border-zinc-900 pb-1">
+                        <span>{t.fromSpell} &rarr; {t.toSpell}</span>
+                        <span className="text-amber-500 font-mono font-bold">{t.delayMs}ms</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              </div>
+              )}
+
+              {/* Keybind layout audits warnings */}
+              {finalStats.keybindAudits && finalStats.keybindAudits.length > 0 && (
+                <div className="bg-zinc-950/50 p-6 rounded-2xl border border-amber-900/40 space-y-3">
+                  <h3 className="font-extrabold text-sm text-amber-500 uppercase tracking-widest flex items-center space-x-1.5">
+                    <svg fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" className="size-4">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+                    </svg>
+                    <span>Keybind Layout Audits</span>
+                  </h3>
+                  <ul className="space-y-2 text-[11px] text-zinc-300">
+                    {finalStats.keybindAudits.map((audit, idx) => (
+                      <li key={idx} className="leading-relaxed flex items-start space-x-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-amber-500 mt-1.5 flex-shrink-0" />
+                        <span>{audit}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
 
               {/* Restart buttons */}
               <div className="flex space-x-4 pt-4 border-t border-zinc-800">
@@ -988,13 +1337,13 @@ export default function Train() {
                   onClick={startCountdown}
                   className="flex-grow py-3.5 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-extrabold rounded-xl active:scale-98 transition-all"
                 >
-                  Practice Scenario Again
+                  Restart Simulation
                 </button>
                 <button
                   onClick={resetGame}
-                  className="px-6 py-3.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-350 hover:text-white font-bold rounded-xl active:scale-98 transition-all"
+                  className="px-6 py-3.5 bg-zinc-900 hover:bg-zinc-850 border border-zinc-800 text-zinc-300 font-extrabold rounded-xl active:scale-98 transition-all"
                 >
-                  Change Scenario
+                  Change Drill
                 </button>
               </div>
             </div>
@@ -1003,161 +1352,170 @@ export default function Train() {
 
         {/* Bottom Panel: Visual WoW Action Bar */}
         <div className="w-full flex flex-col items-center space-y-6 pt-4 border-t border-zinc-900">
-          <div className="flex flex-wrap items-center justify-center gap-3">
-            {activeBuild && activeBuild.actionBars.find(bar => bar.barName === "ActionBar1") ? (
-              activeBuild.actionBars.find(bar => bar.barName === "ActionBar1")?.buttons.map((btn) => {
-                const isSpellActive = activeSpell?.id === btn.id;
-                return (
-                  <div
-                    key={btn.slot}
-                    className={`w-16 h-16 rounded-xl bg-zinc-900 border flex flex-col items-center justify-center relative cursor-default transition-all select-none ${
-                      isSpellActive
-                        ? selectedScenario.isProcReaction
-                          ? "proc-highlight border-emerald-500/80 scale-105"
-                          : "spell-highlight border-violet-500/80 scale-105"
-                        : "border-zinc-850 hover:border-zinc-750 opacity-90"
-                    }`}
-                    style={{
-                      boxShadow: isSpellActive
-                        ? `0 0 15px 1px ${selectedScenario.isProcReaction ? '#10b981' : '#8b5cf6'}20`
-                        : "none",
-                    }}
-                  >
-                    {btn.type !== "empty" ? (
-                      <>
-                        <div className="w-7 h-7 flex items-center justify-center relative">
-                          {!failedIcons[btn.id] ? (
-                            <img
-                              src={getSpellIconUrl(btn.id)}
-                              alt={btn.name}
-                              onError={() => setFailedIcons(prev => ({ ...prev, [btn.id]: true }))}
-                              className="w-full h-full rounded-lg object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center" style={{ color: getSpellColor(btn.name) }}>
-                              {getSpellIconSVG(btn.name)}
-                            </div>
-                          )}
-                        </div>
-                        <span className="text-[9px] font-black text-zinc-400 mt-1 uppercase tracking-wide truncate max-w-full px-1">
-                          {btn.name}
-                        </span>
-                      </>
-                    ) : (
-                      <span className="text-[8px] font-bold text-zinc-700">EMPTY</span>
-                    )}
-                    
-                    {/* Action bind key */}
-                    {btn.key && (
-                      <span className={`absolute -top-1.5 -right-1.5 z-10 px-1.5 py-0.5 rounded-md font-mono text-[10px] font-black border transition-all ${
-                        pressedKeys[btn.key]
-                          ? "bg-violet-600 border-violet-500 text-white scale-95 shadow-md shadow-violet-500/20"
-                          : "bg-zinc-950/90 border-zinc-850 text-zinc-200 shadow-sm"
-                      }`}>
-                        {btn.key}
-                      </span>
-                    )}
-
-                    {/* GCD Swipe Overlay */}
-                    {isGcdActive && (
-                      <div
-                        className="absolute inset-0 pointer-events-none"
-                        style={{
-                          background: `conic-gradient(rgba(9, 9, 11, 0.75) ${gcdPercent}%, transparent ${gcdPercent}%)`,
-                          transform: 'rotate(-90deg)',
-                          borderRadius: 'inherit',
-                        }}
-                      />
-                    )}
-                  </div>
-                );
-              })
+          <div className="flex flex-wrap items-center justify-center gap-3 w-full">
+            {isHardcore && gameState === "running" ? (
+              <div className="h-16 flex items-center justify-center text-xs font-bold text-zinc-600 uppercase tracking-widest border border-dashed border-zinc-850 rounded-2xl w-full max-w-2xl px-6 bg-zinc-950/20 backdrop-blur-sm select-none">
+                <svg fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="size-4 mr-2 text-rose-500 animate-pulse">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z" />
+                </svg>
+                <span>Action Bar Masked (Hardcore Mode Active)</span>
+              </div>
             ) : (
-              Object.values(DEMON_HUNTER_SPELLS).map((spell) => {
-                const isActive = activeSpell?.id === spell.id;
-                return (
-                  <div
-                    key={spell.id}
-                    className={`w-16 h-16 rounded-xl bg-zinc-900 border flex flex-col items-center justify-center relative cursor-default transition-all select-none ${
-                      isActive
-                        ? selectedScenario.isProcReaction
-                          ? "proc-highlight border-emerald-500/80 scale-105"
-                          : "spell-highlight border-violet-500/80 scale-105"
-                        : "border-zinc-850 hover:border-zinc-750 opacity-90"
-                    }`}
-                    style={{
-                      boxShadow: isActive
-                        ? `0 0 15px 1px ${selectedScenario.isProcReaction ? '#10b981' : '#8b5cf6'}20`
-                        : "none",
-                    }}
-                  >
-                    {/* SVG Art representation of spells */}
-                    <div className="w-7 h-7 flex items-center justify-center relative">
-                      {!failedIcons[spell.id] ? (
-                        <img
-                          src={getSpellIconUrl(spell.id)}
-                          alt={spell.name}
-                          onError={() => setFailedIcons(prev => ({ ...prev, [spell.id]: true }))}
-                          className="w-full h-full rounded-lg object-cover"
-                        />
+              activeBuild && activeBuild.actionBars.find(bar => bar.barName === "ActionBar1") ? (
+                activeBuild.actionBars.find(bar => bar.barName === "ActionBar1")?.buttons.map((btn) => {
+                  const isSpellActive = activeSpell?.id === btn.id;
+                  return (
+                    <div
+                      key={btn.slot}
+                      className={`w-16 h-16 rounded-xl bg-zinc-900 border flex flex-col items-center justify-center relative cursor-default transition-all select-none ${
+                        isSpellActive
+                          ? selectedScenario.isProcReaction
+                            ? "proc-highlight border-emerald-500/80 scale-105"
+                            : "spell-highlight border-violet-500/80 scale-105"
+                          : "border-zinc-850 hover:border-zinc-750 opacity-90"
+                      } ${isSpellActive && !isHardcore ? "proc-glow" : ""}`}
+                      style={{
+                        boxShadow: isSpellActive
+                          ? `0 0 15px 1px ${selectedScenario.isProcReaction ? '#10b981' : '#8b5cf6'}20`
+                          : "none",
+                      }}
+                    >
+                      {btn.type !== "empty" ? (
+                        <>
+                          <div className="w-7 h-7 flex items-center justify-center relative">
+                            {!failedIcons[btn.id] ? (
+                              <img
+                                src={getSpellIconUrl(btn.id)}
+                                alt={btn.name}
+                                onError={() => setFailedIcons(prev => ({ ...prev, [btn.id]: true }))}
+                                className="w-full h-full rounded-lg object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center" style={{ color: getSpellColor(btn.name) }}>
+                                {getSpellIconSVG(btn.name)}
+                              </div>
+                            )}
+                          </div>
+                          <span className="text-[9px] font-black text-zinc-400 mt-1 uppercase tracking-wide truncate max-w-full px-1">
+                            {btn.name}
+                          </span>
+                        </>
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center" style={{ color: spell.color }}>
-                          {spell.icon === "metamorphosis" && (
-                            <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-7">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z" />
-                            </svg>
-                          )}
-                          {spell.icon === "eye-beam" && (
-                            <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-7">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                            </svg>
-                          )}
-                          {spell.icon === "blade-dance" && (
-                            <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-7">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="m9 9 6-6m0 0 6 6m-6-6v12m0 3.75a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" />
-                            </svg>
-                          )}
-                          {spell.icon === "chaos-strike" && (
-                            <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-7">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M15.362 5.214A8.252 8.252 0 0 1 12 21 8.25 8.25 0 0 1 6.038 7.047 8.287 8.287 0 0 0 9 9.601a8.983 8.983 0 0 1 3.361-6.867 8.21 8.21 0 0 0 3 2.48Z" />
-                            </svg>
-                          )}
-                        </div>
+                        <span className="text-[8px] font-bold text-zinc-700">EMPTY</span>
+                      )}
+                      
+                      {/* Action bind key */}
+                      {btn.key && (
+                        <span className={`absolute -top-1.5 -right-1.5 z-10 px-1.5 py-0.5 rounded-md font-mono text-[10px] font-black border transition-all ${
+                          pressedKeys[btn.key]
+                            ? "bg-violet-600 border-violet-500 text-white scale-95 shadow-md shadow-violet-500/20"
+                            : "bg-zinc-950/90 border-zinc-850 text-zinc-200 shadow-sm"
+                        }`}>
+                          {btn.key}
+                        </span>
+                      )}
+
+                      {/* GCD Swipe Overlay */}
+                      {isGcdActive && (
+                        <div
+                          className="absolute inset-0 pointer-events-none"
+                          style={{
+                            background: `conic-gradient(rgba(9, 9, 11, 0.75) ${gcdPercent}%, transparent ${gcdPercent}%)`,
+                            transform: 'rotate(-90deg)',
+                            borderRadius: 'inherit',
+                          }}
+                        />
                       )}
                     </div>
-                    <span className="text-[9px] font-black text-zinc-400 mt-1 uppercase tracking-wide truncate max-w-full px-1">
-                      {spell.name}
-                    </span>
-                    
-                    {/* Action bind key */}
-                    {spell.keybind && (
-                      <span className={`absolute -top-1.5 -right-1.5 z-10 px-1.5 py-0.5 rounded-md font-mono text-[10px] font-black border transition-all ${
-                        pressedKeys[spell.keybind]
-                          ? "bg-violet-600 border-violet-500 text-white scale-95 shadow-md shadow-violet-500/20"
-                          : "bg-zinc-950/90 border-zinc-850 text-zinc-200 shadow-sm"
-                      }`}>
-                        {spell.keybind}
+                  );
+                })
+              ) : (
+                Object.values(DEMON_HUNTER_SPELLS).map((spell) => {
+                  const isActive = activeSpell?.id === spell.id;
+                  return (
+                    <div
+                      key={spell.id}
+                      className={`w-16 h-16 rounded-xl bg-zinc-900 border flex flex-col items-center justify-center relative cursor-default transition-all select-none ${
+                        isActive
+                          ? selectedScenario.isProcReaction
+                            ? "proc-highlight border-emerald-500/80 scale-105"
+                            : "spell-highlight border-violet-500/80 scale-105"
+                          : "border-zinc-850 hover:border-zinc-750 opacity-90"
+                      } ${isActive && !isHardcore ? "proc-glow" : ""}`}
+                      style={{
+                        boxShadow: isActive
+                          ? `0 0 15px 1px ${selectedScenario.isProcReaction ? '#10b981' : '#8b5cf6'}20`
+                          : "none",
+                      }}
+                    >
+                      {/* SVG Art representation of spells */}
+                      <div className="w-7 h-7 flex items-center justify-center relative">
+                        {!failedIcons[spell.id] ? (
+                          <img
+                            src={getSpellIconUrl(spell.id)}
+                            alt={spell.name}
+                            onError={() => setFailedIcons(prev => ({ ...prev, [spell.id]: true }))}
+                            className="w-full h-full rounded-lg object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center" style={{ color: spell.color }}>
+                            {spell.icon === "metamorphosis" && (
+                              <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-7">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z" />
+                              </svg>
+                            )}
+                            {spell.icon === "eye-beam" && (
+                              <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-7">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                              </svg>
+                            )}
+                            {spell.icon === "blade-dance" && (
+                              <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-7">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="m9 9 6-6m0 0 6 6m-6-6v12m0 3.75a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" />
+                              </svg>
+                            )}
+                            {spell.icon === "chaos-strike" && (
+                              <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-7">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M15.362 5.214A8.252 8.252 0 0 1 12 21 8.25 8.25 0 0 1 6.038 7.047 8.287 8.287 0 0 0 9 9.601a8.983 8.983 0 0 1 3.361-6.867 8.21 8.21 0 0 0 3 2.48Z" />
+                              </svg>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      <span className="text-[9px] font-black text-zinc-400 mt-1 uppercase tracking-wide truncate max-w-full px-1">
+                        {spell.name}
                       </span>
-                    )}
+                      
+                      {/* Action bind key */}
+                      {spell.keybind && (
+                        <span className={`absolute -top-1.5 -right-1.5 z-10 px-1.5 py-0.5 rounded-md font-mono text-[10px] font-black border transition-all ${
+                          pressedKeys[spell.keybind]
+                            ? "bg-violet-600 border-violet-500 text-white scale-95 shadow-md shadow-violet-500/20"
+                            : "bg-zinc-950/90 border-zinc-850 text-zinc-200 shadow-sm"
+                        }`}>
+                          {spell.keybind}
+                        </span>
+                      )}
 
-                    {/* GCD Swipe Overlay */}
-                    {isGcdActive && (
-                      <div
-                        className="absolute inset-0 pointer-events-none"
-                        style={{
-                          background: `conic-gradient(rgba(9, 9, 11, 0.75) ${gcdPercent}%, transparent ${gcdPercent}%)`,
-                          transform: 'rotate(-90deg)',
-                          borderRadius: 'inherit',
-                        }}
-                      />
-                    )}
-                  </div>
-                );
-              })
+                      {/* GCD Swipe Overlay */}
+                      {isGcdActive && (
+                        <div
+                          className="absolute inset-0 pointer-events-none"
+                          style={{
+                            background: `conic-gradient(rgba(9, 9, 11, 0.75) ${gcdPercent}%, transparent ${gcdPercent}%)`,
+                            transform: 'rotate(-90deg)',
+                            borderRadius: 'inherit',
+                          }}
+                        />
+                      )}
+                    </div>
+                  );
+                })
+              )
             )}
           </div>
- 
+     
           {/* Interactive Keyboard Visualizer HUD */}
           <div className="flex flex-col items-center space-y-1.5">
             <span className="text-[9px] text-zinc-600 font-extrabold uppercase tracking-widest">
@@ -1194,7 +1552,7 @@ export default function Train() {
             </Link>
           </div>
         )}
-      </main>
+      </div>
     </div>
   );
 }

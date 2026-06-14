@@ -1,0 +1,58 @@
+{
+  "class": "DemonHunter",
+  "spec": "Havoc",
+  "coreSpells": [
+    {
+      "id": 191427,
+      "name": "Metamorphosis"
+    },
+    {
+      "id": 198013,
+      "name": "Eye Beam"
+    },
+    {
+      "id": 188499,
+      "name": "Blade Dance"
+    },
+    {
+      "id": 162794,
+      "name": "Chaos Strike"
+    }
+  ],
+  "cooldowns": [
+    191427
+  ],
+  "interrupts": [
+    183752
+  ],
+  "defensives": [
+    198529,
+    191427
+  ],
+  "healthRecovery": [
+    5512,
+    191380
+  ],
+  "apl": [
+    {
+      "spellId": 191427,
+      "name": "Metamorphosis",
+      "condition": "is_opener"
+    },
+    {
+      "spellId": 198013,
+      "name": "Eye Beam",
+      "condition": "off_cooldown"
+    },
+    {
+      "spellId": 188499,
+      "name": "Blade Dance",
+      "condition": "off_cooldown"
+    },
+    {
+      "spellId": 162794,
+      "name": "Chaos Strike",
+      "condition": "always"
+    }
+  ]
+}
