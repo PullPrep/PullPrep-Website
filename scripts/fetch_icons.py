@@ -102,7 +102,9 @@ def main():
         187827, 212084, 228477, 227084, 225919, 204596, 247454, 204021,
         217832, 183752, 202137, 207684, 202138, 203720, 189110,
         # Canonical spell IDs for API resolution (Fracture & Shear)
-        263642, 203782
+        263642, 203782,
+        # Soul Carver & Torment
+        207407, 185245
     ]
     
     print(f"Requesting access to Blizzard API to download {len(spell_ids)} spell icons...")
