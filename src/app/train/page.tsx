@@ -227,7 +227,19 @@ export default function Train() {
     if (e.shiftKey) parts.push("SHIFT");
     
     let keyName = e.key.toUpperCase();
-    if (keyName === " ") keyName = "SPACE";
+    if (keyName === " ") {
+      keyName = "SPACE";
+    } else if (e.shiftKey) {
+      const shiftMap: Record<string, string> = {
+        "!": "1", "@": "2", "#": "3", "$": "4", "%": "5",
+        "^": "6", "&": "7", "*": "8", "(": "9", ")": "0",
+        "_": "-", "+": "=", "{": "[", "}": "]", "|": "\\",
+        ":": ";", "\"": "'", "<": ",", ">": ".", "?": "/"
+      };
+      if (shiftMap[keyName]) {
+        keyName = shiftMap[keyName];
+      }
+    }
     
     parts.push(keyName);
     return parts.join("-");
