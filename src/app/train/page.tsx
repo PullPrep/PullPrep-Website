@@ -849,7 +849,11 @@ export default function Train() {
                     <span className="text-[10px] font-black mt-2 uppercase tracking-widest text-zinc-300">
                       {activeSpell.name}
                     </span>
-                    <span className="absolute top-1.5 right-2 px-1.5 py-0.5 rounded bg-zinc-950 border border-zinc-800 text-[10px] font-mono font-black text-white">
+                    <span className={`absolute top-1.5 right-2 px-1.5 py-0.5 rounded-md font-mono text-[10px] font-black border transition-all ${
+                      pressedKeys[activeSpell.keybind]
+                        ? "bg-violet-600 border-violet-500 text-white scale-95 shadow-md shadow-violet-500/20"
+                        : "bg-zinc-950/90 border-zinc-800 text-zinc-200"
+                    }`}>
                       Key: {activeSpell.keybind}
                     </span>
                   </div>
@@ -1044,9 +1048,15 @@ export default function Train() {
                     )}
                     
                     {/* Action bind key */}
-                    <span className="absolute bottom-1 right-1.5 font-mono text-[9px] font-black text-zinc-500">
-                      {btn.key}
-                    </span>
+                    {btn.key && (
+                      <span className={`absolute -top-1.5 -right-1.5 z-10 px-1.5 py-0.5 rounded-md font-mono text-[10px] font-black border transition-all ${
+                        pressedKeys[btn.key]
+                          ? "bg-violet-600 border-violet-500 text-white scale-95 shadow-md shadow-violet-500/20"
+                          : "bg-zinc-950/90 border-zinc-850 text-zinc-200 shadow-sm"
+                      }`}>
+                        {btn.key}
+                      </span>
+                    )}
 
                     {/* GCD Swipe Overlay */}
                     {isGcdActive && (
@@ -1121,9 +1131,15 @@ export default function Train() {
                     </span>
                     
                     {/* Action bind key */}
-                    <span className="absolute bottom-1 right-1.5 font-mono text-[9px] font-black text-zinc-500">
-                      {spell.keybind}
-                    </span>
+                    {spell.keybind && (
+                      <span className={`absolute -top-1.5 -right-1.5 z-10 px-1.5 py-0.5 rounded-md font-mono text-[10px] font-black border transition-all ${
+                        pressedKeys[spell.keybind]
+                          ? "bg-violet-600 border-violet-500 text-white scale-95 shadow-md shadow-violet-500/20"
+                          : "bg-zinc-950/90 border-zinc-850 text-zinc-200 shadow-sm"
+                      }`}>
+                        {spell.keybind}
+                      </span>
+                    )}
 
                     {/* GCD Swipe Overlay */}
                     {isGcdActive && (
