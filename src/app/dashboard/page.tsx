@@ -23,11 +23,36 @@ interface ImportedBuild {
   actionBars: ImportedBar[];
 }
 
+interface Loadout {
+  id: string;
+  userId: number;
+  name: string;
+  class: string;
+  spec: string;
+  data: string; // base64 config
+  createdAt: number;
+}
+
+interface Session {
+  loggedIn: boolean;
+  user: {
+    id: number;
+    battletag: string;
+  } | null;
+}
+
 export default function Dashboard() {
   const [activeBuild, setActiveBuild] = useState<ImportedBuild | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [importString, setImportString] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+
+  // Auth & Loadouts States
+  const [session, setSession] = useState<Session | null>(null);
+  const [isLoadingSession, setIsLoadingSession] = useState(true);
+  const [savedLoadouts, setSavedLoadouts] = useState<Loadout[]>([]);
+  const [newLoadoutName, setNewLoadoutName] = useState("");
+  const [isSavingLoadout, setIsSavingLoadout] = useState(false);
 
   // Mock recent sessions
   const recentSessions = [
@@ -38,8 +63,9 @@ export default function Dashboard() {
     { id: 5, scenario: "Havoc DH Opener", date: "Jun 10, 11:30 AM", accuracy: 78, speed: "490ms", score: "C" },
   ];
 
-  // Load imported build from localStorage on mount
+  // Fetch session & load active build from localStorage on mount
   useEffect(() => {
+    // 1. Load active build
     const saved = localStorage.getItem("pullprep_active_build");
     if (saved) {
       try {
@@ -48,7 +74,38 @@ export default function Dashboard() {
         console.error("Failed to parse saved build", e);
       }
     }
+
+    // 2. Fetch session
+    checkSession();
   }, []);
+
+  const checkSession = async () => {
+    setIsLoadingSession(true);
+    try {
+      const res = await fetch("/api/auth/session");
+      const data: Session = await res.json();
+      setSession(data);
+      if (data.loggedIn) {
+        fetchLoadouts();
+      }
+    } catch (e) {
+      console.error("Failed to fetch session", e);
+    } finally {
+      setIsLoadingSession(false);
+    }
+  };
+
+  const fetchLoadouts = async () => {
+    try {
+      const res = await fetch("/api/loadouts");
+      const data = await res.json();
+      if (data.loadouts) {
+        setSavedLoadouts(data.loadouts);
+      }
+    } catch (e) {
+      console.error("Failed to fetch loadouts", e);
+    }
+  };
 
   const handleImport = () => {
     setErrorMessage("");
@@ -78,9 +135,66 @@ export default function Dashboard() {
   };
 
   const handleClearBuild = () => {
-    if (confirm("Are you sure you want to clear your imported WoW configuration?")) {
+    if (confirm("Are you sure you want to clear your active WoW configuration?")) {
       localStorage.removeItem("pullprep_active_build");
       setActiveBuild(null);
+    }
+  };
+
+  const handleSaveActiveAsLoadout = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!activeBuild || !newLoadoutName.trim()) return;
+
+    setIsSavingLoadout(true);
+    try {
+      const b64 = btoa(JSON.stringify(activeBuild));
+      const res = await fetch("/api/loadouts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name: newLoadoutName.trim(), data: b64 }),
+      });
+      const data = await res.json();
+      if (res.ok && data.success) {
+        setNewLoadoutName("");
+        fetchLoadouts();
+      } else {
+        alert(data.error || "Failed to save loadout");
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Error saving character setup");
+    } finally {
+      setIsSavingLoadout(false);
+    }
+  };
+
+  const handleSelectLoadout = (loadout: Loadout) => {
+    try {
+      const decoded = atob(loadout.data);
+      const parsed = JSON.parse(decoded) as ImportedBuild;
+      localStorage.setItem("pullprep_active_build", JSON.stringify(parsed));
+      setActiveBuild(parsed);
+    } catch (e) {
+      console.error("Failed to load layout", e);
+    }
+  };
+
+  const handleDeleteLoadout = async (id: string, e: React.MouseEvent) => {
+    e.stopPropagation(); // prevent selecting
+    if (!confirm("Are you sure you want to delete this saved loadout?")) return;
+
+    try {
+      const res = await fetch(`/api/loadouts/${id}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        setSavedLoadouts((prev) => prev.filter((l) => l.id !== id));
+      } else {
+        const data = await res.json();
+        alert(data.error || "Failed to delete");
+      }
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -103,14 +217,30 @@ export default function Dashboard() {
 
   const currentClassKey = activeBuild?.class?.toUpperCase() || "";
   const currentClassStyle = classColors[currentClassKey] || "from-violet-600 to-zinc-900 border-violet-500/30 text-violet-400";
-  
+
   // Count total buttons imported
   const totalSpells = activeBuild
     ? activeBuild.actionBars.reduce((sum, bar) => sum + bar.buttons.filter(b => b.type !== "empty").length, 0)
     : 4;
 
+  const isActiveBuildMatch = (loadout: Loadout): boolean => {
+    if (!activeBuild) return false;
+    // Basic match check: same spec and class, and matching serialized base64 configuration data
+    try {
+      const decoded = atob(loadout.data);
+      const parsed = JSON.parse(decoded) as ImportedBuild;
+      return (
+        parsed.class.toLowerCase() === activeBuild.class.toLowerCase() &&
+        parsed.spec.toLowerCase() === activeBuild.spec.toLowerCase() &&
+        parsed.actionBars.length === activeBuild.actionBars.length
+      );
+    } catch (e) {
+      return false;
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col relative">
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col relative animate-fade-in">
       {/* Decorative Blur */}
       <div className="absolute top-0 right-0 w-[500px] h-[500px] rounded-full bg-violet-900/5 blur-[120px] pointer-events-none" />
 
@@ -134,6 +264,36 @@ export default function Dashboard() {
             >
               Home
             </Link>
+
+            {isLoadingSession ? (
+              <div className="w-24 h-7 bg-zinc-900 rounded-lg animate-pulse" />
+            ) : session?.loggedIn ? (
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-1.5 px-3 py-1 bg-zinc-900 border border-zinc-800 rounded-lg">
+                  <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                  <span className="text-xs font-bold text-zinc-300 font-mono">
+                    {session.user?.battletag}
+                  </span>
+                </div>
+                <a
+                  href="/api/auth/logout"
+                  className="text-xs font-extrabold text-rose-500 hover:text-rose-450 transition-colors uppercase tracking-wider"
+                >
+                  Sign Out
+                </a>
+              </div>
+            ) : (
+              <a
+                href="/api/auth/login"
+                className="flex items-center space-x-1.5 px-3.5 py-2 text-xs font-black text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-all shadow-md shadow-blue-500/10 hover:shadow-blue-500/20 active:scale-95"
+              >
+                <svg fill="currentColor" viewBox="0 0 24 24" className="size-4">
+                  <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
+                </svg>
+                <span>Battle.net Login</span>
+              </a>
+            )}
+
             <Link
               href="/train"
               className="px-4 py-2 text-sm font-bold text-zinc-950 bg-white rounded-lg hover:bg-zinc-200 active:scale-95 transition-all shadow-md shadow-white/5"
@@ -149,7 +309,7 @@ export default function Dashboard() {
         {/* Welcome Section */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-zinc-900 pb-6">
           <div>
-            <h1 className="text-3xl font-black tracking-tight text-white">Player Dashboard</h1>
+            <h1 className="text-3xl font-black tracking-tight text-white font-sans">Player Dashboard</h1>
             <p className="text-zinc-400 text-sm">Monitor your muscle memory progress and manage character configurations.</p>
           </div>
           <div className="flex space-x-3">
@@ -217,25 +377,26 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* Imported Builds List */}
+            {/* Character Setups & Database Loadouts */}
             <div className="bg-zinc-900/40 border border-zinc-850 p-6 rounded-2xl backdrop-blur-sm space-y-4">
               <div className="flex justify-between items-center">
-                <h3 className="font-black text-sm text-white uppercase tracking-wider">Character Setups</h3>
+                <h3 className="font-black text-sm text-white uppercase tracking-wider">Saved Loadouts</h3>
                 <span className="text-[10px] font-extrabold text-violet-400">
-                  {activeBuild ? "1 IMPORTED" : "USING DEFAULT"}
+                  {session?.loggedIn ? `${savedLoadouts.length} SAVED` : "LOCAL ONLY"}
                 </span>
               </div>
 
               <div className="space-y-3">
+                {/* Active local setup status */}
                 <div className="bg-zinc-950/60 p-3 rounded-xl border border-zinc-850/80 flex items-center justify-between">
                   <div className="flex items-center space-x-3">
-                    <div className="w-2 h-2 rounded-full bg-violet-500" />
+                    <div className="w-2 h-2 rounded-full bg-violet-500 animate-pulse" />
                     <div>
                       <span className="font-bold text-xs block text-white">
                         {activeBuild ? `${activeBuild.spec} ${activeBuild.class}` : "Default DH Spec"}
                       </span>
                       <span className="text-[10px] text-zinc-500">
-                        {activeBuild ? "Custom Imported Setup" : "MVP Standard Template"}
+                        {activeBuild ? "Active Temporary Setup" : "MVP Standard Template"}
                       </span>
                     </div>
                   </div>
@@ -244,9 +405,95 @@ export default function Dashboard() {
                   </span>
                 </div>
 
+                {/* Show saved loadouts if logged in */}
+                {session?.loggedIn ? (
+                  savedLoadouts.map((loadout) => {
+                    const isSelected = isActiveBuildMatch(loadout);
+                    return (
+                      <div
+                        key={loadout.id}
+                        onClick={() => handleSelectLoadout(loadout)}
+                        className={`p-3.5 rounded-xl border flex items-center justify-between cursor-pointer transition-all hover:bg-zinc-900/40 ${
+                          isSelected
+                            ? "bg-zinc-900/80 border-violet-500/40"
+                            : "bg-zinc-950/30 border-zinc-850"
+                        }`}
+                      >
+                        <div className="flex items-center space-x-3">
+                          <div className={`w-1.5 h-1.5 rounded-full ${isSelected ? "bg-violet-400" : "bg-zinc-600"}`} />
+                          <div>
+                            <span className="font-bold text-xs block text-white">{loadout.name}</span>
+                            <span className="text-[9px] text-zinc-500 uppercase tracking-wide">
+                              {loadout.spec} {loadout.class}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          {isSelected && (
+                            <span className="text-[9px] font-black text-violet-400 bg-violet-950/40 border border-violet-900/60 px-1 py-0.5 rounded uppercase tracking-wider">
+                              LOADED
+                            </span>
+                          )}
+                          <button
+                            onClick={(e) => handleDeleteLoadout(loadout.id, e)}
+                            className="p-1 text-zinc-600 hover:text-rose-500 rounded hover:bg-rose-950/20 transition-all"
+                            title="Delete Loadout"
+                          >
+                            <svg fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="size-3.5">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })
+                ) : (
+                  <div className="p-4 bg-zinc-950/40 border border-zinc-850 rounded-xl text-center space-y-2">
+                    <span className="text-[10px] text-zinc-500 font-extrabold uppercase block tracking-wider">Multi-character Sync</span>
+                    <p className="text-[10px] text-zinc-400 leading-snug">
+                      Sign in with your Battle.net account to persist your characters in the cloud and switch profiles seamlessly.
+                    </p>
+                    <a
+                      href="/api/auth/login"
+                      className="inline-block px-3 py-1.5 text-[10px] font-black text-sky-400 bg-sky-950/40 border border-sky-900/50 hover:bg-sky-900/30 hover:text-sky-300 rounded-lg transition-all"
+                    >
+                      Login to Battle.net
+                    </a>
+                  </div>
+                )}
+
+                {/* Save Current Layout Form */}
+                {session?.loggedIn && activeBuild && (
+                  <form
+                    onSubmit={handleSaveActiveAsLoadout}
+                    className="pt-3 border-t border-zinc-850 space-y-2"
+                  >
+                    <span className="text-[10px] text-zinc-500 font-extrabold uppercase tracking-wide block">
+                      Save Active Setup as Loadout
+                    </span>
+                    <div className="flex space-x-2">
+                      <input
+                        type="text"
+                        required
+                        value={newLoadoutName}
+                        onChange={(e) => setNewLoadoutName(e.target.value)}
+                        placeholder="e.g. My Mythic+ Spec"
+                        className="flex-grow bg-zinc-950 border border-zinc-850 rounded-lg px-2.5 py-1.5 text-xs text-zinc-200 placeholder-zinc-650 focus:border-violet-500 focus:outline-none"
+                      />
+                      <button
+                        type="submit"
+                        disabled={isSavingLoadout}
+                        className="px-3 py-1.5 text-xs font-bold text-white bg-violet-600 hover:bg-violet-500 rounded-lg transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
+                      >
+                        {isSavingLoadout ? "Saving..." : "Save"}
+                      </button>
+                    </div>
+                  </form>
+                )}
+
                 <div
                   onClick={() => setIsModalOpen(true)}
-                  className="p-3.5 border border-dashed border-zinc-800 hover:border-zinc-700 rounded-xl text-center cursor-pointer transition-colors group"
+                  className="p-3 border border-dashed border-zinc-800 hover:border-zinc-700 rounded-xl text-center cursor-pointer transition-colors group"
                 >
                   <span className="text-xs text-zinc-500 group-hover:text-zinc-400 font-bold block">
                     + Import New WoW Build
@@ -259,7 +506,7 @@ export default function Dashboard() {
                     onClick={handleClearBuild}
                     className="w-full py-2 text-xs font-bold bg-zinc-950 hover:bg-rose-950/20 text-zinc-500 hover:text-rose-450 border border-zinc-900 hover:border-rose-900/40 rounded-xl transition-all cursor-pointer"
                   >
-                    Clear Imported Setup
+                    Clear Active Setup
                   </button>
                 )}
               </div>
@@ -390,7 +637,7 @@ export default function Dashboard() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-fade-in">
           <div className="bg-zinc-900 border border-zinc-800 max-w-lg w-full rounded-2xl p-6 shadow-2xl relative space-y-4">
             <div>
-              <h2 className="text-xl font-black text-white">Import WoW Character Configuration</h2>
+              <h2 className="text-xl font-black text-white font-sans">Import WoW Character Configuration</h2>
               <p className="text-xs text-zinc-400 mt-1">
                 Paste the Base64 export string generated by the PullPrep Addon inside World of Warcraft (using the command <code className="text-violet-400 font-mono">/pp</code> or <code className="text-violet-400 font-mono">/pullprep</code>).
               </p>
