@@ -220,6 +220,74 @@ export default function Train() {
     return DEMON_HUNTER_SPELLS[spellId]?.keybind || "";
   };
 
+  const getMappedSpell = (havocSpellId: number): Spell => {
+    const defaultSpell = DEMON_HUNTER_SPELLS[havocSpellId];
+    if (!activeBuild) return defaultSpell;
+
+    const isVengeance = activeBuild.class?.toUpperCase() === "DEMONHUNTER" && activeBuild.spec?.toLowerCase().includes("vengeance");
+    if (!isVengeance) return defaultSpell;
+
+    // Search terms for Vengeance counterpart spells
+    let searchNames: string[] = [];
+    let fallbackId = havocSpellId;
+    let fallbackName = defaultSpell.name;
+    let fallbackColor = defaultSpell.color;
+    let fallbackIcon = defaultSpell.icon;
+
+    if (havocSpellId === 191427) { // Metamorphosis
+      searchNames = ["metamorphosis"];
+      fallbackId = 187827;
+      fallbackName = "Metamorphosis";
+    } else if (havocSpellId === 198013) { // Eye Beam -> Fel Devastation
+      searchNames = ["fel devastation", "eye beam"];
+      fallbackId = 212084;
+      fallbackName = "Fel Devastation";
+      fallbackColor = "#10b981"; // green
+      fallbackIcon = "eye-beam";
+    } else if (havocSpellId === 188499) { // Blade Dance -> Soul Cleave / Spirit Bomb
+      searchNames = ["soul cleave", "spirit bomb", "blade dance"];
+      fallbackId = 228477;
+      fallbackName = "Soul Cleave";
+      fallbackColor = "#ef4444"; // red
+      fallbackIcon = "blade-dance";
+    } else if (havocSpellId === 162794) { // Chaos Strike -> Fracture / Shear
+      searchNames = ["fracture", "shear", "chaos strike"];
+      fallbackId = 227084;
+      fallbackName = "Fracture";
+      fallbackColor = "#eab308"; // yellow/orange
+      fallbackIcon = "chaos-strike";
+    }
+
+    // Try to find the spell on their bars
+    for (const bar of activeBuild.actionBars) {
+      for (const btn of bar.buttons) {
+        if (btn.type !== "empty" && btn.name) {
+          const nameLower = btn.name.toLowerCase();
+          if (searchNames.some(sName => nameLower.includes(sName))) {
+            return {
+              id: btn.id,
+              name: btn.name,
+              keybind: btn.key,
+              icon: fallbackIcon,
+              color: fallbackColor,
+              description: btn.name,
+            };
+          }
+        }
+      }
+    }
+
+    // Fallback if not found on their bar
+    return {
+      id: fallbackId,
+      name: fallbackName,
+      keybind: getSpellKeybind(fallbackId) || defaultSpell.keybind,
+      icon: fallbackIcon,
+      color: fallbackColor,
+      description: fallbackName,
+    };
+  };
+
   const getWoWKeyString = (e: KeyboardEvent): string => {
     const parts: string[] = [];
     if (e.ctrlKey) parts.push("CTRL");
@@ -357,12 +425,12 @@ export default function Train() {
               ]);
               setCombo(0);
               playSound("incorrect");
-              setLastPressResult({ key: getSpellKeybind(prevStep.spellId), status: "missed" });
+              setLastPressResult({ key: getMappedSpell(prevStep.spellId).keybind, status: "missed" });
             }
           }
 
           setActiveStepIndex(nextStepIndex);
-          setActiveSpell(DEMON_HUNTER_SPELLS[nextStep.spellId]);
+          setActiveSpell(getMappedSpell(nextStep.spellId));
           setActivePromptTime(currentElapsed);
         }
       }
@@ -475,12 +543,12 @@ export default function Train() {
         const timeUntilNext = nextStep.time - elapsed;
         if (timeUntilNext > 0 && timeUntilNext <= queueWindow) {
           targetStepIndex = nextStepIndex;
-          targetSpell = DEMON_HUNTER_SPELLS[nextStep.spellId];
+          targetSpell = getMappedSpell(nextStep.spellId);
           targetPromptTime = nextStep.time;
         }
       }
 
-      const expectedKeybind = targetSpell ? getSpellKeybind(targetSpell.id) : "";
+      const expectedKeybind = targetSpell ? targetSpell.keybind : "";
 
       // 2. Handle GCD lockout
       if (isGcdActive) {
@@ -1037,7 +1105,7 @@ export default function Train() {
               Keyboard Monitor (Real-time)
             </span>
             <div className="flex flex-wrap items-center justify-center gap-1.5 font-mono text-xs text-zinc-500">
-              {([191427, 198013, 188499, 162794].map(id => getSpellKeybind(id))).map((k) => (
+              {([191427, 198013, 188499, 162794].map(id => getMappedSpell(id).keybind)).map((k) => (
                 <div
                   key={k}
                   className={`px-3 h-7 rounded border flex items-center justify-center font-extrabold transition-all select-none min-w-[28px] ${
