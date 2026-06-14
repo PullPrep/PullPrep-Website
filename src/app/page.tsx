@@ -1,6 +1,35 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import Link from "next/link";
 
+interface Session {
+  loggedIn: boolean;
+  user: {
+    id: number;
+    battletag: string;
+  } | null;
+}
+
 export default function Home() {
+  const [session, setSession] = useState<Session | null>(null);
+  const [isLoadingSession, setIsLoadingSession] = useState(true);
+
+  useEffect(() => {
+    async function checkSession() {
+      try {
+        const res = await fetch("/api/auth/session");
+        const data = await res.json();
+        setSession(data);
+      } catch (e) {
+        console.error("Failed to fetch session", e);
+      } finally {
+        setIsLoadingSession(false);
+      }
+    }
+    checkSession();
+  }, []);
+
   return (
     <div className="flex flex-col min-h-screen bg-zinc-950 text-zinc-100 overflow-hidden relative">
       {/* Background Decorative Gradients */}
@@ -25,6 +54,33 @@ export default function Home() {
             >
               Dashboard
             </Link>
+
+            {isLoadingSession ? (
+              <div className="w-24 h-7 bg-zinc-900 rounded-lg animate-pulse" />
+            ) : session?.loggedIn ? (
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center space-x-1.5 px-3 py-1 bg-zinc-900 border border-zinc-800 rounded-lg">
+                  <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                  <span className="text-xs font-bold text-zinc-300 font-mono">
+                    {session.user?.battletag}
+                  </span>
+                </div>
+                <a
+                  href="/api/auth/logout"
+                  className="text-xs font-extrabold text-rose-500 hover:text-rose-450 transition-colors uppercase tracking-wider"
+                >
+                  Sign Out
+                </a>
+              </div>
+            ) : (
+              <a
+                href="/api/auth/login"
+                className="flex items-center space-x-1.5 px-3.5 py-2 text-xs font-black text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-all shadow-md shadow-blue-500/10 hover:shadow-blue-500/20 active:scale-95"
+              >
+                <span>Battle.net Login</span>
+              </a>
+            )}
+
             <Link
               href="/train"
               className="px-4 py-2 text-sm font-bold text-zinc-950 bg-white rounded-lg hover:bg-zinc-200 active:scale-95 transition-all shadow-md shadow-white/5"
