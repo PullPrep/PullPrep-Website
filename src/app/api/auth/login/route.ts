@@ -9,8 +9,8 @@ export async function GET(request: NextRequest) {
 
   // Read proxy headers to determine public origin (since container hostname binds to 0.0.0.0)
   const host = request.headers.get("x-forwarded-host") || request.headers.get("host") || "www.pullprep.com";
-  const proto = request.headers.get("x-forwarded-proto") || "https";
-  const origin = `${proto}://${host}`;
+  const proto = request.headers.get("x-forwarded-proto") || request.nextUrl.protocol.replace(":", "");
+  const origin = process.env.SITE_URL || `${proto}://${host}`;
   const redirectUri = `${origin}/api/auth/callback`;
 
   // Generate random state for CSRF protection
