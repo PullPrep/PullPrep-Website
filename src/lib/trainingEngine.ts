@@ -449,7 +449,7 @@ export function compileStats(
 
   // Keybind audits list
   const specKey = importedBuild ? `${importedBuild.class.toLowerCase().replace(' ', '')}_${importedBuild.spec.toLowerCase().replace(' ', '')}` : "";
-  const keybindAudits = specKey ? auditKeybindLayout(importedBuild, specKey) : [];
+  const keybindAudits = specKey ? auditKeybindLayout(importedBuild || null, specKey) : [];
 
   // Generate Personalized Feedback
   const feedback: string[] = [];
