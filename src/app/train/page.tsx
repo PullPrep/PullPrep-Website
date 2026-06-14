@@ -175,6 +175,7 @@ export default function Train() {
 
   // Hardcore & Alerts states
   const [isHardcore, setIsHardcore] = useState<boolean>(false);
+  const [isBabyMode, setIsBabyMode] = useState<boolean>(false);
   const [activeAlert, setActiveAlert] = useState<EncounterAlert | null>(null);
   const [wipedReason, setWipedReason] = useState<string | null>(null);
   const nextAlertTimeRef = useRef<number>(Infinity);
@@ -189,7 +190,8 @@ export default function Train() {
     combo, 
     lastCastTime,
     activeAlert,
-    isHardcore
+    isHardcore,
+    isBabyMode
   });
 
   // Update ref to read latest states inside timers/listeners
@@ -204,9 +206,10 @@ export default function Train() {
       combo, 
       lastCastTime,
       activeAlert,
-      isHardcore
+      isHardcore,
+      isBabyMode
     };
-  }, [gameState, elapsedTime, activeStepIndex, activeSpell, activePromptTime, casts, combo, lastCastTime, activeAlert, isHardcore]);
+  }, [gameState, elapsedTime, activeStepIndex, activeSpell, activePromptTime, casts, combo, lastCastTime, activeAlert, isHardcore, isBabyMode]);
 
   // Lazy initialize Synthesizer
   useEffect(() => {
@@ -983,27 +986,59 @@ export default function Train() {
                 ))}
               </div>
 
-              {/* Hardcore switch */}
-              <div className="flex items-center justify-between p-4 rounded-xl border border-zinc-850 bg-zinc-900/20 max-w-md w-full select-none mx-auto">
-                <div className="text-left space-y-0.5">
-                  <div className="flex items-center space-x-1.5">
-                    <span className="font-extrabold text-xs text-white uppercase tracking-wider">Hardcore Mode</span>
-                    <span className="px-1.5 py-0.5 rounded text-[8px] font-black bg-rose-950/60 border border-rose-900 text-rose-400 uppercase tracking-widest">High Stakes</span>
+              {/* Simulator Modes Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl w-full select-none mx-auto">
+                {/* Hardcore switch */}
+                <div className="flex items-center justify-between p-4 rounded-xl border border-zinc-850 bg-zinc-900/20 w-full">
+                  <div className="text-left space-y-0.5">
+                    <div className="flex items-center space-x-1.5">
+                      <span className="font-extrabold text-xs text-white uppercase tracking-wider">Hardcore Mode</span>
+                      <span className="px-1.5 py-0.5 rounded text-[8px] font-black bg-rose-950/60 border border-rose-900 text-rose-400 uppercase tracking-widest">High Stakes</span>
+                    </div>
+                    <span className="text-[10px] text-zinc-500 block leading-tight">Hides action bars and keybind helps. Any mistake is fatal.</span>
                   </div>
-                  <span className="text-[10px] text-zinc-500 block leading-tight">Hides action bars and keybind helps. Any mistake is fatal.</span>
-                </div>
-                <button
-                  onClick={() => setIsHardcore(!isHardcore)}
-                  className={`w-11 h-6 rounded-full p-1 transition-colors duration-200 focus:outline-none ${
-                    isHardcore ? "bg-rose-600" : "bg-zinc-800"
-                  }`}
-                >
-                  <div
-                    className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform duration-200 ${
-                      isHardcore ? "translate-x-5" : "translate-x-0"
+                  <button
+                    onClick={() => {
+                      setIsHardcore(!isHardcore);
+                      if (!isHardcore) setIsBabyMode(false);
+                    }}
+                    className={`w-11 h-6 rounded-full p-1 transition-colors duration-200 focus:outline-none ${
+                      isHardcore ? "bg-rose-600" : "bg-zinc-800"
                     }`}
-                  />
-                </button>
+                  >
+                    <div
+                      className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform duration-200 ${
+                        isHardcore ? "translate-x-5" : "translate-x-0"
+                      }`}
+                    />
+                  </button>
+                </div>
+
+                {/* Baby Mode switch */}
+                <div className="flex items-center justify-between p-4 rounded-xl border border-zinc-850 bg-zinc-900/20 w-full">
+                  <div className="text-left space-y-0.5">
+                    <div className="flex items-center space-x-1.5">
+                      <span className="font-extrabold text-xs text-white uppercase tracking-wider">Baby Mode</span>
+                      <span className="px-1.5 py-0.5 rounded text-[8px] font-black bg-emerald-950/60 border border-emerald-900 text-emerald-400 uppercase tracking-widest">Guided</span>
+                    </div>
+                    <span className="text-[10px] text-zinc-500 block leading-tight">Highlights the next spell on action bars in green.</span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setIsBabyMode(!isBabyMode);
+                      if (!isBabyMode) setIsHardcore(false);
+                    }}
+                    className={`w-11 h-6 rounded-full p-1 transition-colors duration-200 focus:outline-none ${
+                      isBabyMode ? "bg-emerald-600" : "bg-zinc-800"
+                    }`}
+                  >
+                    <div
+                      className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform duration-200 ${
+                        isBabyMode ? "translate-x-5" : "translate-x-0"
+                      }`}
+                    />
+                  </button>
+                </div>
               </div>
 
               <button
@@ -1094,7 +1129,7 @@ export default function Train() {
                 <div className="flex flex-col items-center space-y-4">
                   {/* Glowing Target Ring */}
                   <div className={`w-28 h-28 rounded-2xl bg-zinc-900 border-2 border-zinc-800 flex flex-col items-center justify-center relative shadow-2xl transition-all ${
-                    selectedScenario.isProcReaction ? "proc-highlight" : "spell-highlight"
+                    isBabyMode || selectedScenario.isProcReaction ? "proc-highlight" : "spell-highlight"
                   }`}>
                     {/* SVG abstract icon inside target based on spell identifier */}
                     <div className="w-12 h-12 flex items-center justify-center relative">
@@ -1137,7 +1172,9 @@ export default function Train() {
                     {!isHardcore && (
                       <span className={`absolute top-1.5 right-2 px-1.5 py-0.5 rounded-md font-mono text-[10px] font-black border transition-all ${
                         pressedKeys[activeSpell.keybind]
-                          ? "bg-violet-600 border-violet-500 text-white scale-95 shadow-md shadow-violet-500/20"
+                          ? isBabyMode
+                            ? "bg-emerald-600 border-emerald-500 text-white scale-95 shadow-md shadow-emerald-500/20"
+                            : "bg-violet-600 border-violet-500 text-white scale-95 shadow-md shadow-violet-500/20"
                           : "bg-zinc-950/90 border-zinc-800 text-zinc-200"
                       }`}>
                         Key: {activeSpell.keybind}
@@ -1153,7 +1190,7 @@ export default function Train() {
                       {isHardcore ? (
                         <span className="text-rose-500 font-extrabold uppercase tracking-widest text-lg animate-pulse">HARDCORE MEMORY TEST</span>
                       ) : (
-                        <>Press Key: <span className="text-violet-400 font-mono text-3xl px-2 py-0.5 rounded bg-violet-950/40 border border-violet-900">{activeSpell.keybind}</span></>
+                        <>Press Key: <span className={`${isBabyMode ? 'text-emerald-400 bg-emerald-950/40 border-emerald-900' : 'text-violet-400 bg-violet-950/40 border-violet-900'} font-mono text-3xl px-2 py-0.5 rounded border`}>{activeSpell.keybind}</span></>
                       )}
                     </h3>
                   </div>
@@ -1369,14 +1406,14 @@ export default function Train() {
                       key={btn.slot}
                       className={`w-16 h-16 rounded-xl bg-zinc-900 border flex flex-col items-center justify-center relative cursor-default transition-all select-none ${
                         isSpellActive
-                          ? selectedScenario.isProcReaction
+                          ? isBabyMode || selectedScenario.isProcReaction
                             ? "proc-highlight border-emerald-500/80 scale-105"
                             : "spell-highlight border-violet-500/80 scale-105"
                           : "border-zinc-850 hover:border-zinc-750 opacity-90"
-                      } ${isSpellActive && !isHardcore ? "proc-glow" : ""}`}
+                      }`}
                       style={{
                         boxShadow: isSpellActive
-                          ? `0 0 15px 1px ${selectedScenario.isProcReaction ? '#10b981' : '#8b5cf6'}20`
+                          ? `0 0 15px 1px ${isBabyMode || selectedScenario.isProcReaction ? '#10b981' : '#8b5cf6'}20`
                           : "none",
                       }}
                     >
@@ -1437,14 +1474,14 @@ export default function Train() {
                       key={spell.id}
                       className={`w-16 h-16 rounded-xl bg-zinc-900 border flex flex-col items-center justify-center relative cursor-default transition-all select-none ${
                         isActive
-                          ? selectedScenario.isProcReaction
+                          ? isBabyMode || selectedScenario.isProcReaction
                             ? "proc-highlight border-emerald-500/80 scale-105"
                             : "spell-highlight border-violet-500/80 scale-105"
                           : "border-zinc-850 hover:border-zinc-750 opacity-90"
-                      } ${isActive && !isHardcore ? "proc-glow" : ""}`}
+                      }`}
                       style={{
                         boxShadow: isActive
-                          ? `0 0 15px 1px ${selectedScenario.isProcReaction ? '#10b981' : '#8b5cf6'}20`
+                          ? `0 0 15px 1px ${isBabyMode || selectedScenario.isProcReaction ? '#10b981' : '#8b5cf6'}20`
                           : "none",
                       }}
                     >
