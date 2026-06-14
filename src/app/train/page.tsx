@@ -88,6 +88,74 @@ class SoundSynthesizer {
   }
 }
 
+interface ImportedButton {
+  slot: number;
+  type: string;
+  id: number;
+  name: string;
+  key: string;
+  icon: number;
+}
+
+interface ImportedBar {
+  barName: string;
+  buttons: ImportedButton[];
+}
+
+interface ImportedBuild {
+  class: string;
+  spec: string;
+  actionBars: ImportedBar[];
+}
+
+const getSpellColor = (name: string): string => {
+  const lowercase = name.toLowerCase();
+  if (lowercase.includes("chaos strike")) return "#ef4444";
+  if (lowercase.includes("blade dance")) return "#10b981";
+  if (lowercase.includes("eye beam")) return "#8b5cf6";
+  if (lowercase.includes("metamorphosis")) return "#eab308";
+  return "#a855f7"; // default purple
+};
+
+const getSpellIconSVG = (name: string) => {
+  const lowercase = name.toLowerCase();
+  if (lowercase.includes("metamorphosis")) {
+    return (
+      <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-7">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z" />
+      </svg>
+    );
+  }
+  if (lowercase.includes("eye beam")) {
+    return (
+      <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-7">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+        <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+      </svg>
+    );
+  }
+  if (lowercase.includes("blade dance")) {
+    return (
+      <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-7">
+        <path strokeLinecap="round" strokeLinejoin="round" d="m9 9 6-6m0 0 6 6m-6-6v12m0 3.75a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" />
+      </svg>
+    );
+  }
+  if (lowercase.includes("chaos strike")) {
+    return (
+      <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-7">
+        <path strokeLinecap="round" strokeLinejoin="round" d="M15.362 5.214A8.252 8.252 0 0 1 12 21 8.25 8.25 0 0 1 6.038 7.047 8.287 8.287 0 0 0 9 9.601a8.983 8.983 0 0 1 3.361-6.867 8.21 8.21 0 0 0 3 2.48Z" />
+      </svg>
+    );
+  }
+  return (
+    <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-7">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904L9 21l8.982-5.096c.86-.487 1.018-1.666.294-2.39L14.73 9.967c-.724-.724-1.903-.566-2.39.294L9.813 15.904z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 21h6.75M9 21a2.25 2.25 0 01-2.25-2.25v-6M18 10.5h.008v.008H18V10.5zm-3-3h.008v.008H15V7.5z" />
+    </svg>
+  );
+};
+
 export default function Train() {
   const [selectedScenario, setSelectedScenario] = useState<Scenario>(TRAINING_SCENARIOS[0]);
   const [gameState, setGameState] = useState<"idle" | "countdown" | "running" | "finished">("idle");
@@ -125,6 +193,64 @@ export default function Train() {
       if (gameIntervalRef.current) clearInterval(gameIntervalRef.current);
     };
   }, []);
+
+  const [activeBuild, setActiveBuild] = useState<ImportedBuild | null>(null);
+
+  useEffect(() => {
+    const saved = localStorage.getItem("pullprep_active_build");
+    if (saved) {
+      try {
+        setActiveBuild(JSON.parse(saved));
+      } catch (e) {
+        console.error("Failed to parse saved build", e);
+      }
+    }
+  }, []);
+
+  const getSpellKeybind = (spellId: number): string => {
+    if (activeBuild) {
+      for (const bar of activeBuild.actionBars) {
+        for (const btn of bar.buttons) {
+          if (btn.id === spellId && btn.key) {
+            return btn.key;
+          }
+        }
+      }
+    }
+    return DEMON_HUNTER_SPELLS[spellId]?.keybind || "";
+  };
+
+  const getWoWKeyString = (e: KeyboardEvent): string => {
+    const parts: string[] = [];
+    if (e.ctrlKey) parts.push("CTRL");
+    if (e.altKey) parts.push("ALT");
+    if (e.shiftKey) parts.push("SHIFT");
+    
+    let keyName = e.key.toUpperCase();
+    if (keyName === " ") keyName = "SPACE";
+    
+    parts.push(keyName);
+    return parts.join("-");
+  };
+
+  const getActiveKeybinds = (): Set<string> => {
+    const binds = new Set<string>();
+    if (activeBuild) {
+      for (const bar of activeBuild.actionBars) {
+        for (const btn of bar.buttons) {
+          if (btn.key) {
+            binds.add(btn.key.toUpperCase());
+          }
+        }
+      }
+    } else {
+      binds.add("1");
+      binds.add("2");
+      binds.add("3");
+      binds.add("4");
+    }
+    return binds;
+  };
 
   const playSound = (type: "perfect" | "correct" | "incorrect") => {
     if (isMuted || !synthRef.current) return;
@@ -219,7 +345,7 @@ export default function Train() {
               ]);
               setCombo(0);
               playSound("incorrect");
-              setLastPressResult({ key: DEMON_HUNTER_SPELLS[prevStep.spellId].keybind, status: "missed" });
+              setLastPressResult({ key: getSpellKeybind(prevStep.spellId), status: "missed" });
             }
           }
 
@@ -278,10 +404,17 @@ export default function Train() {
   // Listen to keyboard events
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      const key = e.key;
+      // Ignore standalone modifier presses
+      if (["Shift", "Control", "Alt"].includes(e.key)) return;
+
+      const pressedWoWKey = getWoWKeyString(e);
+      const validBinds = getActiveKeybinds();
+      if (!validBinds.has(pressedWoWKey)) return;
+
+      e.preventDefault();
       
       // Update visualizer state
-      setPressedKeys((prev) => ({ ...prev, [key.toLowerCase()]: true }));
+      setPressedKeys((prev) => ({ ...prev, [pressedWoWKey]: true }));
 
       const {
         gameState: currentGameState,
@@ -293,12 +426,6 @@ export default function Train() {
       } = stateRef.current;
 
       if (currentGameState !== "running") return;
-
-      // Check if key corresponds to rotational binds: 1, 2, 3, 4
-      const validBinds = ["1", "2", "3", "4"];
-      if (!validBinds.includes(key)) return;
-
-      e.preventDefault();
 
       const elapsed = stateRef.current.elapsedTime;
       const steps = selectedScenario.steps;
@@ -341,12 +468,14 @@ export default function Train() {
         }
       }
 
+      const expectedKeybind = targetSpell ? getSpellKeybind(targetSpell.id) : "";
+
       // 2. Handle GCD lockout
       if (isGcdActive) {
         // If they pressed the correct target keybind during lockout, ignore (allow spamming)
         // If they pressed an incorrect keybind, register as incorrect
-        if (targetSpell && key !== targetSpell.keybind) {
-          registerIncorrectPress(key);
+        if (targetSpell && pressedWoWKey !== expectedKeybind) {
+          registerIncorrectPress(pressedWoWKey);
         }
         return;
       }
@@ -356,17 +485,28 @@ export default function Train() {
         // Check if this step was already responded to
         const alreadyResponded = currentCasts.some((c) => c.stepIndex === targetStepIndex);
         if (alreadyResponded) {
-          registerIncorrectPress(key);
+          registerIncorrectPress(pressedWoWKey);
           return;
         }
 
         const timeDiff = actualCastTime - (targetPromptTime || 0);
-        const { status, reactionTimeMs } = evaluatePress(targetSpell, key, timeDiff);
+
+        // Override targetSpell keybind with dynamic keybind before passing to evaluatePress
+        const spellWithCustomBind = {
+          ...targetSpell,
+          keybind: expectedKeybind
+        };
+
+        const { status, reactionTimeMs } = evaluatePress(spellWithCustomBind, pressedWoWKey, timeDiff);
+
+        const actualSpellId = activeBuild 
+          ? (activeBuild.actionBars.flatMap(bar => bar.buttons).find(btn => btn.key === pressedWoWKey)?.id || null)
+          : (Object.values(DEMON_HUNTER_SPELLS).find((s) => s.keybind === pressedWoWKey)?.id || null);
 
         const newRecord: CastRecord = {
           stepIndex: targetStepIndex,
           expectedSpellId: targetSpell.id,
-          actualSpellId: Object.values(DEMON_HUNTER_SPELLS).find((s) => s.keybind === key)?.id || null,
+          actualSpellId,
           expectedTime: !selectedScenario.isProcReaction ? steps[targetStepIndex]?.time : (targetPromptTime || 0),
           actualTime: actualCastTime,
           reactionTime: reactionTimeMs,
@@ -374,7 +514,7 @@ export default function Train() {
         };
 
         setCasts((prev) => [...prev, newRecord]);
-        setLastPressResult({ key, status });
+        setLastPressResult({ key: pressedWoWKey, status });
 
         if (status === "perfect") {
           setCombo((prev) => prev + 1);
@@ -389,13 +529,14 @@ export default function Train() {
           playSound("incorrect");
         }
       } else {
-        registerIncorrectPress(key);
+        registerIncorrectPress(pressedWoWKey);
       }
     };
 
     const handleKeyUp = (e: KeyboardEvent) => {
-      const key = e.key;
-      setPressedKeys((prev) => ({ ...prev, [key.toLowerCase()]: false }));
+      if (["Shift", "Control", "Alt"].includes(e.key)) return;
+      const releasedWoWKey = getWoWKeyString(e);
+      setPressedKeys((prev) => ({ ...prev, [releasedWoWKey]: false }));
     };
 
     window.addEventListener("keydown", handleKeyDown);
@@ -405,14 +546,18 @@ export default function Train() {
       window.removeEventListener("keydown", handleKeyDown);
       window.removeEventListener("keyup", handleKeyUp);
     };
-  }, [selectedScenario]);
+  }, [selectedScenario, activeBuild]);
 
   const registerIncorrectPress = (key: string) => {
     const elapsed = stateRef.current.elapsedTime;
+    const actualSpellId = activeBuild
+      ? (activeBuild.actionBars.flatMap(bar => bar.buttons).find(btn => btn.key === key)?.id || null)
+      : (Object.values(DEMON_HUNTER_SPELLS).find((s) => s.keybind === key)?.id || null);
+
     const newRecord: CastRecord = {
       stepIndex: -1, // Penalty
       expectedSpellId: 0,
-      actualSpellId: Object.values(DEMON_HUNTER_SPELLS).find((s) => s.keybind === key)?.id || null,
+      actualSpellId,
       expectedTime: elapsed,
       actualTime: elapsed,
       reactionTime: null,
@@ -753,84 +898,137 @@ export default function Train() {
 
         {/* Bottom Panel: Visual WoW Action Bar */}
         <div className="w-full flex flex-col items-center space-y-6 pt-4 border-t border-zinc-900">
-          <div className="flex items-center space-x-4">
-            {Object.values(DEMON_HUNTER_SPELLS).map((spell) => {
-              const isActive = activeSpell?.id === spell.id;
-              return (
-                <div
-                  key={spell.id}
-                  className={`w-16 h-16 rounded-xl bg-zinc-900 border flex flex-col items-center justify-center relative cursor-default transition-all select-none ${
-                    isActive
-                      ? selectedScenario.isProcReaction
-                        ? "proc-highlight border-emerald-500/80 scale-105"
-                        : "spell-highlight border-violet-500/80 scale-105"
-                      : "border-zinc-850 hover:border-zinc-750 opacity-90"
-                  }`}
-                  style={{
-                    boxShadow: isActive
-                      ? `0 0 15px 1px ${selectedScenario.isProcReaction ? '#10b981' : '#8b5cf6'}20`
-                      : "none",
-                  }}
-                >
-                  {/* SVG Art representation of spells */}
-                  <div className="w-7 h-7 flex items-center justify-center" style={{ color: spell.color }}>
-                    {spell.icon === "metamorphosis" && (
-                      <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-7">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z" />
-                      </svg>
+          <div className="flex flex-wrap items-center justify-center gap-3">
+            {activeBuild && activeBuild.actionBars.find(bar => bar.barName === "ActionBar1") ? (
+              activeBuild.actionBars.find(bar => bar.barName === "ActionBar1")?.buttons.map((btn) => {
+                const isSpellActive = activeSpell?.id === btn.id;
+                return (
+                  <div
+                    key={btn.slot}
+                    className={`w-16 h-16 rounded-xl bg-zinc-900 border flex flex-col items-center justify-center relative cursor-default transition-all select-none ${
+                      isSpellActive
+                        ? selectedScenario.isProcReaction
+                          ? "proc-highlight border-emerald-500/80 scale-105"
+                          : "spell-highlight border-violet-500/80 scale-105"
+                        : "border-zinc-850 hover:border-zinc-750 opacity-90"
+                    }`}
+                    style={{
+                      boxShadow: isSpellActive
+                        ? `0 0 15px 1px ${selectedScenario.isProcReaction ? '#10b981' : '#8b5cf6'}20`
+                        : "none",
+                    }}
+                  >
+                    {btn.type !== "empty" ? (
+                      <>
+                        <div className="w-7 h-7 flex items-center justify-center" style={{ color: getSpellColor(btn.name) }}>
+                          {getSpellIconSVG(btn.name)}
+                        </div>
+                        <span className="text-[9px] font-black text-zinc-400 mt-1 uppercase tracking-wide truncate max-w-full px-1">
+                          {btn.name}
+                        </span>
+                      </>
+                    ) : (
+                      <span className="text-[8px] font-bold text-zinc-700">EMPTY</span>
                     )}
-                    {spell.icon === "eye-beam" && (
-                      <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-7">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                      </svg>
-                    )}
-                    {spell.icon === "blade-dance" && (
-                      <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-7">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="m9 9 6-6m0 0 6 6m-6-6v12m0 3.75a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" />
-                      </svg>
-                    )}
-                    {spell.icon === "chaos-strike" && (
-                      <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-7">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M15.362 5.214A8.252 8.252 0 0 1 12 21 8.25 8.25 0 0 1 6.038 7.047 8.287 8.287 0 0 0 9 9.601a8.983 8.983 0 0 1 3.361-6.867 8.21 8.21 0 0 0 3 2.48Z" />
-                      </svg>
+                    
+                    {/* Action bind key */}
+                    <span className="absolute bottom-1 right-1.5 font-mono text-[9px] font-black text-zinc-500">
+                      {btn.key}
+                    </span>
+
+                    {/* GCD Swipe Overlay */}
+                    {isGcdActive && (
+                      <div
+                        className="absolute inset-0 pointer-events-none"
+                        style={{
+                          background: `conic-gradient(rgba(9, 9, 11, 0.75) ${gcdPercent}%, transparent ${gcdPercent}%)`,
+                          transform: 'rotate(-90deg)',
+                          borderRadius: 'inherit',
+                        }}
+                      />
                     )}
                   </div>
-                  <span className="text-[9px] font-black text-zinc-400 mt-1 uppercase tracking-wide truncate max-w-full px-1">
-                    {spell.name}
-                  </span>
-                  
-                  {/* Action bind key */}
-                  <span className="absolute bottom-1 right-1.5 font-mono text-[9px] font-black text-zinc-500">
-                    {spell.keybind}
-                  </span>
+                );
+              })
+            ) : (
+              Object.values(DEMON_HUNTER_SPELLS).map((spell) => {
+                const isActive = activeSpell?.id === spell.id;
+                return (
+                  <div
+                    key={spell.id}
+                    className={`w-16 h-16 rounded-xl bg-zinc-900 border flex flex-col items-center justify-center relative cursor-default transition-all select-none ${
+                      isActive
+                        ? selectedScenario.isProcReaction
+                          ? "proc-highlight border-emerald-500/80 scale-105"
+                          : "spell-highlight border-violet-500/80 scale-105"
+                        : "border-zinc-850 hover:border-zinc-750 opacity-90"
+                    }`}
+                    style={{
+                      boxShadow: isActive
+                        ? `0 0 15px 1px ${selectedScenario.isProcReaction ? '#10b981' : '#8b5cf6'}20`
+                        : "none",
+                    }}
+                  >
+                    {/* SVG Art representation of spells */}
+                    <div className="w-7 h-7 flex items-center justify-center" style={{ color: spell.color }}>
+                      {spell.icon === "metamorphosis" && (
+                        <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-7">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z" />
+                        </svg>
+                      )}
+                      {spell.icon === "eye-beam" && (
+                        <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-7">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                        </svg>
+                      )}
+                      {spell.icon === "blade-dance" && (
+                        <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-7">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="m9 9 6-6m0 0 6 6m-6-6v12m0 3.75a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" />
+                        </svg>
+                      )}
+                      {spell.icon === "chaos-strike" && (
+                        <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-7">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M15.362 5.214A8.252 8.252 0 0 1 12 21 8.25 8.25 0 0 1 6.038 7.047 8.287 8.287 0 0 0 9 9.601a8.983 8.983 0 0 1 3.361-6.867 8.21 8.21 0 0 0 3 2.48Z" />
+                        </svg>
+                      )}
+                    </div>
+                    <span className="text-[9px] font-black text-zinc-400 mt-1 uppercase tracking-wide truncate max-w-full px-1">
+                      {spell.name}
+                    </span>
+                    
+                    {/* Action bind key */}
+                    <span className="absolute bottom-1 right-1.5 font-mono text-[9px] font-black text-zinc-500">
+                      {spell.keybind}
+                    </span>
 
-                  {/* GCD Swipe Overlay */}
-                  {isGcdActive && (
-                    <div
-                      className="absolute inset-0 pointer-events-none"
-                      style={{
-                        background: `conic-gradient(rgba(9, 9, 11, 0.75) ${gcdPercent}%, transparent ${gcdPercent}%)`,
-                        transform: 'rotate(-90deg)',
-                        borderRadius: 'inherit',
-                      }}
-                    />
-                  )}
-                </div>
-              );
-            })}
+                    {/* GCD Swipe Overlay */}
+                    {isGcdActive && (
+                      <div
+                        className="absolute inset-0 pointer-events-none"
+                        style={{
+                          background: `conic-gradient(rgba(9, 9, 11, 0.75) ${gcdPercent}%, transparent ${gcdPercent}%)`,
+                          transform: 'rotate(-90deg)',
+                          borderRadius: 'inherit',
+                        }}
+                      />
+                    )}
+                  </div>
+                );
+              })
+            )}
           </div>
-
+ 
           {/* Interactive Keyboard Visualizer HUD */}
           <div className="flex flex-col items-center space-y-1.5">
             <span className="text-[9px] text-zinc-600 font-extrabold uppercase tracking-widest">
               Keyboard Monitor (Real-time)
             </span>
-            <div className="flex items-center space-x-1 font-mono text-xs text-zinc-500">
-              {["1", "2", "3", "4"].map((k) => (
+            <div className="flex flex-wrap items-center justify-center gap-1.5 font-mono text-xs text-zinc-500">
+              {([191427, 198013, 188499, 162794].map(id => getSpellKeybind(id))).map((k) => (
                 <div
                   key={k}
-                  className={`w-7 h-7 rounded border flex items-center justify-center font-extrabold transition-all select-none ${
+                  className={`px-3 h-7 rounded border flex items-center justify-center font-extrabold transition-all select-none min-w-[28px] ${
                     pressedKeys[k]
                       ? "bg-violet-600 border-violet-500 text-white scale-90 shadow-md shadow-violet-500/20"
                       : "bg-zinc-900 border-zinc-800 text-zinc-400"

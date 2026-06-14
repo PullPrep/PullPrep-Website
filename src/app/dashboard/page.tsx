@@ -1,6 +1,34 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import Link from "next/link";
 
+interface ImportedButton {
+  slot: number;
+  type: string;
+  id: number;
+  name: string;
+  key: string;
+  icon: number;
+}
+
+interface ImportedBar {
+  barName: string;
+  buttons: ImportedButton[];
+}
+
+interface ImportedBuild {
+  class: string;
+  spec: string;
+  actionBars: ImportedBar[];
+}
+
 export default function Dashboard() {
+  const [activeBuild, setActiveBuild] = useState<ImportedBuild | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [importString, setImportString] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+
   // Mock recent sessions
   const recentSessions = [
     { id: 1, scenario: "Havoc DH Opener", date: "Today, 10:12 AM", accuracy: 96, speed: "262ms", score: "S" },
@@ -9,6 +37,77 @@ export default function Dashboard() {
     { id: 4, scenario: "Proc Reaction Drill", date: "Jun 11, 2:10 PM", accuracy: 92, speed: "298ms", score: "A" },
     { id: 5, scenario: "Havoc DH Opener", date: "Jun 10, 11:30 AM", accuracy: 78, speed: "490ms", score: "C" },
   ];
+
+  // Load imported build from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem("pullprep_active_build");
+    if (saved) {
+      try {
+        setActiveBuild(JSON.parse(saved));
+      } catch (e) {
+        console.error("Failed to parse saved build", e);
+      }
+    }
+  }, []);
+
+  const handleImport = () => {
+    setErrorMessage("");
+    if (!importString.trim()) {
+      setErrorMessage("Please paste an export string first.");
+      return;
+    }
+
+    try {
+      // Decode Base64
+      const decoded = atob(importString.trim());
+      const parsed = JSON.parse(decoded) as ImportedBuild;
+
+      // Validate basic structure
+      if (!parsed.class || !parsed.spec || !Array.isArray(parsed.actionBars)) {
+        throw new Error("Invalid structure");
+      }
+
+      // Save to local storage
+      localStorage.setItem("pullprep_active_build", JSON.stringify(parsed));
+      setActiveBuild(parsed);
+      setIsModalOpen(false);
+      setImportString("");
+    } catch (e) {
+      setErrorMessage("Failed to parse string. Make sure you copied the entire string from the WoW addon exporter.");
+    }
+  };
+
+  const handleClearBuild = () => {
+    if (confirm("Are you sure you want to clear your imported WoW configuration?")) {
+      localStorage.removeItem("pullprep_active_build");
+      setActiveBuild(null);
+    }
+  };
+
+  // Helper to format class display names
+  const classColors: Record<string, string> = {
+    DEMONHUNTER: "from-emerald-600 to-zinc-900 border-emerald-500/30 text-emerald-400",
+    MAGE: "from-sky-600 to-zinc-900 border-sky-500/30 text-sky-400",
+    WARRIOR: "from-amber-700 to-zinc-900 border-amber-600/30 text-amber-550",
+    ROGUE: "from-yellow-600 to-zinc-900 border-yellow-500/30 text-yellow-400",
+    DEATHKNIGHT: "from-red-700 to-zinc-900 border-red-650/30 text-red-500",
+    PALADIN: "from-pink-600 to-zinc-900 border-pink-500/30 text-pink-400",
+    DRUID: "from-orange-600 to-zinc-900 border-orange-500/30 text-orange-400",
+    HUNTER: "from-green-600 to-zinc-900 border-green-500/30 text-green-400",
+    PRIEST: "from-zinc-400 to-zinc-900 border-zinc-300/30 text-zinc-100",
+    SHAMAN: "from-blue-600 to-zinc-900 border-blue-500/30 text-blue-400",
+    WARLOCK: "from-violet-700 to-zinc-900 border-violet-600/30 text-violet-400",
+    MONK: "from-teal-600 to-zinc-900 border-teal-500/30 text-teal-400",
+    EVOKER: "from-cyan-600 to-zinc-900 border-cyan-500/30 text-cyan-400",
+  };
+
+  const currentClassKey = activeBuild?.class?.toUpperCase() || "";
+  const currentClassStyle = classColors[currentClassKey] || "from-violet-600 to-zinc-900 border-violet-500/30 text-violet-400";
+  
+  // Count total buttons imported
+  const totalSpells = activeBuild
+    ? activeBuild.actionBars.reduce((sum, bar) => sum + bar.buttons.filter(b => b.type !== "empty").length, 0)
+    : 4;
 
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col relative">
@@ -54,12 +153,15 @@ export default function Dashboard() {
             <p className="text-zinc-400 text-sm">Monitor your muscle memory progress and manage character configurations.</p>
           </div>
           <div className="flex space-x-3">
-            <button className="px-4 py-2 text-xs font-bold bg-zinc-900 border border-zinc-800 rounded-lg text-zinc-400 hover:text-white transition-colors cursor-not-allowed">
-              Export Keybinds Addon
+            <button
+              onClick={() => setIsModalOpen(true)}
+              className="px-5 py-2.5 text-xs font-black bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white rounded-lg shadow-md shadow-violet-500/10 active:scale-95 transition-all cursor-pointer"
+            >
+              Import WoW Setup
             </button>
             <Link
               href="/train"
-              className="px-5 py-2.5 text-xs font-black bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white rounded-lg shadow-md shadow-violet-500/10 active:scale-95 transition-all"
+              className="px-5 py-2.5 text-xs font-black bg-zinc-900 border border-zinc-800 hover:bg-zinc-800 hover:text-white text-zinc-300 rounded-lg shadow-sm active:scale-95 transition-all"
             >
               Launch Practice Simulator
             </Link>
@@ -78,13 +180,19 @@ export default function Dashboard() {
               
               <div className="flex items-center space-x-4 mb-6">
                 {/* Spec Icon Avatar */}
-                <div className="w-14 h-14 rounded-xl bg-gradient-to-tr from-emerald-600 to-zinc-900 border border-emerald-500/30 flex items-center justify-center shadow-lg shadow-emerald-500/10">
-                  <span className="font-extrabold text-emerald-400 text-lg">DH</span>
+                <div className={`w-14 h-14 rounded-xl bg-gradient-to-tr ${currentClassStyle} flex items-center justify-center shadow-lg border`}>
+                  <span className="font-extrabold text-lg uppercase">
+                    {activeBuild ? activeBuild.class.substring(0, 2) : "DH"}
+                  </span>
                 </div>
                 <div>
-                  <h2 className="font-black text-lg text-white">IllidariPro</h2>
-                  <span className="inline-block px-2 py-0.5 rounded bg-emerald-950/50 border border-emerald-900/60 text-[10px] text-emerald-400 font-extrabold tracking-wide">
-                    HAVOC DEMON HUNTER
+                  <h2 className="font-black text-lg text-white">
+                    {activeBuild ? "Imported Character" : "IllidariPro"}
+                  </h2>
+                  <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-extrabold tracking-wide uppercase ${
+                    activeBuild ? "bg-zinc-800/80 border border-zinc-700 text-zinc-300" : "bg-emerald-950/50 border border-emerald-900/60 text-emerald-400"
+                  }`}>
+                    {activeBuild ? `${activeBuild.spec} ${activeBuild.class}` : "HAVOC DEMON HUNTER"}
                   </span>
                 </div>
               </div>
@@ -92,15 +200,19 @@ export default function Dashboard() {
               <div className="space-y-3 pt-3 border-t border-zinc-850 text-xs">
                 <div className="flex justify-between">
                   <span className="text-zinc-500 font-bold uppercase">Active Spec</span>
-                  <span className="text-zinc-200 font-semibold">Havoc (Rotational Core)</span>
+                  <span className="text-zinc-200 font-semibold">
+                    {activeBuild ? activeBuild.spec : "Havoc (Rotational Core)"}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-zinc-500 font-bold uppercase">Action Bars</span>
-                  <span className="text-zinc-200 font-semibold">4 Active Spells</span>
+                  <span className="text-zinc-200 font-semibold">{totalSpells} Active Spells</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-zinc-500 font-bold uppercase">Import Status</span>
-                  <span className="text-zinc-400 font-semibold italic">Predefined MVP Template</span>
+                  <span className="text-zinc-400 font-semibold italic">
+                    {activeBuild ? "Imported Custom Setup" : "Predefined MVP Template"}
+                  </span>
                 </div>
               </div>
             </div>
@@ -109,7 +221,9 @@ export default function Dashboard() {
             <div className="bg-zinc-900/40 border border-zinc-850 p-6 rounded-2xl backdrop-blur-sm space-y-4">
               <div className="flex justify-between items-center">
                 <h3 className="font-black text-sm text-white uppercase tracking-wider">Character Setups</h3>
-                <span className="text-[10px] font-extrabold text-violet-400">1 IMPORTED</span>
+                <span className="text-[10px] font-extrabold text-violet-400">
+                  {activeBuild ? "1 IMPORTED" : "USING DEFAULT"}
+                </span>
               </div>
 
               <div className="space-y-3">
@@ -117,8 +231,12 @@ export default function Dashboard() {
                   <div className="flex items-center space-x-3">
                     <div className="w-2 h-2 rounded-full bg-violet-500" />
                     <div>
-                      <span className="font-bold text-xs block text-white">Default DH Spec</span>
-                      <span className="text-[10px] text-zinc-500">Imported 1 hour ago</span>
+                      <span className="font-bold text-xs block text-white">
+                        {activeBuild ? `${activeBuild.spec} ${activeBuild.class}` : "Default DH Spec"}
+                      </span>
+                      <span className="text-[10px] text-zinc-500">
+                        {activeBuild ? "Custom Imported Setup" : "MVP Standard Template"}
+                      </span>
                     </div>
                   </div>
                   <span className="text-[10px] font-extrabold text-emerald-400 bg-emerald-950/40 border border-emerald-900/60 px-1.5 py-0.5 rounded">
@@ -126,12 +244,24 @@ export default function Dashboard() {
                   </span>
                 </div>
 
-                <div className="p-3.5 border border-dashed border-zinc-800 rounded-xl text-center cursor-not-allowed group hover:border-zinc-700 transition-colors">
+                <div
+                  onClick={() => setIsModalOpen(true)}
+                  className="p-3.5 border border-dashed border-zinc-800 hover:border-zinc-700 rounded-xl text-center cursor-pointer transition-colors group"
+                >
                   <span className="text-xs text-zinc-500 group-hover:text-zinc-400 font-bold block">
                     + Import New WoW Build
                   </span>
-                  <span className="text-[9px] text-zinc-600 block mt-1">Requires Addon String (Future Release)</span>
+                  <span className="text-[9px] text-zinc-600 block mt-1">Requires Addon Base64 String</span>
                 </div>
+
+                {activeBuild && (
+                  <button
+                    onClick={handleClearBuild}
+                    className="w-full py-2 text-xs font-bold bg-zinc-950 hover:bg-rose-950/20 text-zinc-500 hover:text-rose-450 border border-zinc-900 hover:border-rose-900/40 rounded-xl transition-all cursor-pointer"
+                  >
+                    Clear Imported Setup
+                  </button>
+                )}
               </div>
             </div>
           </div>
@@ -254,6 +384,52 @@ export default function Dashboard() {
           </div>
         </div>
       </main>
+
+      {/* Import Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-fade-in">
+          <div className="bg-zinc-900 border border-zinc-800 max-w-lg w-full rounded-2xl p-6 shadow-2xl relative space-y-4">
+            <div>
+              <h2 className="text-xl font-black text-white">Import WoW Character Configuration</h2>
+              <p className="text-xs text-zinc-400 mt-1">
+                Paste the Base64 export string generated by the PullPrep Addon inside World of Warcraft (using the command <code className="text-violet-400 font-mono">/pp</code> or <code className="text-violet-400 font-mono">/pullprep</code>).
+              </p>
+            </div>
+
+            <textarea
+              value={importString}
+              onChange={(e) => setImportString(e.target.value)}
+              placeholder="Paste Base64 addon string here..."
+              className="w-full h-44 bg-zinc-950 border border-zinc-800 rounded-xl p-3 text-xs text-zinc-300 font-mono focus:border-violet-500 focus:outline-none resize-none"
+            />
+
+            {errorMessage && (
+              <p className="text-xs text-rose-500 bg-rose-950/20 border border-rose-900/50 p-2.5 rounded-lg">
+                ⚠️ {errorMessage}
+              </p>
+            )}
+
+            <div className="flex space-x-3 pt-2">
+              <button
+                onClick={handleImport}
+                className="flex-grow py-3 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-extrabold rounded-xl text-xs active:scale-98 transition-all cursor-pointer"
+              >
+                Validate and Import Setup
+              </button>
+              <button
+                onClick={() => {
+                  setIsModalOpen(false);
+                  setErrorMessage("");
+                  setImportString("");
+                }}
+                className="px-5 py-3 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold rounded-xl text-xs active:scale-98 transition-all cursor-pointer"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
