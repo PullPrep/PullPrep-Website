@@ -171,6 +171,7 @@ export default function Train() {
   const [isMuted, setIsMuted] = useState<boolean>(false);
   const [lastPressResult, setLastPressResult] = useState<{ key: string; status: string } | null>(null);
   const [finalStats, setFinalStats] = useState<SessionStats | null>(null);
+  const [failedIcons, setFailedIcons] = useState<Record<number, boolean>>({});
 
   const [lastCastTime, setLastCastTime] = useState<number | null>(null);
 
@@ -218,6 +219,15 @@ export default function Train() {
       }
     }
     return DEMON_HUNTER_SPELLS[spellId]?.keybind || "";
+  };
+
+  const getSpellIconUrl = (spellId: number): string => {
+    const idMap: Record<number, number> = {
+      227084: 263642, // Fracture internal/talent -> Fracture spell
+      225919: 203782, // Shear internal/talent -> Shear spell
+    };
+    const targetId = idMap[spellId] || spellId;
+    return `/icons/${targetId}.jpg`;
   };
 
   const getMappedSpell = (havocSpellId: number): Spell => {
@@ -802,27 +812,38 @@ export default function Train() {
                     selectedScenario.isProcReaction ? "proc-highlight" : "spell-highlight"
                   }`}>
                     {/* SVG abstract icon inside target based on spell identifier */}
-                    <div className="w-12 h-12 flex items-center justify-center" style={{ color: activeSpell.color }}>
-                      {activeSpell.icon === "metamorphosis" && (
-                        <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-10">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z" />
-                        </svg>
-                      )}
-                      {activeSpell.icon === "eye-beam" && (
-                        <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-10">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                        </svg>
-                      )}
-                      {activeSpell.icon === "blade-dance" && (
-                        <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-10">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="m9 9 6-6m0 0 6 6m-6-6v12m0 3.75a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" />
-                        </svg>
-                      )}
-                      {activeSpell.icon === "chaos-strike" && (
-                        <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-10">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M15.362 5.214A8.252 8.252 0 0 1 12 21 8.25 8.25 0 0 1 6.038 7.047 8.287 8.287 0 0 0 9 9.601a8.983 8.983 0 0 1 3.361-6.867 8.21 8.21 0 0 0 3 2.48Z" />
-                        </svg>
+                    <div className="w-12 h-12 flex items-center justify-center relative">
+                      {!failedIcons[activeSpell.id] ? (
+                        <img
+                          src={getSpellIconUrl(activeSpell.id)}
+                          alt={activeSpell.name}
+                          onError={() => setFailedIcons(prev => ({ ...prev, [activeSpell.id]: true }))}
+                          className="w-full h-full rounded-xl object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center" style={{ color: activeSpell.color }}>
+                          {activeSpell.icon === "metamorphosis" && (
+                            <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-10">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z" />
+                            </svg>
+                          )}
+                          {activeSpell.icon === "eye-beam" && (
+                            <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-10">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                            </svg>
+                          )}
+                          {activeSpell.icon === "blade-dance" && (
+                            <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-10">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="m9 9 6-6m0 0 6 6m-6-6v12m0 3.75a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" />
+                            </svg>
+                          )}
+                          {activeSpell.icon === "chaos-strike" && (
+                            <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-10">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M15.362 5.214A8.252 8.252 0 0 1 12 21 8.25 8.25 0 0 1 6.038 7.047 8.287 8.287 0 0 0 9 9.601a8.983 8.983 0 0 1 3.361-6.867 8.21 8.21 0 0 0 3 2.48Z" />
+                            </svg>
+                          )}
+                        </div>
                       )}
                     </div>
                     <span className="text-[10px] font-black mt-2 uppercase tracking-widest text-zinc-300">
@@ -1000,8 +1021,19 @@ export default function Train() {
                   >
                     {btn.type !== "empty" ? (
                       <>
-                        <div className="w-7 h-7 flex items-center justify-center" style={{ color: getSpellColor(btn.name) }}>
-                          {getSpellIconSVG(btn.name)}
+                        <div className="w-7 h-7 flex items-center justify-center relative">
+                          {!failedIcons[btn.id] ? (
+                            <img
+                              src={getSpellIconUrl(btn.id)}
+                              alt={btn.name}
+                              onError={() => setFailedIcons(prev => ({ ...prev, [btn.id]: true }))}
+                              className="w-full h-full rounded-lg object-cover"
+                            />
+                          ) : (
+                            <div className="w-full h-full flex items-center justify-center" style={{ color: getSpellColor(btn.name) }}>
+                              {getSpellIconSVG(btn.name)}
+                            </div>
+                          )}
                         </div>
                         <span className="text-[9px] font-black text-zinc-400 mt-1 uppercase tracking-wide truncate max-w-full px-1">
                           {btn.name}
@@ -1050,27 +1082,38 @@ export default function Train() {
                     }}
                   >
                     {/* SVG Art representation of spells */}
-                    <div className="w-7 h-7 flex items-center justify-center" style={{ color: spell.color }}>
-                      {spell.icon === "metamorphosis" && (
-                        <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-7">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z" />
-                        </svg>
-                      )}
-                      {spell.icon === "eye-beam" && (
-                        <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-7">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                        </svg>
-                      )}
-                      {spell.icon === "blade-dance" && (
-                        <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-7">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="m9 9 6-6m0 0 6 6m-6-6v12m0 3.75a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" />
-                        </svg>
-                      )}
-                      {spell.icon === "chaos-strike" && (
-                        <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-7">
-                          <path strokeLinecap="round" strokeLinejoin="round" d="M15.362 5.214A8.252 8.252 0 0 1 12 21 8.25 8.25 0 0 1 6.038 7.047 8.287 8.287 0 0 0 9 9.601a8.983 8.983 0 0 1 3.361-6.867 8.21 8.21 0 0 0 3 2.48Z" />
-                        </svg>
+                    <div className="w-7 h-7 flex items-center justify-center relative">
+                      {!failedIcons[spell.id] ? (
+                        <img
+                          src={getSpellIconUrl(spell.id)}
+                          alt={spell.name}
+                          onError={() => setFailedIcons(prev => ({ ...prev, [spell.id]: true }))}
+                          className="w-full h-full rounded-lg object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center" style={{ color: spell.color }}>
+                          {spell.icon === "metamorphosis" && (
+                            <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-7">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z" />
+                            </svg>
+                          )}
+                          {spell.icon === "eye-beam" && (
+                            <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-7">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                            </svg>
+                          )}
+                          {spell.icon === "blade-dance" && (
+                            <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-7">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="m9 9 6-6m0 0 6 6m-6-6v12m0 3.75a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" />
+                            </svg>
+                          )}
+                          {spell.icon === "chaos-strike" && (
+                            <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-7">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M15.362 5.214A8.252 8.252 0 0 1 12 21 8.25 8.25 0 0 1 6.038 7.047 8.287 8.287 0 0 0 9 9.601a8.983 8.983 0 0 1 3.361-6.867 8.21 8.21 0 0 0 3 2.48Z" />
+                            </svg>
+                          )}
+                        </div>
                       )}
                     </div>
                     <span className="text-[9px] font-black text-zinc-400 mt-1 uppercase tracking-wide truncate max-w-full px-1">
