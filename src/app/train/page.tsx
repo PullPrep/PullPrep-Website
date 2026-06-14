@@ -1052,9 +1052,6 @@ export default function Train() {
 
           {gameState === "countdown" && (
             <div className="flex flex-col items-center justify-center space-y-4">
-              <span className="text-[10px] text-zinc-500 font-black uppercase tracking-widest">
-                Prepare Hands (Keys 1-4)
-              </span>
               <span className="text-8xl font-black text-violet-400 animate-ping">
                 {countdown}
               </span>
