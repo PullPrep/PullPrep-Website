@@ -10,6 +10,8 @@ services:
     ports:
       # Exposes Next.js port 3000 to the host for local validation/access
       - "3000:3000"
+    volumes:
+      - pullprep_data:/app/data
     networks:
       - pullprep_network
 
@@ -32,3 +34,7 @@ networks:
   pullprep_network:
     name: pullprep_network
     driver: bridge
+
+volumes:
+  pullprep_data:
+
