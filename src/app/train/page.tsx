@@ -1552,18 +1552,21 @@ export default function Train() {
               Keyboard Monitor (Real-time)
             </span>
             <div className="flex flex-wrap items-center justify-center gap-1.5 font-mono text-xs text-zinc-500">
-              {Array.from(new Set(activeCoreSpells.map((core: any) => getMappedSpell(core.id).keybind).filter(Boolean))).map((k) => (
-                <div
-                  key={k}
-                  className={`px-3 h-7 rounded border flex items-center justify-center font-extrabold transition-all select-none min-w-[28px] ${
-                    pressedKeys[k]
-                      ? "bg-violet-600 border-violet-500 text-white scale-90 shadow-md shadow-violet-500/20"
-                      : "bg-zinc-900 border-zinc-800 text-zinc-400"
-                  }`}
-                >
-                  {k}
-                </div>
-              ))}
+              {activeCoreSpells
+                .map((core: any) => getMappedSpell(core.id).keybind)
+                .filter((k: string, idx: number, self: string[]) => k && self.indexOf(k) === idx)
+                .map((k: string) => (
+                  <div
+                    key={k}
+                    className={`px-3 h-7 rounded border flex items-center justify-center font-extrabold transition-all select-none min-w-[28px] ${
+                      pressedKeys[k]
+                        ? "bg-violet-600 border-violet-500 text-white scale-90 shadow-md shadow-violet-500/20"
+                        : "bg-zinc-900 border-zinc-800 text-zinc-400"
+                    }`}
+                  >
+                    {k}
+                  </div>
+                ))}
             </div>
           </div>
         </div>
