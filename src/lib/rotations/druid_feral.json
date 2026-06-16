@@ -1,0 +1,216 @@
+{
+  "class": "Druid",
+  "spec": "Feral",
+  "coreSpells": [
+    {
+      "id": 768,
+      "name": "Cat Form"
+    },
+    {
+      "id": 5215,
+      "name": "Prowl"
+    },
+    {
+      "id": 5217,
+      "name": "Tigers Fury"
+    },
+    {
+      "id": 38432,
+      "name": "Invoke External Buff"
+    },
+    {
+      "id": 883,
+      "name": "Call Action List"
+    },
+    {
+      "id": 1822,
+      "name": "Rake"
+    },
+    {
+      "id": 1244258,
+      "name": "Chomp"
+    },
+    {
+      "id": 22568,
+      "name": "Ferocious Bite"
+    },
+    {
+      "id": 8936,
+      "name": "Regrowth"
+    },
+    {
+      "id": 5221,
+      "name": "Shred"
+    },
+    {
+      "id": 1079,
+      "name": "Rip"
+    },
+    {
+      "id": 285381,
+      "name": "Primal Wrath"
+    },
+    {
+      "id": 58984,
+      "name": "Shadowmeld"
+    },
+    {
+      "id": 26297,
+      "name": "Berserking"
+    },
+    {
+      "id": 31829,
+      "name": "Use Items"
+    },
+    {
+      "id": 5420,
+      "name": "Incarnation"
+    },
+    {
+      "id": 106951,
+      "name": "Berserk"
+    },
+    {
+      "id": 274837,
+      "name": "Feral Frenzy"
+    },
+    {
+      "id": 1243807,
+      "name": "Frantic Frenzy"
+    },
+    {
+      "id": 323764,
+      "name": "Convoke The Spirits"
+    },
+    {
+      "id": 173841,
+      "name": "Pool Resource"
+    }
+  ],
+  "cooldowns": [
+    285381
+  ],
+  "interrupts": [],
+  "defensives": [],
+  "healthRecovery": [
+    5512,
+    191380
+  ],
+  "apl": [
+    {
+      "spellId": 768,
+      "name": "Cat Form",
+      "condition": "always"
+    },
+    {
+      "spellId": 5215,
+      "name": "Prowl",
+      "condition": "always"
+    },
+    {
+      "spellId": 5217,
+      "name": "Tigers Fury",
+      "condition": "always"
+    },
+    {
+      "spellId": 38432,
+      "name": "Invoke External Buff",
+      "condition": "always"
+    },
+    {
+      "spellId": 883,
+      "name": "Call Action List",
+      "condition": "always"
+    },
+    {
+      "spellId": 1822,
+      "name": "Rake",
+      "condition": "always"
+    },
+    {
+      "spellId": 1244258,
+      "name": "Chomp",
+      "condition": "always"
+    },
+    {
+      "spellId": 22568,
+      "name": "Ferocious Bite",
+      "condition": "always"
+    },
+    {
+      "spellId": 8936,
+      "name": "Regrowth",
+      "condition": "always"
+    },
+    {
+      "spellId": 768,
+      "name": "Moonfire Cat",
+      "condition": "always"
+    },
+    {
+      "spellId": 768,
+      "name": "Swipe Cat",
+      "condition": "always"
+    },
+    {
+      "spellId": 5221,
+      "name": "Shred",
+      "condition": "always"
+    },
+    {
+      "spellId": 1079,
+      "name": "Rip",
+      "condition": "always"
+    },
+    {
+      "spellId": 285381,
+      "name": "Primal Wrath",
+      "condition": "always"
+    },
+    {
+      "spellId": 58984,
+      "name": "Shadowmeld",
+      "condition": "always"
+    },
+    {
+      "spellId": 26297,
+      "name": "Berserking",
+      "condition": "always"
+    },
+    {
+      "spellId": 31829,
+      "name": "Use Items",
+      "condition": "always"
+    },
+    {
+      "spellId": 5420,
+      "name": "Incarnation",
+      "condition": "always"
+    },
+    {
+      "spellId": 106951,
+      "name": "Berserk",
+      "condition": "always"
+    },
+    {
+      "spellId": 274837,
+      "name": "Feral Frenzy",
+      "condition": "always"
+    },
+    {
+      "spellId": 1243807,
+      "name": "Frantic Frenzy",
+      "condition": "always"
+    },
+    {
+      "spellId": 323764,
+      "name": "Convoke The Spirits",
+      "condition": "always"
+    },
+    {
+      "spellId": 173841,
+      "name": "Pool Resource",
+      "condition": "always"
+    }
+  ]
+}

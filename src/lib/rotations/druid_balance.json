@@ -1,0 +1,211 @@
+{
+  "class": "Druid",
+  "spec": "Balance",
+  "coreSpells": [
+    {
+      "id": 24858,
+      "name": "Moonkin Form"
+    },
+    {
+      "id": 5176,
+      "name": "Wrath"
+    },
+    {
+      "id": 190984,
+      "name": "Starfire"
+    },
+    {
+      "id": 26297,
+      "name": "Berserking"
+    },
+    {
+      "id": 38432,
+      "name": "Invoke External Buff"
+    },
+    {
+      "id": 87840,
+      "name": "Run Action List"
+    },
+    {
+      "id": 1239669,
+      "name": "Eclipse"
+    },
+    {
+      "id": 8921,
+      "name": "Moonfire"
+    },
+    {
+      "id": 93402,
+      "name": "Sunfire"
+    },
+    {
+      "id": 202770,
+      "name": "Fury Of Elune"
+    },
+    {
+      "id": 37846,
+      "name": "Force Of Nature"
+    },
+    {
+      "id": 46832,
+      "name": "Solar Eclipse"
+    },
+    {
+      "id": 323764,
+      "name": "Convoke The Spirits"
+    },
+    {
+      "id": 78674,
+      "name": "Starsurge"
+    },
+    {
+      "id": 191034,
+      "name": "Starfall"
+    },
+    {
+      "id": 274281,
+      "name": "New Moon"
+    },
+    {
+      "id": 233750,
+      "name": "Half Moon"
+    },
+    {
+      "id": 58933,
+      "name": "Full Moon"
+    },
+    {
+      "id": 88747,
+      "name": "Wild Mushroom"
+    },
+    {
+      "id": 31829,
+      "name": "Use Items"
+    },
+    {
+      "id": 194223,
+      "name": "Celestial Alignment"
+    }
+  ],
+  "cooldowns": [
+    5176
+  ],
+  "interrupts": [],
+  "defensives": [],
+  "healthRecovery": [
+    5512,
+    191380
+  ],
+  "apl": [
+    {
+      "spellId": 24858,
+      "name": "Moonkin Form",
+      "condition": "always"
+    },
+    {
+      "spellId": 5176,
+      "name": "Wrath",
+      "condition": "always"
+    },
+    {
+      "spellId": 190984,
+      "name": "Starfire",
+      "condition": "always"
+    },
+    {
+      "spellId": 26297,
+      "name": "Berserking",
+      "condition": "always"
+    },
+    {
+      "spellId": 38432,
+      "name": "Invoke External Buff",
+      "condition": "always"
+    },
+    {
+      "spellId": 87840,
+      "name": "Run Action List",
+      "condition": "always"
+    },
+    {
+      "spellId": 1239669,
+      "name": "Eclipse",
+      "condition": "always"
+    },
+    {
+      "spellId": 8921,
+      "name": "Moonfire",
+      "condition": "always"
+    },
+    {
+      "spellId": 93402,
+      "name": "Sunfire",
+      "condition": "always"
+    },
+    {
+      "spellId": 202770,
+      "name": "Fury Of Elune",
+      "condition": "always"
+    },
+    {
+      "spellId": 37846,
+      "name": "Force Of Nature",
+      "condition": "always"
+    },
+    {
+      "spellId": 46832,
+      "name": "Solar Eclipse",
+      "condition": "always"
+    },
+    {
+      "spellId": 46832,
+      "name": "Lunar Eclipse",
+      "condition": "always"
+    },
+    {
+      "spellId": 323764,
+      "name": "Convoke The Spirits",
+      "condition": "always"
+    },
+    {
+      "spellId": 78674,
+      "name": "Starsurge",
+      "condition": "always"
+    },
+    {
+      "spellId": 191034,
+      "name": "Starfall",
+      "condition": "always"
+    },
+    {
+      "spellId": 274281,
+      "name": "New Moon",
+      "condition": "always"
+    },
+    {
+      "spellId": 233750,
+      "name": "Half Moon",
+      "condition": "always"
+    },
+    {
+      "spellId": 58933,
+      "name": "Full Moon",
+      "condition": "always"
+    },
+    {
+      "spellId": 88747,
+      "name": "Wild Mushroom",
+      "condition": "always"
+    },
+    {
+      "spellId": 31829,
+      "name": "Use Items",
+      "condition": "always"
+    },
+    {
+      "spellId": 194223,
+      "name": "Celestial Alignment",
+      "condition": "always"
+    }
+  ]
+}

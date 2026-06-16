@@ -1,0 +1,289 @@
+{
+  "class": "Warrior",
+  "spec": "Arms",
+  "coreSpells": [
+    {
+      "id": 386164,
+      "name": "Battle Stance"
+    },
+    {
+      "id": 6552,
+      "name": "Pummel"
+    },
+    {
+      "id": 883,
+      "name": "Call Action List"
+    },
+    {
+      "id": 25046,
+      "name": "Arcane Torrent"
+    },
+    {
+      "id": 19750,
+      "name": "Lights Judgment"
+    },
+    {
+      "id": 312411,
+      "name": "Bag Of Tricks"
+    },
+    {
+      "id": 26297,
+      "name": "Berserking"
+    },
+    {
+      "id": 20572,
+      "name": "Blood Fury"
+    },
+    {
+      "id": 265221,
+      "name": "Fireblood"
+    },
+    {
+      "id": 274738,
+      "name": "Ancestral Call"
+    },
+    {
+      "id": 38432,
+      "name": "Invoke External Buff"
+    },
+    {
+      "id": 87840,
+      "name": "Run Action List"
+    },
+    {
+      "id": 772,
+      "name": "Rend"
+    },
+    {
+      "id": 260708,
+      "name": "Sweeping Strikes"
+    },
+    {
+      "id": 228287,
+      "name": "Ravager"
+    },
+    {
+      "id": 107574,
+      "name": "Avatar"
+    },
+    {
+      "id": 167105,
+      "name": "Colossus Smash"
+    },
+    {
+      "id": 78346,
+      "name": "Champions Spear"
+    },
+    {
+      "id": 845,
+      "name": "Cleave"
+    },
+    {
+      "id": 436358,
+      "name": "Demolish"
+    },
+    {
+      "id": 1680,
+      "name": "Whirlwind"
+    },
+    {
+      "id": 12294,
+      "name": "Mortal Strike"
+    },
+    {
+      "id": 7384,
+      "name": "Overpower"
+    },
+    {
+      "id": 5308,
+      "name": "Execute"
+    },
+    {
+      "id": 1752,
+      "name": "Heroic Strike"
+    },
+    {
+      "id": 1464,
+      "name": "Slam"
+    },
+    {
+      "id": 227847,
+      "name": "Bladestorm"
+    },
+    {
+      "id": 384110,
+      "name": "Wrecking Throw"
+    },
+    {
+      "id": 6343,
+      "name": "Thunder Clap"
+    },
+    {
+      "id": 107570,
+      "name": "Storm Bolt"
+    }
+  ],
+  "cooldowns": [
+    107574
+  ],
+  "interrupts": [
+    6552
+  ],
+  "defensives": [],
+  "healthRecovery": [
+    5512,
+    191380
+  ],
+  "apl": [
+    {
+      "spellId": 386164,
+      "name": "Battle Stance",
+      "condition": "always"
+    },
+    {
+      "spellId": 6552,
+      "name": "Pummel",
+      "condition": "always"
+    },
+    {
+      "spellId": 883,
+      "name": "Call Action List",
+      "condition": "always"
+    },
+    {
+      "spellId": 25046,
+      "name": "Arcane Torrent",
+      "condition": "always"
+    },
+    {
+      "spellId": 19750,
+      "name": "Lights Judgment",
+      "condition": "always"
+    },
+    {
+      "spellId": 312411,
+      "name": "Bag Of Tricks",
+      "condition": "always"
+    },
+    {
+      "spellId": 26297,
+      "name": "Berserking",
+      "condition": "always"
+    },
+    {
+      "spellId": 20572,
+      "name": "Blood Fury",
+      "condition": "always"
+    },
+    {
+      "spellId": 265221,
+      "name": "Fireblood",
+      "condition": "always"
+    },
+    {
+      "spellId": 274738,
+      "name": "Ancestral Call",
+      "condition": "always"
+    },
+    {
+      "spellId": 38432,
+      "name": "Invoke External Buff",
+      "condition": "always"
+    },
+    {
+      "spellId": 87840,
+      "name": "Run Action List",
+      "condition": "always"
+    },
+    {
+      "spellId": 772,
+      "name": "Rend",
+      "condition": "always"
+    },
+    {
+      "spellId": 260708,
+      "name": "Sweeping Strikes",
+      "condition": "always"
+    },
+    {
+      "spellId": 228287,
+      "name": "Ravager",
+      "condition": "always"
+    },
+    {
+      "spellId": 107574,
+      "name": "Avatar",
+      "condition": "always"
+    },
+    {
+      "spellId": 167105,
+      "name": "Colossus Smash",
+      "condition": "always"
+    },
+    {
+      "spellId": 78346,
+      "name": "Champions Spear",
+      "condition": "always"
+    },
+    {
+      "spellId": 845,
+      "name": "Cleave",
+      "condition": "always"
+    },
+    {
+      "spellId": 436358,
+      "name": "Demolish",
+      "condition": "always"
+    },
+    {
+      "spellId": 1680,
+      "name": "Whirlwind",
+      "condition": "always"
+    },
+    {
+      "spellId": 12294,
+      "name": "Mortal Strike",
+      "condition": "always"
+    },
+    {
+      "spellId": 7384,
+      "name": "Overpower",
+      "condition": "always"
+    },
+    {
+      "spellId": 5308,
+      "name": "Execute",
+      "condition": "always"
+    },
+    {
+      "spellId": 1752,
+      "name": "Heroic Strike",
+      "condition": "always"
+    },
+    {
+      "spellId": 1464,
+      "name": "Slam",
+      "condition": "always"
+    },
+    {
+      "spellId": 227847,
+      "name": "Bladestorm",
+      "condition": "always"
+    },
+    {
+      "spellId": 384110,
+      "name": "Wrecking Throw",
+      "condition": "always"
+    },
+    {
+      "spellId": 6343,
+      "name": "Thunder Clap",
+      "condition": "always"
+    },
+    {
+      "spellId": 107570,
+      "name": "Storm Bolt",
+      "condition": "always"
+    }
+  ]
+}

@@ -1,0 +1,186 @@
+{
+  "class": "Warlock",
+  "spec": "Affliction",
+  "coreSpells": [
+    {
+      "id": 108503,
+      "name": "Grimoire Of Sacrifice"
+    },
+    {
+      "id": 27243,
+      "name": "Seed Of Corruption"
+    },
+    {
+      "id": 48181,
+      "name": "Haunt"
+    },
+    {
+      "id": 883,
+      "name": "Call Action List"
+    },
+    {
+      "id": 1261149,
+      "name": "Malefic Grasp"
+    },
+    {
+      "id": 198590,
+      "name": "Drain Soul"
+    },
+    {
+      "id": 686,
+      "name": "Shadow Bolt"
+    },
+    {
+      "id": 387016,
+      "name": "Dark Harvest"
+    },
+    {
+      "id": 980,
+      "name": "Agony"
+    },
+    {
+      "id": 205180,
+      "name": "Summon Darkglare"
+    },
+    {
+      "id": 442726,
+      "name": "Malevolence"
+    },
+    {
+      "id": 30108,
+      "name": "Unstable Affliction"
+    },
+    {
+      "id": 445468,
+      "name": "Wither"
+    },
+    {
+      "id": 172,
+      "name": "Corruption"
+    },
+    {
+      "id": 26297,
+      "name": "Berserking"
+    },
+    {
+      "id": 20572,
+      "name": "Blood Fury"
+    },
+    {
+      "id": 265221,
+      "name": "Fireblood"
+    },
+    {
+      "id": 274738,
+      "name": "Ancestral Call"
+    },
+    {
+      "id": 258887,
+      "name": "Cycling Variable"
+    }
+  ],
+  "cooldowns": [],
+  "interrupts": [],
+  "defensives": [],
+  "healthRecovery": [
+    5512,
+    191380
+  ],
+  "apl": [
+    {
+      "spellId": 108503,
+      "name": "Grimoire Of Sacrifice",
+      "condition": "always"
+    },
+    {
+      "spellId": 27243,
+      "name": "Seed Of Corruption",
+      "condition": "always"
+    },
+    {
+      "spellId": 48181,
+      "name": "Haunt",
+      "condition": "always"
+    },
+    {
+      "spellId": 883,
+      "name": "Call Action List",
+      "condition": "always"
+    },
+    {
+      "spellId": 1261149,
+      "name": "Malefic Grasp",
+      "condition": "always"
+    },
+    {
+      "spellId": 198590,
+      "name": "Drain Soul",
+      "condition": "always"
+    },
+    {
+      "spellId": 686,
+      "name": "Shadow Bolt",
+      "condition": "always"
+    },
+    {
+      "spellId": 387016,
+      "name": "Dark Harvest",
+      "condition": "always"
+    },
+    {
+      "spellId": 980,
+      "name": "Agony",
+      "condition": "always"
+    },
+    {
+      "spellId": 205180,
+      "name": "Summon Darkglare",
+      "condition": "always"
+    },
+    {
+      "spellId": 442726,
+      "name": "Malevolence",
+      "condition": "always"
+    },
+    {
+      "spellId": 30108,
+      "name": "Unstable Affliction",
+      "condition": "always"
+    },
+    {
+      "spellId": 445468,
+      "name": "Wither",
+      "condition": "always"
+    },
+    {
+      "spellId": 172,
+      "name": "Corruption",
+      "condition": "always"
+    },
+    {
+      "spellId": 26297,
+      "name": "Berserking",
+      "condition": "always"
+    },
+    {
+      "spellId": 20572,
+      "name": "Blood Fury",
+      "condition": "always"
+    },
+    {
+      "spellId": 265221,
+      "name": "Fireblood",
+      "condition": "always"
+    },
+    {
+      "spellId": 274738,
+      "name": "Ancestral Call",
+      "condition": "always"
+    },
+    {
+      "spellId": 258887,
+      "name": "Cycling Variable",
+      "condition": "always"
+    }
+  ]
+}

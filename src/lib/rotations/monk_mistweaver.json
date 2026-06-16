@@ -1,0 +1,74 @@
+{
+  "class": "Monk",
+  "spec": "Mistweaver",
+  "coreSpells": [
+    {
+      "id": 115151,
+      "name": "Renewing Mist"
+    },
+    {
+      "id": 116670,
+      "name": "Vivify"
+    },
+    {
+      "id": 124682,
+      "name": "Enveloping Mist"
+    },
+    {
+      "id": 107428,
+      "name": "Rising Sun Kick"
+    },
+    {
+      "id": 100780,
+      "name": "Tiger Palm"
+    },
+    {
+      "id": 116705,
+      "name": "Spear Hand Strike"
+    },
+    {
+      "id": 115203,
+      "name": "Fortifying Brew"
+    }
+  ],
+  "cooldowns": [
+    107428
+  ],
+  "interrupts": [
+    116705
+  ],
+  "defensives": [
+    115203
+  ],
+  "healthRecovery": [
+    116670,
+    124682
+  ],
+  "apl": [
+    {
+      "spellId": 115151,
+      "name": "Renewing Mist",
+      "condition": "always"
+    },
+    {
+      "spellId": 107428,
+      "name": "Rising Sun Kick",
+      "condition": "off_cooldown"
+    },
+    {
+      "spellId": 100780,
+      "name": "Tiger Palm",
+      "condition": "always"
+    },
+    {
+      "spellId": 124682,
+      "name": "Enveloping Mist",
+      "condition": "always"
+    },
+    {
+      "spellId": 116670,
+      "name": "Vivify",
+      "condition": "always"
+    }
+  ]
+}

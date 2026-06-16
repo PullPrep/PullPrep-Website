@@ -1,0 +1,186 @@
+{
+  "class": "Death Knight",
+  "spec": "Blood",
+  "coreSpells": [
+    {
+      "id": 5384,
+      "name": "Deaths Caress"
+    },
+    {
+      "id": 31829,
+      "name": "Use Items"
+    },
+    {
+      "id": 265221,
+      "name": "Fireblood"
+    },
+    {
+      "id": 20572,
+      "name": "Blood Fury"
+    },
+    {
+      "id": 26297,
+      "name": "Berserking"
+    },
+    {
+      "id": 274738,
+      "name": "Ancestral Call"
+    },
+    {
+      "id": 55233,
+      "name": "Vampiric Blood"
+    },
+    {
+      "id": 883,
+      "name": "Call Action List"
+    },
+    {
+      "id": 87840,
+      "name": "Run Action List"
+    },
+    {
+      "id": 43265,
+      "name": "Death And Decay"
+    },
+    {
+      "id": 1126,
+      "name": "Reapers Mark"
+    },
+    {
+      "id": 195182,
+      "name": "Marrowrend"
+    },
+    {
+      "id": 49998,
+      "name": "Death Strike"
+    },
+    {
+      "id": 50842,
+      "name": "Blood Boil"
+    },
+    {
+      "id": 205223,
+      "name": "Consumption"
+    },
+    {
+      "id": 206930,
+      "name": "Heart Strike"
+    },
+    {
+      "id": 25046,
+      "name": "Arcane Torrent"
+    },
+    {
+      "id": 49028,
+      "name": "Dancing Rune Weapon"
+    },
+    {
+      "id": 24256,
+      "name": "Any Dnd"
+    }
+  ],
+  "cooldowns": [],
+  "interrupts": [],
+  "defensives": [],
+  "healthRecovery": [
+    5512,
+    191380
+  ],
+  "apl": [
+    {
+      "spellId": 5384,
+      "name": "Deaths Caress",
+      "condition": "always"
+    },
+    {
+      "spellId": 31829,
+      "name": "Use Items",
+      "condition": "always"
+    },
+    {
+      "spellId": 265221,
+      "name": "Fireblood",
+      "condition": "always"
+    },
+    {
+      "spellId": 20572,
+      "name": "Blood Fury",
+      "condition": "always"
+    },
+    {
+      "spellId": 26297,
+      "name": "Berserking",
+      "condition": "always"
+    },
+    {
+      "spellId": 274738,
+      "name": "Ancestral Call",
+      "condition": "always"
+    },
+    {
+      "spellId": 55233,
+      "name": "Vampiric Blood",
+      "condition": "always"
+    },
+    {
+      "spellId": 883,
+      "name": "Call Action List",
+      "condition": "always"
+    },
+    {
+      "spellId": 87840,
+      "name": "Run Action List",
+      "condition": "always"
+    },
+    {
+      "spellId": 43265,
+      "name": "Death And Decay",
+      "condition": "always"
+    },
+    {
+      "spellId": 1126,
+      "name": "Reapers Mark",
+      "condition": "always"
+    },
+    {
+      "spellId": 195182,
+      "name": "Marrowrend",
+      "condition": "always"
+    },
+    {
+      "spellId": 49998,
+      "name": "Death Strike",
+      "condition": "always"
+    },
+    {
+      "spellId": 50842,
+      "name": "Blood Boil",
+      "condition": "always"
+    },
+    {
+      "spellId": 205223,
+      "name": "Consumption",
+      "condition": "always"
+    },
+    {
+      "spellId": 206930,
+      "name": "Heart Strike",
+      "condition": "always"
+    },
+    {
+      "spellId": 25046,
+      "name": "Arcane Torrent",
+      "condition": "always"
+    },
+    {
+      "spellId": 49028,
+      "name": "Dancing Rune Weapon",
+      "condition": "always"
+    },
+    {
+      "spellId": 24256,
+      "name": "Any Dnd",
+      "condition": "always"
+    }
+  ]
+}

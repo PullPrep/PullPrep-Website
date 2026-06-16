@@ -1,3 +1,43 @@
+import deathknight_blood_rotation from "./rotations/deathknight_blood.json";
+import deathknight_frost_rotation from "./rotations/deathknight_frost.json";
+import deathknight_unholy_rotation from "./rotations/deathknight_unholy.json";
+import demonhunter_havoc_rotation from "./rotations/demonhunter_havoc.json";
+import demonhunter_vengeance_rotation from "./rotations/demonhunter_vengeance.json";
+import druid_balance_rotation from "./rotations/druid_balance.json";
+import druid_feral_rotation from "./rotations/druid_feral.json";
+import druid_guardian_rotation from "./rotations/druid_guardian.json";
+import druid_restoration_rotation from "./rotations/druid_restoration.json";
+import evoker_augmentation_rotation from "./rotations/evoker_augmentation.json";
+import evoker_devastation_rotation from "./rotations/evoker_devastation.json";
+import evoker_preservation_rotation from "./rotations/evoker_preservation.json";
+import hunter_beastmastery_rotation from "./rotations/hunter_beastmastery.json";
+import hunter_marksmanship_rotation from "./rotations/hunter_marksmanship.json";
+import hunter_survival_rotation from "./rotations/hunter_survival.json";
+import mage_arcane_rotation from "./rotations/mage_arcane.json";
+import mage_fire_rotation from "./rotations/mage_fire.json";
+import mage_frost_rotation from "./rotations/mage_frost.json";
+import monk_brewmaster_rotation from "./rotations/monk_brewmaster.json";
+import monk_mistweaver_rotation from "./rotations/monk_mistweaver.json";
+import monk_windwalker_rotation from "./rotations/monk_windwalker.json";
+import paladin_holy_rotation from "./rotations/paladin_holy.json";
+import paladin_protection_rotation from "./rotations/paladin_protection.json";
+import paladin_retribution_rotation from "./rotations/paladin_retribution.json";
+import priest_discipline_rotation from "./rotations/priest_discipline.json";
+import priest_holy_rotation from "./rotations/priest_holy.json";
+import priest_shadow_rotation from "./rotations/priest_shadow.json";
+import rogue_assassination_rotation from "./rotations/rogue_assassination.json";
+import rogue_outlaw_rotation from "./rotations/rogue_outlaw.json";
+import rogue_subtlety_rotation from "./rotations/rogue_subtlety.json";
+import shaman_elemental_rotation from "./rotations/shaman_elemental.json";
+import shaman_enhancement_rotation from "./rotations/shaman_enhancement.json";
+import shaman_restoration_rotation from "./rotations/shaman_restoration.json";
+import warlock_affliction_rotation from "./rotations/warlock_affliction.json";
+import warlock_demonology_rotation from "./rotations/warlock_demonology.json";
+import warlock_destruction_rotation from "./rotations/warlock_destruction.json";
+import warrior_arms_rotation from "./rotations/warrior_arms.json";
+import warrior_fury_rotation from "./rotations/warrior_fury.json";
+import warrior_protection_rotation from "./rotations/warrior_protection.json";
+
 import havocRotation from "./rotations/demonhunter_havoc.json";
 import vengeanceRotation from "./rotations/demonhunter_vengeance.json";
 
@@ -89,8 +129,45 @@ export interface ImportedBuild {
 
 // Database of spec JSON profiles
 export const ROTATIONS_DB: Record<string, any> = {
-  "demonhunter_havoc": havocRotation,
-  "demonhunter_vengeance": vengeanceRotation,
+  "deathknight_blood": deathknight_blood_rotation,
+  "deathknight_frost": deathknight_frost_rotation,
+  "deathknight_unholy": deathknight_unholy_rotation,
+  "demonhunter_havoc": demonhunter_havoc_rotation,
+  "demonhunter_vengeance": demonhunter_vengeance_rotation,
+  "druid_balance": druid_balance_rotation,
+  "druid_feral": druid_feral_rotation,
+  "druid_guardian": druid_guardian_rotation,
+  "druid_restoration": druid_restoration_rotation,
+  "evoker_augmentation": evoker_augmentation_rotation,
+  "evoker_devastation": evoker_devastation_rotation,
+  "evoker_preservation": evoker_preservation_rotation,
+  "hunter_beastmastery": hunter_beastmastery_rotation,
+  "hunter_marksmanship": hunter_marksmanship_rotation,
+  "hunter_survival": hunter_survival_rotation,
+  "mage_arcane": mage_arcane_rotation,
+  "mage_fire": mage_fire_rotation,
+  "mage_frost": mage_frost_rotation,
+  "monk_brewmaster": monk_brewmaster_rotation,
+  "monk_mistweaver": monk_mistweaver_rotation,
+  "monk_windwalker": monk_windwalker_rotation,
+  "paladin_holy": paladin_holy_rotation,
+  "paladin_protection": paladin_protection_rotation,
+  "paladin_retribution": paladin_retribution_rotation,
+  "priest_discipline": priest_discipline_rotation,
+  "priest_holy": priest_holy_rotation,
+  "priest_shadow": priest_shadow_rotation,
+  "rogue_assassination": rogue_assassination_rotation,
+  "rogue_outlaw": rogue_outlaw_rotation,
+  "rogue_subtlety": rogue_subtlety_rotation,
+  "shaman_elemental": shaman_elemental_rotation,
+  "shaman_enhancement": shaman_enhancement_rotation,
+  "shaman_restoration": shaman_restoration_rotation,
+  "warlock_affliction": warlock_affliction_rotation,
+  "warlock_demonology": warlock_demonology_rotation,
+  "warlock_destruction": warlock_destruction_rotation,
+  "warrior_arms": warrior_arms_rotation,
+  "warrior_fury": warrior_fury_rotation,
+  "warrior_protection": warrior_protection_rotation,
 };
 
 // Predefined WoW spells for Demon Hunter (fallback database)
@@ -602,59 +679,53 @@ export function compileStats(
 }
 
 export function getScenariosForSpec(specName: string | undefined): Scenario[] {
-  const isVengeance = specName?.toLowerCase().includes("vengeance");
-  if (isVengeance) {
-    return [
-      {
-        id: "vdh-rotation",
-        name: "Vengeance Demon Hunter Rotation",
-        description: "Practice the optimal single-target Vengeance tanking and damage rotation.",
-        duration: 20,
-        steps: [
-          { time: 0.5, spellId: 204021 }, // Fiery Brand
-          { time: 2.0, spellId: 187827 }, // Metamorphosis
-          { time: 3.5, spellId: 227084 }, // Fracture (alternates with Shear)
-          { time: 5.0, spellId: 207407 }, // Soul Carver
-          { time: 6.5, spellId: 247454 }, // Spirit Bomb
-          { time: 8.0, spellId: 212084 }, // Fel Devastation
-          { time: 9.5, spellId: 228477 }, // Soul Cleave
-          { time: 11.0, spellId: 227084 }, // Fracture
-          { time: 12.5, spellId: 227084 }, // Fracture
-          { time: 14.0, spellId: 247454 }, // Spirit Bomb
-          { time: 15.5, spellId: 228477 }, // Soul Cleave
-          { time: 17.0, spellId: 227084 }, // Fracture
-          { time: 18.5, spellId: 227084 }, // Fracture
-        ],
-      },
-      {
-        id: "proc-reaction",
-        name: "Proc Reaction Speed Drill",
-        description: "React to randomized, rapid spell procs. Hit the highlighted button as fast as you can.",
-        duration: 20,
-        isProcReaction: true,
-        steps: [],
-      }
-    ];
+  if (!specName) {
+    return TRAINING_SCENARIOS;
+  }
+  const specKey = specName.toLowerCase().replace(/ /g, "");
+  
+  // Find matching profile in our registered rotations db
+  const matchedKey = Object.keys(ROTATIONS_DB).find(k => k.endsWith(`_${specKey}`));
+  if (!matchedKey) {
+    return TRAINING_SCENARIOS;
   }
 
-  // Default: Havoc DH
+  const rotationData = ROTATIONS_DB[matchedKey];
+  const className = rotationData.class;
+  const specDisplayName = rotationData.spec;
+
+  // Generate steps sequence dynamically from coreSpells (excluding cooldowns/interrupts/defensives from active gcd filler loop)
+  const cds = new Set(rotationData.cooldowns || []);
+  const interrupts = new Set(rotationData.interrupts || []);
+  const defensives = new Set(rotationData.defensives || []);
+  const coreSpells = rotationData.coreSpells || [];
+
+  const cdSpells = coreSpells.filter((s: any) => cds.has(s.id));
+  const fillerSpells = coreSpells.filter((s: any) => !cds.has(s.id) && !interrupts.has(s.id) && !defensives.has(s.id));
+  
+  const rotationFiller = fillerSpells.length > 0 ? fillerSpells : coreSpells;
+
+  const sequence = [];
+  sequence.push(...cdSpells);
+  
+  let fillerIdx = 0;
+  while (sequence.length < 13) {
+    sequence.push(rotationFiller[fillerIdx % rotationFiller.length]);
+    fillerIdx++;
+  }
+
+  const steps = sequence.map((spell: any, idx: number) => ({
+    time: 0.5 + idx * 1.5,
+    spellId: spell.id
+  }));
+
   return [
     {
-      id: "dh-opener",
-      name: "Havoc Demon Hunter Opener",
-      description: "Practice the perfect single-target Havoc DH opener sequence. Build keybind muscle memory.",
-      duration: 15,
-      steps: [
-        { time: 0.5, spellId: 191427 }, // Metamorphosis
-        { time: 2.0, spellId: 198013 }, // Eye Beam
-        { time: 3.5, spellId: 188499 }, // Blade Dance
-        { time: 5.0, spellId: 162794 }, // Chaos Strike
-        { time: 6.5, spellId: 162794 }, // Chaos Strike
-        { time: 8.0, spellId: 188499 }, // Blade Dance
-        { time: 9.5, spellId: 162794 }, // Chaos Strike
-        { time: 11.0, spellId: 198013 }, // Eye Beam
-        { time: 12.5, spellId: 188499 }, // Blade Dance
-      ],
+      id: `${matchedKey}-rotation`,
+      name: `${className} (${specDisplayName}) Practice Drill`,
+      description: `Practice the core rotational priority and muscle memory for ${specDisplayName} ${className}.`,
+      duration: 20,
+      steps
     },
     {
       id: "proc-reaction",
@@ -662,7 +733,7 @@ export function getScenariosForSpec(specName: string | undefined): Scenario[] {
       description: "React to randomized, rapid spell procs. Hit the highlighted button as fast as you can.",
       duration: 20,
       isProcReaction: true,
-      steps: [],
+      steps: []
     }
   ];
 }

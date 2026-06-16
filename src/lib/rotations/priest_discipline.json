@@ -1,0 +1,83 @@
+{
+  "class": "Priest",
+  "spec": "Discipline",
+  "coreSpells": [
+    {
+      "id": 17,
+      "name": "Power Word: Shield"
+    },
+    {
+      "id": 47540,
+      "name": "Penance"
+    },
+    {
+      "id": 585,
+      "name": "Smite"
+    },
+    {
+      "id": 589,
+      "name": "Shadow Word: Pain"
+    },
+    {
+      "id": 8092,
+      "name": "Mind Blast"
+    },
+    {
+      "id": 15487,
+      "name": "Silence"
+    },
+    {
+      "id": 19236,
+      "name": "Desperate Prayer"
+    },
+    {
+      "id": 194509,
+      "name": "Power Word: Radiance"
+    }
+  ],
+  "cooldowns": [
+    47540,
+    194509
+  ],
+  "interrupts": [
+    15487
+  ],
+  "defensives": [
+    19236
+  ],
+  "healthRecovery": [
+    47540
+  ],
+  "apl": [
+    {
+      "spellId": 17,
+      "name": "Power Word: Shield",
+      "condition": "always"
+    },
+    {
+      "spellId": 589,
+      "name": "Shadow Word: Pain",
+      "condition": "always"
+    },
+    {
+      "spellId": 194509,
+      "name": "Power Word: Radiance",
+      "condition": "off_cooldown"
+    },
+    {
+      "spellId": 47540,
+      "name": "Penance",
+      "condition": "off_cooldown"
+    },
+    {
+      "spellId": 8092,
+      "name": "Mind Blast",
+      "condition": "off_cooldown"
+    },
+    {
+      "spellId": 585,
+      "name": "Smite",
+      "condition": "always"
+    }
+  ]
+}

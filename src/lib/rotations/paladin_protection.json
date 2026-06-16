@@ -1,0 +1,183 @@
+{
+  "class": "Paladin",
+  "spec": "Protection",
+  "coreSpells": [
+    {
+      "id": 433583,
+      "name": "Rite Of Adjuration"
+    },
+    {
+      "id": 465,
+      "name": "Devotion Aura"
+    },
+    {
+      "id": 19750,
+      "name": "Lights Judgment"
+    },
+    {
+      "id": 26573,
+      "name": "Consecration"
+    },
+    {
+      "id": 31829,
+      "name": "Use Items"
+    },
+    {
+      "id": 31884,
+      "name": "Avenging Wrath"
+    },
+    {
+      "id": 265221,
+      "name": "Fireblood"
+    },
+    {
+      "id": 304971,
+      "name": "Divine Toll"
+    },
+    {
+      "id": 853,
+      "name": "Hammer Of Light"
+    },
+    {
+      "id": 53600,
+      "name": "Shield Of The Righteous"
+    },
+    {
+      "id": 2050,
+      "name": "Holy Armaments"
+    },
+    {
+      "id": 24275,
+      "name": "Hammer Of Wrath"
+    },
+    {
+      "id": 20271,
+      "name": "Judgment"
+    },
+    {
+      "id": 31935,
+      "name": "Avengers Shield"
+    },
+    {
+      "id": 53595,
+      "name": "Hammer Of The Righteous"
+    },
+    {
+      "id": 204019,
+      "name": "Blessed Hammer"
+    },
+    {
+      "id": 25046,
+      "name": "Arcane Torrent"
+    },
+    {
+      "id": 85673,
+      "name": "Word Of Glory"
+    }
+  ],
+  "cooldowns": [
+    31884,
+    24275
+  ],
+  "interrupts": [],
+  "defensives": [
+    53600,
+    31935
+  ],
+  "healthRecovery": [
+    5512,
+    191380
+  ],
+  "apl": [
+    {
+      "spellId": 433583,
+      "name": "Rite Of Adjuration",
+      "condition": "always"
+    },
+    {
+      "spellId": 465,
+      "name": "Devotion Aura",
+      "condition": "always"
+    },
+    {
+      "spellId": 19750,
+      "name": "Lights Judgment",
+      "condition": "always"
+    },
+    {
+      "spellId": 26573,
+      "name": "Consecration",
+      "condition": "always"
+    },
+    {
+      "spellId": 31829,
+      "name": "Use Items",
+      "condition": "always"
+    },
+    {
+      "spellId": 31884,
+      "name": "Avenging Wrath",
+      "condition": "always"
+    },
+    {
+      "spellId": 265221,
+      "name": "Fireblood",
+      "condition": "always"
+    },
+    {
+      "spellId": 304971,
+      "name": "Divine Toll",
+      "condition": "always"
+    },
+    {
+      "spellId": 853,
+      "name": "Hammer Of Light",
+      "condition": "always"
+    },
+    {
+      "spellId": 53600,
+      "name": "Shield Of The Righteous",
+      "condition": "always"
+    },
+    {
+      "spellId": 2050,
+      "name": "Holy Armaments",
+      "condition": "always"
+    },
+    {
+      "spellId": 24275,
+      "name": "Hammer Of Wrath",
+      "condition": "always"
+    },
+    {
+      "spellId": 20271,
+      "name": "Judgment",
+      "condition": "always"
+    },
+    {
+      "spellId": 31935,
+      "name": "Avengers Shield",
+      "condition": "always"
+    },
+    {
+      "spellId": 53595,
+      "name": "Hammer Of The Righteous",
+      "condition": "always"
+    },
+    {
+      "spellId": 204019,
+      "name": "Blessed Hammer",
+      "condition": "always"
+    },
+    {
+      "spellId": 25046,
+      "name": "Arcane Torrent",
+      "condition": "always"
+    },
+    {
+      "spellId": 85673,
+      "name": "Word Of Glory",
+      "condition": "always"
+    }
+  ]
+}

@@ -1,0 +1,74 @@
+{
+  "class": "Evoker",
+  "spec": "Augmentation",
+  "coreSpells": [
+    {
+      "id": 395152,
+      "name": "Ebon Might"
+    },
+    {
+      "id": 396286,
+      "name": "Upheaval"
+    },
+    {
+      "id": 403631,
+      "name": "Breath of Eons"
+    },
+    {
+      "id": 357208,
+      "name": "Fire Breath"
+    },
+    {
+      "id": 361469,
+      "name": "Living Flame"
+    },
+    {
+      "id": 351338,
+      "name": "Quell"
+    },
+    {
+      "id": 363916,
+      "name": "Obsidian Scales"
+    }
+  ],
+  "cooldowns": [
+    395152,
+    403631
+  ],
+  "interrupts": [
+    351338
+  ],
+  "defensives": [
+    363916
+  ],
+  "healthRecovery": [
+    361469
+  ],
+  "apl": [
+    {
+      "spellId": 403631,
+      "name": "Breath of Eons",
+      "condition": "off_cooldown"
+    },
+    {
+      "spellId": 395152,
+      "name": "Ebon Might",
+      "condition": "off_cooldown"
+    },
+    {
+      "spellId": 396286,
+      "name": "Upheaval",
+      "condition": "off_cooldown"
+    },
+    {
+      "spellId": 357208,
+      "name": "Fire Breath",
+      "condition": "off_cooldown"
+    },
+    {
+      "spellId": 361469,
+      "name": "Living Flame",
+      "condition": "always"
+    }
+  ]
+}

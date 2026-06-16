@@ -1,5 +1,6 @@
 import os
 import sys
+import json
 import requests
 from pathlib import Path
 from dotenv import load_dotenv
@@ -38,7 +39,6 @@ def get_access_token():
 def download_icon(spell_id, token):
     output_path = PUBLIC_ICONS_DIR / f"{spell_id}.jpg"
     if output_path.exists():
-        print(f"[-] Icon for spell {spell_id} already exists. Skipping.")
         return True
 
     headers = {
@@ -94,26 +94,44 @@ def download_icon(spell_id, token):
 def main():
     token = get_access_token()
     
-    # List of Havoc + Vengeance Demon Hunter spell IDs
-    spell_ids = [
-        # Havoc Spells
-        162794, 188499, 198013, 191427,
-        # Vengeance Spells
-        187827, 212084, 228477, 227084, 225919, 204596, 247454, 204021,
-        217832, 183752, 202137, 207684, 202138, 203720, 189110,
-        # Canonical spell IDs for API resolution (Fracture & Shear)
-        263642, 203782,
-        # Soul Carver & Torment
-        207407, 185245
-    ]
-    
-    print(f"Requesting access to Blizzard API to download {len(spell_ids)} spell icons...")
+    # Scan all rotations JSONs for spell IDs
+    spell_ids = set()
+    rotations_dir = ROOT_DIR / "src" / "lib" / "rotations"
+    if rotations_dir.exists():
+        for path in rotations_dir.glob("*.json"):
+            try:
+                with open(path, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    
+                    # 1. Add coreSpells
+                    for s in data.get("coreSpells", []):
+                        spell_ids.add(s["id"])
+                    
+                    # 2. Add category IDs
+                    for cat in ["cooldowns", "interrupts", "defensives", "healthRecovery"]:
+                        for sid in data.get(cat, []):
+                            spell_ids.add(sid)
+                            
+                    # 3. Add APL IDs
+                    for step in data.get("apl", []):
+                        if "spellId" in step:
+                            spell_ids.add(step["spellId"])
+            except Exception as e:
+                print(f"Failed to parse {path.name}: {e}")
+                
+    # Also include standard icons for maps and alternates
+    extra_ids = [263642, 203782, 5512, 191380]
+    for eid in extra_ids:
+        spell_ids.add(eid)
+
+    spell_ids_list = sorted(list(spell_ids))
+    print(f"Requesting access to Blizzard API to download {len(spell_ids_list)} spell icons...")
     success = 0
-    for sid in spell_ids:
+    for sid in spell_ids_list:
         if download_icon(sid, token):
             success += 1
             
-    print(f"Download complete. Processed {success}/{len(spell_ids)} icons successfully.")
+    print(f"Download complete. Processed {success}/{len(spell_ids_list)} icons successfully.")
 
 if __name__ == "__main__":
     main()

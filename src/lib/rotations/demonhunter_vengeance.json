@@ -1,30 +1,50 @@
 {
-  "class": "DemonHunter",
+  "class": "Demon Hunter",
   "spec": "Vengeance",
   "coreSpells": [
     {
-      "id": 187827,
-      "name": "Metamorphosis"
+      "id": 204596,
+      "name": "Sigil Of Flame"
     },
     {
-      "id": 212084,
-      "name": "Fel Devastation"
+      "id": 390163,
+      "name": "Sigil Of Spite"
     },
     {
-      "id": 228477,
-      "name": "Soul Cleave"
+      "id": 258920,
+      "name": "Immolation Aura"
     },
     {
-      "id": 247454,
-      "name": "Spirit Bomb"
+      "id": 258887,
+      "name": "Cycling Variable"
     },
     {
-      "id": 207407,
-      "name": "Soul Carver"
+      "id": 9336,
+      "name": "Retarget Auto Attack"
+    },
+    {
+      "id": 183752,
+      "name": "Disrupt"
+    },
+    {
+      "id": 189110,
+      "name": "Infernal Strike"
     },
     {
       "id": 203720,
       "name": "Demon Spikes"
+    },
+    {
+      "id": 87840,
+      "name": "Run Action List"
+    },
+    {
+      "id": 38432,
+      "name": "Invoke External Buff"
+    },
+    {
+      "id": 883,
+      "name": "Call Action List"
     },
     {
       "id": 204021,
@@ -35,59 +55,109 @@
       "name": "Fracture"
     },
     {
-      "id": 225919,
-      "name": "Shear"
+      "id": 247454,
+      "name": "Spirit Bomb"
+    },
+    {
+      "id": 228477,
+      "name": "Soul Cleave"
+    },
+    {
+      "id": 232893,
+      "name": "Felblade"
+    },
+    {
+      "id": 185123,
+      "name": "Throw Glaive"
+    },
+    {
+      "id": 207407,
+      "name": "Soul Carver"
+    },
+    {
+      "id": 212084,
+      "name": "Fel Devastation"
+    },
+    {
+      "id": 191427,
+      "name": "Metamorphosis"
+    },
+    {
+      "id": 198793,
+      "name": "Vengeful Retreat"
     }
   ],
   "cooldowns": [
-    187827,
-    212084,
-    204021
+    191427
   ],
   "interrupts": [
-    202137,
     183752
   ],
-  "defensives": [
-    187827,
-    203720,
-    204021
-  ],
+  "defensives": [],
   "healthRecovery": [
     5512,
-    191380,
-    228477
+    191380
   ],
   "apl": [
     {
+      "spellId": 204596,
+      "name": "Sigil Of Flame",
+      "condition": "always"
+    },
+    {
+      "spellId": 390163,
+      "name": "Sigil Of Spite",
+      "condition": "always"
+    },
+    {
+      "spellId": 258920,
+      "name": "Immolation Aura",
+      "condition": "always"
+    },
+    {
+      "spellId": 258887,
+      "name": "Cycling Variable",
+      "condition": "always"
+    },
+    {
+      "spellId": 9336,
+      "name": "Retarget Auto Attack",
+      "condition": "always"
+    },
+    {
+      "spellId": 183752,
+      "name": "Disrupt",
+      "condition": "always"
+    },
+    {
+      "spellId": 189110,
+      "name": "Infernal Strike",
+      "condition": "always"
+    },
+    {
+      "spellId": 203720,
+      "name": "Demon Spikes",
+      "condition": "always"
+    },
+    {
+      "spellId": 87840,
+      "name": "Run Action List",
+      "condition": "always"
+    },
+    {
+      "spellId": 38432,
+      "name": "Invoke External Buff",
+      "condition": "always"
+    },
+    {
+      "spellId": 883,
+      "name": "Call Action List",
+      "condition": "always"
+    },
+    {
       "spellId": 204021,
       "name": "Fiery Brand",
-      "condition": "off_cooldown"
-    },
-    {
-      "spellId": 187827,
-      "name": "Metamorphosis",
-      "condition": "off_cooldown"
-    },
-    {
-      "spellId": 212084,
-      "name": "Fel Devastation",
-      "condition": "off_cooldown"
-    },
-    {
-      "spellId": 247454,
-      "name": "Spirit Bomb",
-      "condition": "off_cooldown"
-    },
-    {
-      "spellId": 207407,
-      "name": "Soul Carver",
-      "condition": "off_cooldown"
-    },
-    {
-      "spellId": 228477,
-      "name": "Soul Cleave",
-      "condition": "off_cooldown"
+      "condition": "always"
     },
     {
       "spellId": 227084,
@@ -95,8 +165,48 @@
       "condition": "always"
     },
     {
-      "spellId": 225919,
-      "name": "Shear",
+      "spellId": 247454,
+      "name": "Spirit Bomb",
+      "condition": "always"
+    },
+    {
+      "spellId": 228477,
+      "name": "Soul Cleave",
+      "condition": "always"
+    },
+    {
+      "spellId": 232893,
+      "name": "Felblade",
+      "condition": "always"
+    },
+    {
+      "spellId": 185123,
+      "name": "Throw Glaive",
+      "condition": "always"
+    },
+    {
+      "spellId": 207407,
+      "name": "Soul Carver",
+      "condition": "always"
+    },
+    {
+      "spellId": 212084,
+      "name": "Fel Devastation",
+      "condition": "always"
+    },
+    {
+      "spellId": 191427,
+      "name": "Metamorphosis",
+      "condition": "always"
+    },
+    {
+      "spellId": 185123,
+      "name": "Reavers Glaive",
+      "condition": "always"
+    },
+    {
+      "spellId": 198793,
+      "name": "Vengeful Retreat",
       "condition": "always"
     }
   ]

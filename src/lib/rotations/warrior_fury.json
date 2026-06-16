@@ -1,0 +1,277 @@
+{
+  "class": "Warrior",
+  "spec": "Fury",
+  "coreSpells": [
+    {
+      "id": 386196,
+      "name": "Berserker Stance"
+    },
+    {
+      "id": 100,
+      "name": "Charge"
+    },
+    {
+      "id": 6544,
+      "name": "Heroic Leap"
+    },
+    {
+      "id": 6552,
+      "name": "Pummel"
+    },
+    {
+      "id": 883,
+      "name": "Call Action List"
+    },
+    {
+      "id": 19750,
+      "name": "Lights Judgment"
+    },
+    {
+      "id": 312411,
+      "name": "Bag Of Tricks"
+    },
+    {
+      "id": 26297,
+      "name": "Berserking"
+    },
+    {
+      "id": 20572,
+      "name": "Blood Fury"
+    },
+    {
+      "id": 265221,
+      "name": "Fireblood"
+    },
+    {
+      "id": 274738,
+      "name": "Ancestral Call"
+    },
+    {
+      "id": 38432,
+      "name": "Invoke External Buff"
+    },
+    {
+      "id": 87840,
+      "name": "Run Action List"
+    },
+    {
+      "id": 107574,
+      "name": "Avatar"
+    },
+    {
+      "id": 184367,
+      "name": "Rampage"
+    },
+    {
+      "id": 227847,
+      "name": "Bladestorm"
+    },
+    {
+      "id": 385059,
+      "name": "Odyns Fury"
+    },
+    {
+      "id": 5308,
+      "name": "Execute"
+    },
+    {
+      "id": 113344,
+      "name": "Bloodbath"
+    },
+    {
+      "id": 85288,
+      "name": "Crushing Blow"
+    },
+    {
+      "id": 23881,
+      "name": "Bloodthirst"
+    },
+    {
+      "id": 384110,
+      "name": "Wrecking Throw"
+    },
+    {
+      "id": 772,
+      "name": "Rend"
+    },
+    {
+      "id": 1680,
+      "name": "Whirlwind"
+    },
+    {
+      "id": 107570,
+      "name": "Storm Bolt"
+    },
+    {
+      "id": 1719,
+      "name": "Recklessness"
+    },
+    {
+      "id": 435607,
+      "name": "Thunder Blast"
+    },
+    {
+      "id": 6343,
+      "name": "Thunder Clap"
+    }
+  ],
+  "cooldowns": [
+    107574,
+    1719
+  ],
+  "interrupts": [
+    6552
+  ],
+  "defensives": [],
+  "healthRecovery": [
+    5512,
+    191380
+  ],
+  "apl": [
+    {
+      "spellId": 386196,
+      "name": "Berserker Stance",
+      "condition": "always"
+    },
+    {
+      "spellId": 100,
+      "name": "Charge",
+      "condition": "always"
+    },
+    {
+      "spellId": 6544,
+      "name": "Heroic Leap",
+      "condition": "always"
+    },
+    {
+      "spellId": 6552,
+      "name": "Pummel",
+      "condition": "always"
+    },
+    {
+      "spellId": 883,
+      "name": "Call Action List",
+      "condition": "always"
+    },
+    {
+      "spellId": 19750,
+      "name": "Lights Judgment",
+      "condition": "always"
+    },
+    {
+      "spellId": 312411,
+      "name": "Bag Of Tricks",
+      "condition": "always"
+    },
+    {
+      "spellId": 26297,
+      "name": "Berserking",
+      "condition": "always"
+    },
+    {
+      "spellId": 20572,
+      "name": "Blood Fury",
+      "condition": "always"
+    },
+    {
+      "spellId": 265221,
+      "name": "Fireblood",
+      "condition": "always"
+    },
+    {
+      "spellId": 274738,
+      "name": "Ancestral Call",
+      "condition": "always"
+    },
+    {
+      "spellId": 38432,
+      "name": "Invoke External Buff",
+      "condition": "always"
+    },
+    {
+      "spellId": 87840,
+      "name": "Run Action List",
+      "condition": "always"
+    },
+    {
+      "spellId": 107574,
+      "name": "Avatar",
+      "condition": "always"
+    },
+    {
+      "spellId": 184367,
+      "name": "Rampage",
+      "condition": "always"
+    },
+    {
+      "spellId": 227847,
+      "name": "Bladestorm",
+      "condition": "always"
+    },
+    {
+      "spellId": 385059,
+      "name": "Odyns Fury",
+      "condition": "always"
+    },
+    {
+      "spellId": 5308,
+      "name": "Execute",
+      "condition": "always"
+    },
+    {
+      "spellId": 113344,
+      "name": "Bloodbath",
+      "condition": "always"
+    },
+    {
+      "spellId": 85288,
+      "name": "Crushing Blow",
+      "condition": "always"
+    },
+    {
+      "spellId": 23881,
+      "name": "Bloodthirst",
+      "condition": "always"
+    },
+    {
+      "spellId": 384110,
+      "name": "Wrecking Throw",
+      "condition": "always"
+    },
+    {
+      "spellId": 772,
+      "name": "Rend",
+      "condition": "always"
+    },
+    {
+      "spellId": 85288,
+      "name": "Raging Blow",
+      "condition": "always"
+    },
+    {
+      "spellId": 1680,
+      "name": "Whirlwind",
+      "condition": "always"
+    },
+    {
+      "spellId": 107570,
+      "name": "Storm Bolt",
+      "condition": "always"
+    },
+    {
+      "spellId": 1719,
+      "name": "Recklessness",
+      "condition": "always"
+    },
+    {
+      "spellId": 435607,
+      "name": "Thunder Blast",
+      "condition": "always"
+    },
+    {
+      "spellId": 6343,
+      "name": "Thunder Clap",
+      "condition": "always"
+    }
+  ]
+}

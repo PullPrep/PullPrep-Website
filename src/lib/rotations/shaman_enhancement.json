@@ -1,0 +1,224 @@
+{
+  "class": "Shaman",
+  "spec": "Enhancement",
+  "coreSpells": [
+    {
+      "id": 318038,
+      "name": "Flametongue Weapon"
+    },
+    {
+      "id": 23551,
+      "name": "Lightning Shield"
+    },
+    {
+      "id": 2825,
+      "name": "Bloodlust"
+    },
+    {
+      "id": 883,
+      "name": "Call Action List"
+    },
+    {
+      "id": 188389,
+      "name": "Flame Shock"
+    },
+    {
+      "id": 444995,
+      "name": "Surging Totem"
+    },
+    {
+      "id": 114050,
+      "name": "Ascendance"
+    },
+    {
+      "id": 197214,
+      "name": "Sundering"
+    },
+    {
+      "id": 60103,
+      "name": "Lava Lash"
+    },
+    {
+      "id": 384352,
+      "name": "Doom Winds"
+    },
+    {
+      "id": 187874,
+      "name": "Crash Lightning"
+    },
+    {
+      "id": 115356,
+      "name": "Windstrike"
+    },
+    {
+      "id": 17364,
+      "name": "Stormstrike"
+    },
+    {
+      "id": 454009,
+      "name": "Tempest"
+    },
+    {
+      "id": 1218047,
+      "name": "Primordial Storm"
+    },
+    {
+      "id": 188443,
+      "name": "Chain Lightning"
+    },
+    {
+      "id": 470057,
+      "name": "Voltaic Blaze"
+    },
+    {
+      "id": 20572,
+      "name": "Blood Fury"
+    },
+    {
+      "id": 26297,
+      "name": "Berserking"
+    },
+    {
+      "id": 265221,
+      "name": "Fireblood"
+    },
+    {
+      "id": 274738,
+      "name": "Ancestral Call"
+    },
+    {
+      "id": 38432,
+      "name": "Invoke External Buff"
+    },
+    {
+      "id": 188196,
+      "name": "Lightning Bolt"
+    }
+  ],
+  "cooldowns": [],
+  "interrupts": [],
+  "defensives": [
+    23551
+  ],
+  "healthRecovery": [
+    5512,
+    191380
+  ],
+  "apl": [
+    {
+      "spellId": 318038,
+      "name": "Flametongue Weapon",
+      "condition": "always"
+    },
+    {
+      "spellId": 23551,
+      "name": "Lightning Shield",
+      "condition": "always"
+    },
+    {
+      "spellId": 2825,
+      "name": "Bloodlust",
+      "condition": "always"
+    },
+    {
+      "spellId": 883,
+      "name": "Call Action List",
+      "condition": "always"
+    },
+    {
+      "spellId": 188389,
+      "name": "Flame Shock",
+      "condition": "always"
+    },
+    {
+      "spellId": 444995,
+      "name": "Surging Totem",
+      "condition": "always"
+    },
+    {
+      "spellId": 114050,
+      "name": "Ascendance",
+      "condition": "always"
+    },
+    {
+      "spellId": 197214,
+      "name": "Sundering",
+      "condition": "always"
+    },
+    {
+      "spellId": 60103,
+      "name": "Lava Lash",
+      "condition": "always"
+    },
+    {
+      "spellId": 384352,
+      "name": "Doom Winds",
+      "condition": "always"
+    },
+    {
+      "spellId": 187874,
+      "name": "Crash Lightning",
+      "condition": "always"
+    },
+    {
+      "spellId": 115356,
+      "name": "Windstrike",
+      "condition": "always"
+    },
+    {
+      "spellId": 17364,
+      "name": "Stormstrike",
+      "condition": "always"
+    },
+    {
+      "spellId": 454009,
+      "name": "Tempest",
+      "condition": "always"
+    },
+    {
+      "spellId": 1218047,
+      "name": "Primordial Storm",
+      "condition": "always"
+    },
+    {
+      "spellId": 188443,
+      "name": "Chain Lightning",
+      "condition": "always"
+    },
+    {
+      "spellId": 470057,
+      "name": "Voltaic Blaze",
+      "condition": "always"
+    },
+    {
+      "spellId": 20572,
+      "name": "Blood Fury",
+      "condition": "always"
+    },
+    {
+      "spellId": 26297,
+      "name": "Berserking",
+      "condition": "always"
+    },
+    {
+      "spellId": 265221,
+      "name": "Fireblood",
+      "condition": "always"
+    },
+    {
+      "spellId": 274738,
+      "name": "Ancestral Call",
+      "condition": "always"
+    },
+    {
+      "spellId": 38432,
+      "name": "Invoke External Buff",
+      "condition": "always"
+    },
+    {
+      "spellId": 188196,
+      "name": "Lightning Bolt",
+      "condition": "always"
+    }
+  ]
+}

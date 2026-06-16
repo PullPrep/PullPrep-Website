@@ -1,0 +1,206 @@
+{
+  "class": "Death Knight",
+  "spec": "Frost",
+  "coreSpells": [
+    {
+      "id": 883,
+      "name": "Call Action List"
+    },
+    {
+      "id": 87840,
+      "name": "Run Action List"
+    },
+    {
+      "id": 49143,
+      "name": "Frost Strike"
+    },
+    {
+      "id": 207230,
+      "name": "Frostscythe"
+    },
+    {
+      "id": 49020,
+      "name": "Obliterate"
+    },
+    {
+      "id": 49184,
+      "name": "Howling Blast"
+    },
+    {
+      "id": 194913,
+      "name": "Glacial Advance"
+    },
+    {
+      "id": 1126,
+      "name": "Reapers Mark"
+    },
+    {
+      "id": 51271,
+      "name": "Pillar Of Frost"
+    },
+    {
+      "id": 152279,
+      "name": "Breath Of Sindragosa"
+    },
+    {
+      "id": 5217,
+      "name": "Frostwyrms Fury"
+    },
+    {
+      "id": 46584,
+      "name": "Raise Dead"
+    },
+    {
+      "id": 47568,
+      "name": "Empower Rune Weapon"
+    },
+    {
+      "id": 38432,
+      "name": "Invoke External Buff"
+    },
+    {
+      "id": 48707,
+      "name": "Antimagic Shell"
+    },
+    {
+      "id": 26297,
+      "name": "Berserking"
+    },
+    {
+      "id": 260364,
+      "name": "Arcane Pulse"
+    },
+    {
+      "id": 19750,
+      "name": "Lights Judgment"
+    },
+    {
+      "id": 274738,
+      "name": "Ancestral Call"
+    },
+    {
+      "id": 265221,
+      "name": "Fireblood"
+    },
+    {
+      "id": 312411,
+      "name": "Bag Of Tricks"
+    }
+  ],
+  "cooldowns": [
+    47568
+  ],
+  "interrupts": [],
+  "defensives": [],
+  "healthRecovery": [
+    5512,
+    191380
+  ],
+  "apl": [
+    {
+      "spellId": 883,
+      "name": "Call Action List",
+      "condition": "always"
+    },
+    {
+      "spellId": 87840,
+      "name": "Run Action List",
+      "condition": "always"
+    },
+    {
+      "spellId": 49143,
+      "name": "Frost Strike",
+      "condition": "always"
+    },
+    {
+      "spellId": 207230,
+      "name": "Frostscythe",
+      "condition": "always"
+    },
+    {
+      "spellId": 49020,
+      "name": "Obliterate",
+      "condition": "always"
+    },
+    {
+      "spellId": 49184,
+      "name": "Howling Blast",
+      "condition": "always"
+    },
+    {
+      "spellId": 194913,
+      "name": "Glacial Advance",
+      "condition": "always"
+    },
+    {
+      "spellId": 1126,
+      "name": "Reapers Mark",
+      "condition": "always"
+    },
+    {
+      "spellId": 51271,
+      "name": "Pillar Of Frost",
+      "condition": "always"
+    },
+    {
+      "spellId": 152279,
+      "name": "Breath Of Sindragosa",
+      "condition": "always"
+    },
+    {
+      "spellId": 5217,
+      "name": "Frostwyrms Fury",
+      "condition": "always"
+    },
+    {
+      "spellId": 46584,
+      "name": "Raise Dead",
+      "condition": "always"
+    },
+    {
+      "spellId": 47568,
+      "name": "Empower Rune Weapon",
+      "condition": "always"
+    },
+    {
+      "spellId": 38432,
+      "name": "Invoke External Buff",
+      "condition": "always"
+    },
+    {
+      "spellId": 48707,
+      "name": "Antimagic Shell",
+      "condition": "always"
+    },
+    {
+      "spellId": 26297,
+      "name": "Berserking",
+      "condition": "always"
+    },
+    {
+      "spellId": 260364,
+      "name": "Arcane Pulse",
+      "condition": "always"
+    },
+    {
+      "spellId": 19750,
+      "name": "Lights Judgment",
+      "condition": "always"
+    },
+    {
+      "spellId": 274738,
+      "name": "Ancestral Call",
+      "condition": "always"
+    },
+    {
+      "spellId": 265221,
+      "name": "Fireblood",
+      "condition": "always"
+    },
+    {
+      "spellId": 312411,
+      "name": "Bag Of Tricks",
+      "condition": "always"
+    }
+  ]
+}

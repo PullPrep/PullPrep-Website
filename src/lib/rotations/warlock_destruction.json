@@ -1,0 +1,204 @@
+{
+  "class": "Warlock",
+  "spec": "Destruction",
+  "coreSpells": [
+    {
+      "id": 108503,
+      "name": "Grimoire Of Sacrifice"
+    },
+    {
+      "id": 152108,
+      "name": "Cataclysm"
+    },
+    {
+      "id": 6353,
+      "name": "Soul Fire"
+    },
+    {
+      "id": 348,
+      "name": "Immolate"
+    },
+    {
+      "id": 29722,
+      "name": "Incinerate"
+    },
+    {
+      "id": 883,
+      "name": "Call Action List"
+    },
+    {
+      "id": 116858,
+      "name": "Chaos Bolt"
+    },
+    {
+      "id": 17962,
+      "name": "Conflagrate"
+    },
+    {
+      "id": 1122,
+      "name": "Summon Infernal"
+    },
+    {
+      "id": 442726,
+      "name": "Malevolence"
+    },
+    {
+      "id": 17877,
+      "name": "Shadowburn"
+    },
+    {
+      "id": 445468,
+      "name": "Wither"
+    },
+    {
+      "id": 428522,
+      "name": "Ruination"
+    },
+    {
+      "id": 686,
+      "name": "Infernal Bolt"
+    },
+    {
+      "id": 5740,
+      "name": "Rain Of Fire"
+    },
+    {
+      "id": 80240,
+      "name": "Havoc"
+    },
+    {
+      "id": 38432,
+      "name": "Invoke External Buff"
+    },
+    {
+      "id": 26297,
+      "name": "Berserking"
+    },
+    {
+      "id": 20572,
+      "name": "Blood Fury"
+    },
+    {
+      "id": 265221,
+      "name": "Fireblood"
+    },
+    {
+      "id": 274738,
+      "name": "Ancestral Call"
+    }
+  ],
+  "cooldowns": [],
+  "interrupts": [],
+  "defensives": [],
+  "healthRecovery": [
+    5512,
+    191380
+  ],
+  "apl": [
+    {
+      "spellId": 108503,
+      "name": "Grimoire Of Sacrifice",
+      "condition": "always"
+    },
+    {
+      "spellId": 152108,
+      "name": "Cataclysm",
+      "condition": "always"
+    },
+    {
+      "spellId": 6353,
+      "name": "Soul Fire",
+      "condition": "always"
+    },
+    {
+      "spellId": 348,
+      "name": "Immolate",
+      "condition": "always"
+    },
+    {
+      "spellId": 29722,
+      "name": "Incinerate",
+      "condition": "always"
+    },
+    {
+      "spellId": 883,
+      "name": "Call Action List",
+      "condition": "always"
+    },
+    {
+      "spellId": 116858,
+      "name": "Chaos Bolt",
+      "condition": "always"
+    },
+    {
+      "spellId": 17962,
+      "name": "Conflagrate",
+      "condition": "always"
+    },
+    {
+      "spellId": 1122,
+      "name": "Summon Infernal",
+      "condition": "always"
+    },
+    {
+      "spellId": 442726,
+      "name": "Malevolence",
+      "condition": "always"
+    },
+    {
+      "spellId": 17877,
+      "name": "Shadowburn",
+      "condition": "always"
+    },
+    {
+      "spellId": 445468,
+      "name": "Wither",
+      "condition": "always"
+    },
+    {
+      "spellId": 428522,
+      "name": "Ruination",
+      "condition": "always"
+    },
+    {
+      "spellId": 686,
+      "name": "Infernal Bolt",
+      "condition": "always"
+    },
+    {
+      "spellId": 5740,
+      "name": "Rain Of Fire",
+      "condition": "always"
+    },
+    {
+      "spellId": 80240,
+      "name": "Havoc",
+      "condition": "always"
+    },
+    {
+      "spellId": 38432,
+      "name": "Invoke External Buff",
+      "condition": "always"
+    },
+    {
+      "spellId": 26297,
+      "name": "Berserking",
+      "condition": "always"
+    },
+    {
+      "spellId": 20572,
+      "name": "Blood Fury",
+      "condition": "always"
+    },
+    {
+      "spellId": 265221,
+      "name": "Fireblood",
+      "condition": "always"
+    },
+    {
+      "spellId": 274738,
+      "name": "Ancestral Call",
+      "condition": "always"
+    }
+  ]
+}

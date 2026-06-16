@@ -1,0 +1,150 @@
+{
+  "class": "Hunter",
+  "spec": "Survival",
+  "coreSpells": [
+    {
+      "id": 259489,
+      "name": "Wildfire Bomb"
+    },
+    {
+      "id": 883,
+      "name": "Call Action List"
+    },
+    {
+      "id": 31829,
+      "name": "Use Items"
+    },
+    {
+      "id": 38432,
+      "name": "Invoke External Buff"
+    },
+    {
+      "id": 274738,
+      "name": "Ancestral Call"
+    },
+    {
+      "id": 265221,
+      "name": "Fireblood"
+    },
+    {
+      "id": 26297,
+      "name": "Berserking"
+    },
+    {
+      "id": 187707,
+      "name": "Muzzle"
+    },
+    {
+      "id": 186289,
+      "name": "Aspect Of The Eagle"
+    },
+    {
+      "id": 34026,
+      "name": "Kill Command"
+    },
+    {
+      "id": 1250646,
+      "name": "Takedown"
+    },
+    {
+      "id": 1251592,
+      "name": "Flamefang Pitch"
+    },
+    {
+      "id": 1261193,
+      "name": "Boomstick"
+    },
+    {
+      "id": 186270,
+      "name": "Raptor Strike"
+    },
+    {
+      "id": 1264902,
+      "name": "Moonlight Chakram"
+    }
+  ],
+  "cooldowns": [],
+  "interrupts": [],
+  "defensives": [],
+  "healthRecovery": [
+    5512,
+    191380
+  ],
+  "apl": [
+    {
+      "spellId": 259489,
+      "name": "Wildfire Bomb",
+      "condition": "always"
+    },
+    {
+      "spellId": 883,
+      "name": "Call Action List",
+      "condition": "always"
+    },
+    {
+      "spellId": 31829,
+      "name": "Use Items",
+      "condition": "always"
+    },
+    {
+      "spellId": 38432,
+      "name": "Invoke External Buff",
+      "condition": "always"
+    },
+    {
+      "spellId": 274738,
+      "name": "Ancestral Call",
+      "condition": "always"
+    },
+    {
+      "spellId": 265221,
+      "name": "Fireblood",
+      "condition": "always"
+    },
+    {
+      "spellId": 26297,
+      "name": "Berserking",
+      "condition": "always"
+    },
+    {
+      "spellId": 187707,
+      "name": "Muzzle",
+      "condition": "always"
+    },
+    {
+      "spellId": 186289,
+      "name": "Aspect Of The Eagle",
+      "condition": "always"
+    },
+    {
+      "spellId": 34026,
+      "name": "Kill Command",
+      "condition": "always"
+    },
+    {
+      "spellId": 1250646,
+      "name": "Takedown",
+      "condition": "always"
+    },
+    {
+      "spellId": 1251592,
+      "name": "Flamefang Pitch",
+      "condition": "always"
+    },
+    {
+      "spellId": 1261193,
+      "name": "Boomstick",
+      "condition": "always"
+    },
+    {
+      "spellId": 186270,
+      "name": "Raptor Strike",
+      "condition": "always"
+    },
+    {
+      "spellId": 1264902,
+      "name": "Moonlight Chakram",
+      "condition": "always"
+    }
+  ]
+}

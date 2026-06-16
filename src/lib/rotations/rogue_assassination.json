@@ -1,0 +1,197 @@
+{
+  "class": "Rogue",
+  "spec": "Assassination",
+  "coreSpells": [
+    {
+      "id": 1784,
+      "name": "Stealth"
+    },
+    {
+      "id": 315496,
+      "name": "Slice And Dice"
+    },
+    {
+      "id": 1766,
+      "name": "Kick"
+    },
+    {
+      "id": 381623,
+      "name": "Thistle Tea"
+    },
+    {
+      "id": 8676,
+      "name": "Ambush"
+    },
+    {
+      "id": 883,
+      "name": "Call Action List"
+    },
+    {
+      "id": 385627,
+      "name": "Kingsbane"
+    },
+    {
+      "id": 703,
+      "name": "Garrote"
+    },
+    {
+      "id": 1943,
+      "name": "Rupture"
+    },
+    {
+      "id": 5938,
+      "name": "Shiv"
+    },
+    {
+      "id": 51723,
+      "name": "Fan Of Knives"
+    },
+    {
+      "id": 1329,
+      "name": "Mutilate"
+    },
+    {
+      "id": 31829,
+      "name": "Use Items"
+    },
+    {
+      "id": 20572,
+      "name": "Blood Fury"
+    },
+    {
+      "id": 26297,
+      "name": "Berserking"
+    },
+    {
+      "id": 265221,
+      "name": "Fireblood"
+    },
+    {
+      "id": 274738,
+      "name": "Ancestral Call"
+    },
+    {
+      "id": 38432,
+      "name": "Cancel Buff"
+    },
+    {
+      "id": 32645,
+      "name": "Envenom"
+    },
+    {
+      "id": 1856,
+      "name": "Vanish"
+    }
+  ],
+  "cooldowns": [],
+  "interrupts": [
+    1766
+  ],
+  "defensives": [],
+  "healthRecovery": [
+    5512,
+    191380
+  ],
+  "apl": [
+    {
+      "spellId": 1784,
+      "name": "Stealth",
+      "condition": "always"
+    },
+    {
+      "spellId": 315496,
+      "name": "Slice And Dice",
+      "condition": "always"
+    },
+    {
+      "spellId": 1766,
+      "name": "Kick",
+      "condition": "always"
+    },
+    {
+      "spellId": 381623,
+      "name": "Thistle Tea",
+      "condition": "always"
+    },
+    {
+      "spellId": 8676,
+      "name": "Ambush",
+      "condition": "always"
+    },
+    {
+      "spellId": 883,
+      "name": "Call Action List",
+      "condition": "always"
+    },
+    {
+      "spellId": 385627,
+      "name": "Kingsbane",
+      "condition": "always"
+    },
+    {
+      "spellId": 703,
+      "name": "Garrote",
+      "condition": "always"
+    },
+    {
+      "spellId": 1943,
+      "name": "Rupture",
+      "condition": "always"
+    },
+    {
+      "spellId": 5938,
+      "name": "Shiv",
+      "condition": "always"
+    },
+    {
+      "spellId": 51723,
+      "name": "Fan Of Knives",
+      "condition": "always"
+    },
+    {
+      "spellId": 1329,
+      "name": "Mutilate",
+      "condition": "always"
+    },
+    {
+      "spellId": 31829,
+      "name": "Use Items",
+      "condition": "always"
+    },
+    {
+      "spellId": 20572,
+      "name": "Blood Fury",
+      "condition": "always"
+    },
+    {
+      "spellId": 26297,
+      "name": "Berserking",
+      "condition": "always"
+    },
+    {
+      "spellId": 265221,
+      "name": "Fireblood",
+      "condition": "always"
+    },
+    {
+      "spellId": 274738,
+      "name": "Ancestral Call",
+      "condition": "always"
+    },
+    {
+      "spellId": 38432,
+      "name": "Cancel Buff",
+      "condition": "always"
+    },
+    {
+      "spellId": 32645,
+      "name": "Envenom",
+      "condition": "always"
+    },
+    {
+      "spellId": 1856,
+      "name": "Vanish",
+      "condition": "always"
+    }
+  ]
+}

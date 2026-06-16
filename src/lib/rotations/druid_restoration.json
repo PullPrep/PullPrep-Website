@@ -1,0 +1,75 @@
+{
+  "class": "Druid",
+  "spec": "Restoration",
+  "coreSpells": [
+    {
+      "id": 774,
+      "name": "Rejuvenation"
+    },
+    {
+      "id": 8936,
+      "name": "Regrowth"
+    },
+    {
+      "id": 48438,
+      "name": "Wild Growth"
+    },
+    {
+      "id": 33763,
+      "name": "Lifebloom"
+    },
+    {
+      "id": 18562,
+      "name": "Swiftmend"
+    },
+    {
+      "id": 106839,
+      "name": "Skull Bash"
+    },
+    {
+      "id": 22812,
+      "name": "Barkskin"
+    }
+  ],
+  "cooldowns": [
+    48438,
+    18562
+  ],
+  "interrupts": [
+    106839
+  ],
+  "defensives": [
+    22812
+  ],
+  "healthRecovery": [
+    8936,
+    18562
+  ],
+  "apl": [
+    {
+      "spellId": 33763,
+      "name": "Lifebloom",
+      "condition": "always"
+    },
+    {
+      "spellId": 774,
+      "name": "Rejuvenation",
+      "condition": "always"
+    },
+    {
+      "spellId": 18562,
+      "name": "Swiftmend",
+      "condition": "off_cooldown"
+    },
+    {
+      "spellId": 48438,
+      "name": "Wild Growth",
+      "condition": "off_cooldown"
+    },
+    {
+      "spellId": 8936,
+      "name": "Regrowth",
+      "condition": "always"
+    }
+  ]
+}

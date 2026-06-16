@@ -1,22 +1,82 @@
 {
-  "class": "DemonHunter",
+  "class": "Demon Hunter",
   "spec": "Havoc",
   "coreSpells": [
     {
-      "id": 191427,
-      "name": "Metamorphosis"
+      "id": 258920,
+      "name": "Immolation Aura"
+    },
+    {
+      "id": 258887,
+      "name": "Cycling Variable"
+    },
+    {
+      "id": 9336,
+      "name": "Retarget Auto Attack"
+    },
+    {
+      "id": 183752,
+      "name": "Disrupt"
+    },
+    {
+      "id": 921,
+      "name": "Pick Up Fragment"
+    },
+    {
+      "id": 188499,
+      "name": "Death Sweep"
+    },
+    {
+      "id": 162794,
+      "name": "Annihilation"
+    },
+    {
+      "id": 185123,
+      "name": "Reavers Glaive"
+    },
+    {
+      "id": 198793,
+      "name": "Vengeful Retreat"
+    },
+    {
+      "id": 883,
+      "name": "Call Action List"
+    },
+    {
+      "id": 232893,
+      "name": "Felblade"
+    },
+    {
+      "id": 195072,
+      "name": "Fel Rush"
+    },
+    {
+      "id": 87840,
+      "name": "Run Action List"
     },
     {
       "id": 198013,
       "name": "Eye Beam"
     },
     {
-      "id": 188499,
-      "name": "Blade Dance"
+      "id": 25046,
+      "name": "Arcane Torrent"
     },
     {
-      "id": 162794,
-      "name": "Chaos Strike"
+      "id": 38432,
+      "name": "Invoke External Buff"
+    },
+    {
+      "id": 323639,
+      "name": "The Hunt"
+    },
+    {
+      "id": 191427,
+      "name": "Metamorphosis"
+    },
+    {
+      "id": 258860,
+      "name": "Essence Break"
     }
   ],
   "cooldowns": [
@@ -25,33 +85,120 @@
   "interrupts": [
     183752
   ],
-  "defensives": [
-    198529,
-    191427
-  ],
+  "defensives": [],
   "healthRecovery": [
     5512,
     191380
   ],
   "apl": [
     {
-      "spellId": 191427,
-      "name": "Metamorphosis",
-      "condition": "is_opener"
+      "spellId": 258920,
+      "name": "Immolation Aura",
+      "condition": "always"
     },
     {
-      "spellId": 198013,
-      "name": "Eye Beam",
-      "condition": "off_cooldown"
+      "spellId": 258887,
+      "name": "Cycling Variable",
+      "condition": "always"
+    },
+    {
+      "spellId": 9336,
+      "name": "Retarget Auto Attack",
+      "condition": "always"
+    },
+    {
+      "spellId": 183752,
+      "name": "Disrupt",
+      "condition": "always"
+    },
+    {
+      "spellId": 921,
+      "name": "Pick Up Fragment",
+      "condition": "always"
     },
     {
       "spellId": 188499,
-      "name": "Blade Dance",
-      "condition": "off_cooldown"
+      "name": "Death Sweep",
+      "condition": "always"
+    },
+    {
+      "spellId": 162794,
+      "name": "Annihilation",
+      "condition": "always"
     },
     {
       "spellId": 162794,
       "name": "Chaos Strike",
+      "condition": "always"
+    },
+    {
+      "spellId": 185123,
+      "name": "Reavers Glaive",
+      "condition": "always"
+    },
+    {
+      "spellId": 198793,
+      "name": "Vengeful Retreat",
+      "condition": "always"
+    },
+    {
+      "spellId": 883,
+      "name": "Call Action List",
+      "condition": "always"
+    },
+    {
+      "spellId": 232893,
+      "name": "Felblade",
+      "condition": "always"
+    },
+    {
+      "spellId": 195072,
+      "name": "Fel Rush",
+      "condition": "always"
+    },
+    {
+      "spellId": 87840,
+      "name": "Run Action List",
+      "condition": "always"
+    },
+    {
+      "spellId": 198013,
+      "name": "Eye Beam",
+      "condition": "always"
+    },
+    {
+      "spellId": 188499,
+      "name": "Blade Dance",
+      "condition": "always"
+    },
+    {
+      "spellId": 185123,
+      "name": "Throw Glaive",
+      "condition": "always"
+    },
+    {
+      "spellId": 25046,
+      "name": "Arcane Torrent",
+      "condition": "always"
+    },
+    {
+      "spellId": 38432,
+      "name": "Invoke External Buff",
+      "condition": "always"
+    },
+    {
+      "spellId": 323639,
+      "name": "The Hunt",
+      "condition": "always"
+    },
+    {
+      "spellId": 191427,
+      "name": "Metamorphosis",
+      "condition": "always"
+    },
+    {
+      "spellId": 258860,
+      "name": "Essence Break",
       "condition": "always"
     }
   ]

@@ -1,0 +1,292 @@
+{
+  "class": "Warrior",
+  "spec": "Protection",
+  "coreSpells": [
+    {
+      "id": 386164,
+      "name": "Battle Stance"
+    },
+    {
+      "id": 883,
+      "name": "Call Action List"
+    },
+    {
+      "id": 100,
+      "name": "Charge"
+    },
+    {
+      "id": 31829,
+      "name": "Use Items"
+    },
+    {
+      "id": 107574,
+      "name": "Avatar"
+    },
+    {
+      "id": 871,
+      "name": "Shield Wall"
+    },
+    {
+      "id": 20572,
+      "name": "Blood Fury"
+    },
+    {
+      "id": 26297,
+      "name": "Berserking"
+    },
+    {
+      "id": 25046,
+      "name": "Arcane Torrent"
+    },
+    {
+      "id": 19750,
+      "name": "Lights Judgment"
+    },
+    {
+      "id": 265221,
+      "name": "Fireblood"
+    },
+    {
+      "id": 274738,
+      "name": "Ancestral Call"
+    },
+    {
+      "id": 312411,
+      "name": "Bag Of Tricks"
+    },
+    {
+      "id": 190456,
+      "name": "Ignore Pain"
+    },
+    {
+      "id": 228287,
+      "name": "Ravager"
+    },
+    {
+      "id": 1160,
+      "name": "Demoralizing Shout"
+    },
+    {
+      "id": 6544,
+      "name": "Champions Leap"
+    },
+    {
+      "id": 78346,
+      "name": "Champions Spear"
+    },
+    {
+      "id": 435607,
+      "name": "Thunder Blast"
+    },
+    {
+      "id": 436358,
+      "name": "Demolish"
+    },
+    {
+      "id": 385952,
+      "name": "Shield Charge"
+    },
+    {
+      "id": 2565,
+      "name": "Shield Block"
+    },
+    {
+      "id": 87840,
+      "name": "Run Action List"
+    },
+    {
+      "id": 23922,
+      "name": "Shield Slam"
+    },
+    {
+      "id": 6343,
+      "name": "Thunder Clap"
+    },
+    {
+      "id": 6572,
+      "name": "Revenge"
+    },
+    {
+      "id": 5308,
+      "name": "Execute"
+    },
+    {
+      "id": 384110,
+      "name": "Wrecking Throw"
+    },
+    {
+      "id": 64382,
+      "name": "Shattering Throw"
+    },
+    {
+      "id": 20243,
+      "name": "Devastate"
+    }
+  ],
+  "cooldowns": [
+    107574
+  ],
+  "interrupts": [],
+  "defensives": [
+    871,
+    385952,
+    2565,
+    23922
+  ],
+  "healthRecovery": [
+    5512,
+    191380
+  ],
+  "apl": [
+    {
+      "spellId": 386164,
+      "name": "Battle Stance",
+      "condition": "always"
+    },
+    {
+      "spellId": 883,
+      "name": "Call Action List",
+      "condition": "always"
+    },
+    {
+      "spellId": 100,
+      "name": "Charge",
+      "condition": "always"
+    },
+    {
+      "spellId": 31829,
+      "name": "Use Items",
+      "condition": "always"
+    },
+    {
+      "spellId": 107574,
+      "name": "Avatar",
+      "condition": "always"
+    },
+    {
+      "spellId": 871,
+      "name": "Shield Wall",
+      "condition": "always"
+    },
+    {
+      "spellId": 20572,
+      "name": "Blood Fury",
+      "condition": "always"
+    },
+    {
+      "spellId": 26297,
+      "name": "Berserking",
+      "condition": "always"
+    },
+    {
+      "spellId": 25046,
+      "name": "Arcane Torrent",
+      "condition": "always"
+    },
+    {
+      "spellId": 19750,
+      "name": "Lights Judgment",
+      "condition": "always"
+    },
+    {
+      "spellId": 265221,
+      "name": "Fireblood",
+      "condition": "always"
+    },
+    {
+      "spellId": 274738,
+      "name": "Ancestral Call",
+      "condition": "always"
+    },
+    {
+      "spellId": 312411,
+      "name": "Bag Of Tricks",
+      "condition": "always"
+    },
+    {
+      "spellId": 190456,
+      "name": "Ignore Pain",
+      "condition": "always"
+    },
+    {
+      "spellId": 228287,
+      "name": "Ravager",
+      "condition": "always"
+    },
+    {
+      "spellId": 1160,
+      "name": "Demoralizing Shout",
+      "condition": "always"
+    },
+    {
+      "spellId": 6544,
+      "name": "Champions Leap",
+      "condition": "always"
+    },
+    {
+      "spellId": 78346,
+      "name": "Champions Spear",
+      "condition": "always"
+    },
+    {
+      "spellId": 435607,
+      "name": "Thunder Blast",
+      "condition": "always"
+    },
+    {
+      "spellId": 436358,
+      "name": "Demolish",
+      "condition": "always"
+    },
+    {
+      "spellId": 385952,
+      "name": "Shield Charge",
+      "condition": "always"
+    },
+    {
+      "spellId": 2565,
+      "name": "Shield Block",
+      "condition": "always"
+    },
+    {
+      "spellId": 87840,
+      "name": "Run Action List",
+      "condition": "always"
+    },
+    {
+      "spellId": 23922,
+      "name": "Shield Slam",
+      "condition": "always"
+    },
+    {
+      "spellId": 6343,
+      "name": "Thunder Clap",
+      "condition": "always"
+    },
+    {
+      "spellId": 6572,
+      "name": "Revenge",
+      "condition": "always"
+    },
+    {
+      "spellId": 5308,
+      "name": "Execute",
+      "condition": "always"
+    },
+    {
+      "spellId": 384110,
+      "name": "Wrecking Throw",
+      "condition": "always"
+    },
+    {
+      "spellId": 64382,
+      "name": "Shattering Throw",
+      "condition": "always"
+    },
+    {
+      "spellId": 20243,
+      "name": "Devastate",
+      "condition": "always"
+    }
+  ]
+}

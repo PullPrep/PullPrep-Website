@@ -1,0 +1,164 @@
+{
+  "class": "Warlock",
+  "spec": "Demonology",
+  "coreSpells": [
+    {
+      "id": 264130,
+      "name": "Power Siphon"
+    },
+    {
+      "id": 264178,
+      "name": "Demonbolt"
+    },
+    {
+      "id": 686,
+      "name": "Shadow Bolt"
+    },
+    {
+      "id": 38432,
+      "name": "Invoke External Buff"
+    },
+    {
+      "id": 883,
+      "name": "Call Action List"
+    },
+    {
+      "id": 105174,
+      "name": "Hand Of Guldan"
+    },
+    {
+      "id": 688,
+      "name": "Grimoire Imp Lord"
+    },
+    {
+      "id": 108503,
+      "name": "Grimoire Fel Ravager"
+    },
+    {
+      "id": 1276672,
+      "name": "Summon Doomguard"
+    },
+    {
+      "id": 104316,
+      "name": "Call Dreadstalkers"
+    },
+    {
+      "id": 265187,
+      "name": "Summon Demonic Tyrant"
+    },
+    {
+      "id": 196277,
+      "name": "Implosion"
+    },
+    {
+      "id": 428522,
+      "name": "Ruination"
+    },
+    {
+      "id": 20572,
+      "name": "Blood Fury"
+    },
+    {
+      "id": 265221,
+      "name": "Fireblood"
+    },
+    {
+      "id": 274738,
+      "name": "Ancestral Call"
+    }
+  ],
+  "cooldowns": [],
+  "interrupts": [],
+  "defensives": [],
+  "healthRecovery": [
+    5512,
+    191380
+  ],
+  "apl": [
+    {
+      "spellId": 264130,
+      "name": "Power Siphon",
+      "condition": "always"
+    },
+    {
+      "spellId": 264178,
+      "name": "Demonbolt",
+      "condition": "always"
+    },
+    {
+      "spellId": 686,
+      "name": "Shadow Bolt",
+      "condition": "always"
+    },
+    {
+      "spellId": 38432,
+      "name": "Invoke External Buff",
+      "condition": "always"
+    },
+    {
+      "spellId": 883,
+      "name": "Call Action List",
+      "condition": "always"
+    },
+    {
+      "spellId": 105174,
+      "name": "Hand Of Guldan",
+      "condition": "always"
+    },
+    {
+      "spellId": 688,
+      "name": "Grimoire Imp Lord",
+      "condition": "always"
+    },
+    {
+      "spellId": 108503,
+      "name": "Grimoire Fel Ravager",
+      "condition": "always"
+    },
+    {
+      "spellId": 1276672,
+      "name": "Summon Doomguard",
+      "condition": "always"
+    },
+    {
+      "spellId": 104316,
+      "name": "Call Dreadstalkers",
+      "condition": "always"
+    },
+    {
+      "spellId": 265187,
+      "name": "Summon Demonic Tyrant",
+      "condition": "always"
+    },
+    {
+      "spellId": 196277,
+      "name": "Implosion",
+      "condition": "always"
+    },
+    {
+      "spellId": 428522,
+      "name": "Ruination",
+      "condition": "always"
+    },
+    {
+      "spellId": 686,
+      "name": "Infernal Bolt",
+      "condition": "always"
+    },
+    {
+      "spellId": 20572,
+      "name": "Blood Fury",
+      "condition": "always"
+    },
+    {
+      "spellId": 265221,
+      "name": "Fireblood",
+      "condition": "always"
+    },
+    {
+      "spellId": 274738,
+      "name": "Ancestral Call",
+      "condition": "always"
+    }
+  ]
+}

@@ -1,0 +1,163 @@
+{
+  "class": "Evoker",
+  "spec": "Devastation",
+  "coreSpells": [
+    {
+      "id": 360995,
+      "name": "Verdant Embrace"
+    },
+    {
+      "id": 358267,
+      "name": "Hover"
+    },
+    {
+      "id": 361469,
+      "name": "Living Flame"
+    },
+    {
+      "id": 38432,
+      "name": "Invoke External Buff"
+    },
+    {
+      "id": 351338,
+      "name": "Quell"
+    },
+    {
+      "id": 883,
+      "name": "Call Action List"
+    },
+    {
+      "id": 87840,
+      "name": "Run Action List"
+    },
+    {
+      "id": 357208,
+      "name": "Fire Breath"
+    },
+    {
+      "id": 370553,
+      "name": "Tip The Scales"
+    },
+    {
+      "id": 375087,
+      "name": "Dragonrage"
+    },
+    {
+      "id": 357211,
+      "name": "Pyre"
+    },
+    {
+      "id": 357210,
+      "name": "Deep Breath"
+    },
+    {
+      "id": 1265867,
+      "name": "Azure Sweep"
+    },
+    {
+      "id": 362969,
+      "name": "Azure Strike"
+    },
+    {
+      "id": 359073,
+      "name": "Eternity Surge"
+    },
+    {
+      "id": 356995,
+      "name": "Disintegrate"
+    }
+  ],
+  "cooldowns": [],
+  "interrupts": [
+    351338
+  ],
+  "defensives": [
+    370553
+  ],
+  "healthRecovery": [
+    5512,
+    191380
+  ],
+  "apl": [
+    {
+      "spellId": 360995,
+      "name": "Verdant Embrace",
+      "condition": "always"
+    },
+    {
+      "spellId": 358267,
+      "name": "Hover",
+      "condition": "always"
+    },
+    {
+      "spellId": 361469,
+      "name": "Living Flame",
+      "condition": "always"
+    },
+    {
+      "spellId": 38432,
+      "name": "Invoke External Buff",
+      "condition": "always"
+    },
+    {
+      "spellId": 351338,
+      "name": "Quell",
+      "condition": "always"
+    },
+    {
+      "spellId": 883,
+      "name": "Call Action List",
+      "condition": "always"
+    },
+    {
+      "spellId": 87840,
+      "name": "Run Action List",
+      "condition": "always"
+    },
+    {
+      "spellId": 357208,
+      "name": "Fire Breath",
+      "condition": "always"
+    },
+    {
+      "spellId": 370553,
+      "name": "Tip The Scales",
+      "condition": "always"
+    },
+    {
+      "spellId": 375087,
+      "name": "Dragonrage",
+      "condition": "always"
+    },
+    {
+      "spellId": 357211,
+      "name": "Pyre",
+      "condition": "always"
+    },
+    {
+      "spellId": 357210,
+      "name": "Deep Breath",
+      "condition": "always"
+    },
+    {
+      "spellId": 1265867,
+      "name": "Azure Sweep",
+      "condition": "always"
+    },
+    {
+      "spellId": 362969,
+      "name": "Azure Strike",
+      "condition": "always"
+    },
+    {
+      "spellId": 359073,
+      "name": "Eternity Surge",
+      "condition": "always"
+    },
+    {
+      "spellId": 356995,
+      "name": "Disintegrate",
+      "condition": "always"
+    }
+  ]
+}

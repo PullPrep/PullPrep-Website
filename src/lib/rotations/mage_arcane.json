@@ -1,0 +1,186 @@
+{
+  "class": "Mage",
+  "spec": "Arcane",
+  "coreSpells": [
+    {
+      "id": 55342,
+      "name": "Mirror Image"
+    },
+    {
+      "id": 365350,
+      "name": "Arcane Surge"
+    },
+    {
+      "id": 260364,
+      "name": "Arcane Pulse"
+    },
+    {
+      "id": 30451,
+      "name": "Arcane Blast"
+    },
+    {
+      "id": 38432,
+      "name": "Invoke External Buff"
+    },
+    {
+      "id": 26297,
+      "name": "Berserking"
+    },
+    {
+      "id": 20572,
+      "name": "Blood Fury"
+    },
+    {
+      "id": 265221,
+      "name": "Fireblood"
+    },
+    {
+      "id": 274738,
+      "name": "Ancestral Call"
+    },
+    {
+      "id": 31829,
+      "name": "Use Items"
+    },
+    {
+      "id": 44425,
+      "name": "Arcane Barrage"
+    },
+    {
+      "id": 5143,
+      "name": "Arcane Missiles"
+    },
+    {
+      "id": 153626,
+      "name": "Arcane Orb"
+    },
+    {
+      "id": 883,
+      "name": "Call Action List"
+    },
+    {
+      "id": 321507,
+      "name": "Touch Of The Magi"
+    },
+    {
+      "id": 201603,
+      "name": "Cancel Action"
+    },
+    {
+      "id": 12051,
+      "name": "Evocation"
+    },
+    {
+      "id": 205025,
+      "name": "Presence Of Mind"
+    },
+    {
+      "id": 1449,
+      "name": "Arcane Explosion"
+    }
+  ],
+  "cooldowns": [],
+  "interrupts": [],
+  "defensives": [],
+  "healthRecovery": [
+    5512,
+    191380
+  ],
+  "apl": [
+    {
+      "spellId": 55342,
+      "name": "Mirror Image",
+      "condition": "always"
+    },
+    {
+      "spellId": 365350,
+      "name": "Arcane Surge",
+      "condition": "always"
+    },
+    {
+      "spellId": 260364,
+      "name": "Arcane Pulse",
+      "condition": "always"
+    },
+    {
+      "spellId": 30451,
+      "name": "Arcane Blast",
+      "condition": "always"
+    },
+    {
+      "spellId": 38432,
+      "name": "Invoke External Buff",
+      "condition": "always"
+    },
+    {
+      "spellId": 26297,
+      "name": "Berserking",
+      "condition": "always"
+    },
+    {
+      "spellId": 20572,
+      "name": "Blood Fury",
+      "condition": "always"
+    },
+    {
+      "spellId": 265221,
+      "name": "Fireblood",
+      "condition": "always"
+    },
+    {
+      "spellId": 274738,
+      "name": "Ancestral Call",
+      "condition": "always"
+    },
+    {
+      "spellId": 31829,
+      "name": "Use Items",
+      "condition": "always"
+    },
+    {
+      "spellId": 44425,
+      "name": "Arcane Barrage",
+      "condition": "always"
+    },
+    {
+      "spellId": 5143,
+      "name": "Arcane Missiles",
+      "condition": "always"
+    },
+    {
+      "spellId": 153626,
+      "name": "Arcane Orb",
+      "condition": "always"
+    },
+    {
+      "spellId": 883,
+      "name": "Call Action List",
+      "condition": "always"
+    },
+    {
+      "spellId": 321507,
+      "name": "Touch Of The Magi",
+      "condition": "always"
+    },
+    {
+      "spellId": 201603,
+      "name": "Cancel Action",
+      "condition": "always"
+    },
+    {
+      "spellId": 12051,
+      "name": "Evocation",
+      "condition": "always"
+    },
+    {
+      "spellId": 205025,
+      "name": "Presence Of Mind",
+      "condition": "always"
+    },
+    {
+      "spellId": 1449,
+      "name": "Arcane Explosion",
+      "condition": "always"
+    }
+  ]
+}

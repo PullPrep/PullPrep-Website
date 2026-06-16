@@ -1,0 +1,79 @@
+{
+  "class": "Shaman",
+  "spec": "Restoration",
+  "coreSpells": [
+    {
+      "id": 61295,
+      "name": "Riptide"
+    },
+    {
+      "id": 77472,
+      "name": "Healing Wave"
+    },
+    {
+      "id": 73920,
+      "name": "Healing Rain"
+    },
+    {
+      "id": 1064,
+      "name": "Chain Heal"
+    },
+    {
+      "id": 73103,
+      "name": "Unleash Life"
+    },
+    {
+      "id": 188389,
+      "name": "Flame Shock"
+    },
+    {
+      "id": 57994,
+      "name": "Wind Shear"
+    },
+    {
+      "id": 108271,
+      "name": "Astral Shift"
+    }
+  ],
+  "cooldowns": [
+    61295,
+    73920
+  ],
+  "interrupts": [
+    57994
+  ],
+  "defensives": [
+    108271
+  ],
+  "healthRecovery": [
+    77472,
+    1064
+  ],
+  "apl": [
+    {
+      "spellId": 61295,
+      "name": "Riptide",
+      "condition": "off_cooldown"
+    },
+    {
+      "spellId": 73103,
+      "name": "Unleash Life",
+      "condition": "off_cooldown"
+    },
+    {
+      "spellId": 73920,
+      "name": "Healing Rain",
+      "condition": "off_cooldown"
+    },
+    {
+      "spellId": 188389,
+      "name": "Flame Shock",
+      "condition": "always"
+    },
+    {
+      "spellId": 77472,
+      "name": "Healing Wave",
+      "condition": "always"
+    }
+  ]
+}

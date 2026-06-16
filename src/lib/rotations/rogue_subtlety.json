@@ -1,0 +1,213 @@
+{
+  "class": "Rogue",
+  "spec": "Subtlety",
+  "coreSpells": [
+    {
+      "id": 1784,
+      "name": "Stealth"
+    },
+    {
+      "id": 883,
+      "name": "Call Action List"
+    },
+    {
+      "id": 185438,
+      "name": "Shadowstrike"
+    },
+    {
+      "id": 197835,
+      "name": "Shuriken Storm"
+    },
+    {
+      "id": 22568,
+      "name": "Goremaws Bite"
+    },
+    {
+      "id": 200758,
+      "name": "Gloomblade"
+    },
+    {
+      "id": 53,
+      "name": "Backstab"
+    },
+    {
+      "id": 185313,
+      "name": "Shadow Dance"
+    },
+    {
+      "id": 1856,
+      "name": "Vanish"
+    },
+    {
+      "id": 58984,
+      "name": "Shadowmeld"
+    },
+    {
+      "id": 260364,
+      "name": "Arcane Pulse"
+    },
+    {
+      "id": 19750,
+      "name": "Lights Judgment"
+    },
+    {
+      "id": 312411,
+      "name": "Bag Of Tricks"
+    },
+    {
+      "id": 280719,
+      "name": "Secret Technique"
+    },
+    {
+      "id": 441423,
+      "name": "Coup De Grace"
+    },
+    {
+      "id": 319175,
+      "name": "Black Powder"
+    },
+    {
+      "id": 196819,
+      "name": "Eviscerate"
+    },
+    {
+      "id": 31829,
+      "name": "Use Items"
+    },
+    {
+      "id": 26297,
+      "name": "Berserking"
+    },
+    {
+      "id": 265221,
+      "name": "Fireblood"
+    },
+    {
+      "id": 274738,
+      "name": "Ancestral Call"
+    },
+    {
+      "id": 38432,
+      "name": "Invoke External Buff"
+    }
+  ],
+  "cooldowns": [],
+  "interrupts": [],
+  "defensives": [],
+  "healthRecovery": [
+    5512,
+    191380
+  ],
+  "apl": [
+    {
+      "spellId": 1784,
+      "name": "Stealth",
+      "condition": "always"
+    },
+    {
+      "spellId": 883,
+      "name": "Call Action List",
+      "condition": "always"
+    },
+    {
+      "spellId": 185438,
+      "name": "Shadowstrike",
+      "condition": "always"
+    },
+    {
+      "spellId": 197835,
+      "name": "Shuriken Storm",
+      "condition": "always"
+    },
+    {
+      "spellId": 22568,
+      "name": "Goremaws Bite",
+      "condition": "always"
+    },
+    {
+      "spellId": 200758,
+      "name": "Gloomblade",
+      "condition": "always"
+    },
+    {
+      "spellId": 53,
+      "name": "Backstab",
+      "condition": "always"
+    },
+    {
+      "spellId": 185313,
+      "name": "Shadow Dance",
+      "condition": "always"
+    },
+    {
+      "spellId": 1856,
+      "name": "Vanish",
+      "condition": "always"
+    },
+    {
+      "spellId": 58984,
+      "name": "Shadowmeld",
+      "condition": "always"
+    },
+    {
+      "spellId": 260364,
+      "name": "Arcane Pulse",
+      "condition": "always"
+    },
+    {
+      "spellId": 19750,
+      "name": "Lights Judgment",
+      "condition": "always"
+    },
+    {
+      "spellId": 312411,
+      "name": "Bag Of Tricks",
+      "condition": "always"
+    },
+    {
+      "spellId": 280719,
+      "name": "Secret Technique",
+      "condition": "always"
+    },
+    {
+      "spellId": 441423,
+      "name": "Coup De Grace",
+      "condition": "always"
+    },
+    {
+      "spellId": 319175,
+      "name": "Black Powder",
+      "condition": "always"
+    },
+    {
+      "spellId": 196819,
+      "name": "Eviscerate",
+      "condition": "always"
+    },
+    {
+      "spellId": 31829,
+      "name": "Use Items",
+      "condition": "always"
+    },
+    {
+      "spellId": 26297,
+      "name": "Berserking",
+      "condition": "always"
+    },
+    {
+      "spellId": 265221,
+      "name": "Fireblood",
+      "condition": "always"
+    },
+    {
+      "spellId": 274738,
+      "name": "Ancestral Call",
+      "condition": "always"
+    },
+    {
+      "spellId": 38432,
+      "name": "Invoke External Buff",
+      "condition": "always"
+    }
+  ]
+}

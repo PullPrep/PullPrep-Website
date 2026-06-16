@@ -1,0 +1,235 @@
+{
+  "class": "Shaman",
+  "spec": "Elemental",
+  "coreSpells": [
+    {
+      "id": 318038,
+      "name": "Flametongue Weapon"
+    },
+    {
+      "id": 23551,
+      "name": "Lightning Shield"
+    },
+    {
+      "id": 462757,
+      "name": "Thunderstrike Ward"
+    },
+    {
+      "id": 191634,
+      "name": "Stormkeeper"
+    },
+    {
+      "id": 57994,
+      "name": "Wind Shear"
+    },
+    {
+      "id": 20572,
+      "name": "Blood Fury"
+    },
+    {
+      "id": 26297,
+      "name": "Berserking"
+    },
+    {
+      "id": 265221,
+      "name": "Fireblood"
+    },
+    {
+      "id": 274738,
+      "name": "Ancestral Call"
+    },
+    {
+      "id": 16974,
+      "name": "Natures Swiftness"
+    },
+    {
+      "id": 38432,
+      "name": "Invoke External Buff"
+    },
+    {
+      "id": 87840,
+      "name": "Run Action List"
+    },
+    {
+      "id": 470057,
+      "name": "Voltaic Blaze"
+    },
+    {
+      "id": 443454,
+      "name": "Ancestral Swiftness"
+    },
+    {
+      "id": 114050,
+      "name": "Ascendance"
+    },
+    {
+      "id": 188389,
+      "name": "Flame Shock"
+    },
+    {
+      "id": 117014,
+      "name": "Elemental Blast"
+    },
+    {
+      "id": 61882,
+      "name": "Earthquake"
+    },
+    {
+      "id": 51505,
+      "name": "Lava Burst"
+    },
+    {
+      "id": 454009,
+      "name": "Tempest"
+    },
+    {
+      "id": 188443,
+      "name": "Chain Lightning"
+    },
+    {
+      "id": 196840,
+      "name": "Frost Shock"
+    },
+    {
+      "id": 188196,
+      "name": "Lightning Bolt"
+    },
+    {
+      "id": 8042,
+      "name": "Earth Shock"
+    }
+  ],
+  "cooldowns": [],
+  "interrupts": [
+    57994
+  ],
+  "defensives": [
+    23551
+  ],
+  "healthRecovery": [
+    5512,
+    191380
+  ],
+  "apl": [
+    {
+      "spellId": 318038,
+      "name": "Flametongue Weapon",
+      "condition": "always"
+    },
+    {
+      "spellId": 23551,
+      "name": "Lightning Shield",
+      "condition": "always"
+    },
+    {
+      "spellId": 462757,
+      "name": "Thunderstrike Ward",
+      "condition": "always"
+    },
+    {
+      "spellId": 191634,
+      "name": "Stormkeeper",
+      "condition": "always"
+    },
+    {
+      "spellId": 57994,
+      "name": "Wind Shear",
+      "condition": "always"
+    },
+    {
+      "spellId": 20572,
+      "name": "Blood Fury",
+      "condition": "always"
+    },
+    {
+      "spellId": 26297,
+      "name": "Berserking",
+      "condition": "always"
+    },
+    {
+      "spellId": 265221,
+      "name": "Fireblood",
+      "condition": "always"
+    },
+    {
+      "spellId": 274738,
+      "name": "Ancestral Call",
+      "condition": "always"
+    },
+    {
+      "spellId": 16974,
+      "name": "Natures Swiftness",
+      "condition": "always"
+    },
+    {
+      "spellId": 38432,
+      "name": "Invoke External Buff",
+      "condition": "always"
+    },
+    {
+      "spellId": 87840,
+      "name": "Run Action List",
+      "condition": "always"
+    },
+    {
+      "spellId": 470057,
+      "name": "Voltaic Blaze",
+      "condition": "always"
+    },
+    {
+      "spellId": 443454,
+      "name": "Ancestral Swiftness",
+      "condition": "always"
+    },
+    {
+      "spellId": 114050,
+      "name": "Ascendance",
+      "condition": "always"
+    },
+    {
+      "spellId": 188389,
+      "name": "Flame Shock",
+      "condition": "always"
+    },
+    {
+      "spellId": 117014,
+      "name": "Elemental Blast",
+      "condition": "always"
+    },
+    {
+      "spellId": 61882,
+      "name": "Earthquake",
+      "condition": "always"
+    },
+    {
+      "spellId": 51505,
+      "name": "Lava Burst",
+      "condition": "always"
+    },
+    {
+      "spellId": 454009,
+      "name": "Tempest",
+      "condition": "always"
+    },
+    {
+      "spellId": 188443,
+      "name": "Chain Lightning",
+      "condition": "always"
+    },
+    {
+      "spellId": 196840,
+      "name": "Frost Shock",
+      "condition": "always"
+    },
+    {
+      "spellId": 188196,
+      "name": "Lightning Bolt",
+      "condition": "always"
+    },
+    {
+      "spellId": 8042,
+      "name": "Earth Shock",
+      "condition": "always"
+    }
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "class": "Evoker",
+  "spec": "Preservation",
+  "coreSpells": [
+    {
+      "id": 364343,
+      "name": "Echo"
+    },
+    {
+      "id": 366155,
+      "name": "Reversion"
+    },
+    {
+      "id": 355936,
+      "name": "Dream Breath"
+    },
+    {
+      "id": 367222,
+      "name": "Spiritbloom"
+    },
+    {
+      "id": 361469,
+      "name": "Living Flame"
+    },
+    {
+      "id": 351338,
+      "name": "Quell"
+    },
+    {
+      "id": 363916,
+      "name": "Obsidian Scales"
+    }
+  ],
+  "cooldowns": [
+    355936,
+    367222
+  ],
+  "interrupts": [
+    351338
+  ],
+  "defensives": [
+    363916
+  ],
+  "healthRecovery": [
+    367222,
+    361469
+  ],
+  "apl": [
+    {
+      "spellId": 366155,
+      "name": "Reversion",
+      "condition": "always"
+    },
+    {
+      "spellId": 364343,
+      "name": "Echo",
+      "condition": "always"
+    },
+    {
+      "spellId": 355936,
+      "name": "Dream Breath",
+      "condition": "off_cooldown"
+    },
+    {
+      "spellId": 367222,
+      "name": "Spiritbloom",
+      "condition": "off_cooldown"
+    },
+    {
+      "spellId": 361469,
+      "name": "Living Flame",
+      "condition": "always"
+    }
+  ]
+}

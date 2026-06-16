@@ -1,0 +1,186 @@
+{
+  "class": "Mage",
+  "spec": "Frost",
+  "coreSpells": [
+    {
+      "id": 31687,
+      "name": "Summon Water Elemental"
+    },
+    {
+      "id": 190356,
+      "name": "Blizzard"
+    },
+    {
+      "id": 194913,
+      "name": "Glacial Spike"
+    },
+    {
+      "id": 116,
+      "name": "Frostbolt"
+    },
+    {
+      "id": 87840,
+      "name": "Run Action List"
+    },
+    {
+      "id": 31829,
+      "name": "Use Items"
+    },
+    {
+      "id": 20572,
+      "name": "Blood Fury"
+    },
+    {
+      "id": 26297,
+      "name": "Berserking"
+    },
+    {
+      "id": 265221,
+      "name": "Fireblood"
+    },
+    {
+      "id": 274738,
+      "name": "Ancestral Call"
+    },
+    {
+      "id": 44614,
+      "name": "Flurry"
+    },
+    {
+      "id": 205021,
+      "name": "Ray Of Frost"
+    },
+    {
+      "id": 84714,
+      "name": "Frozen Orb"
+    },
+    {
+      "id": 38432,
+      "name": "Invoke External Buff"
+    },
+    {
+      "id": 1247777,
+      "name": "Comet Storm"
+    },
+    {
+      "id": 30455,
+      "name": "Ice Lance"
+    },
+    {
+      "id": 883,
+      "name": "Call Action List"
+    },
+    {
+      "id": 157997,
+      "name": "Ice Nova"
+    },
+    {
+      "id": 120,
+      "name": "Cone Of Cold"
+    }
+  ],
+  "cooldowns": [],
+  "interrupts": [],
+  "defensives": [],
+  "healthRecovery": [
+    5512,
+    191380
+  ],
+  "apl": [
+    {
+      "spellId": 31687,
+      "name": "Summon Water Elemental",
+      "condition": "always"
+    },
+    {
+      "spellId": 190356,
+      "name": "Blizzard",
+      "condition": "always"
+    },
+    {
+      "spellId": 194913,
+      "name": "Glacial Spike",
+      "condition": "always"
+    },
+    {
+      "spellId": 116,
+      "name": "Frostbolt",
+      "condition": "always"
+    },
+    {
+      "spellId": 87840,
+      "name": "Run Action List",
+      "condition": "always"
+    },
+    {
+      "spellId": 31829,
+      "name": "Use Items",
+      "condition": "always"
+    },
+    {
+      "spellId": 20572,
+      "name": "Blood Fury",
+      "condition": "always"
+    },
+    {
+      "spellId": 26297,
+      "name": "Berserking",
+      "condition": "always"
+    },
+    {
+      "spellId": 265221,
+      "name": "Fireblood",
+      "condition": "always"
+    },
+    {
+      "spellId": 274738,
+      "name": "Ancestral Call",
+      "condition": "always"
+    },
+    {
+      "spellId": 44614,
+      "name": "Flurry",
+      "condition": "always"
+    },
+    {
+      "spellId": 205021,
+      "name": "Ray Of Frost",
+      "condition": "always"
+    },
+    {
+      "spellId": 84714,
+      "name": "Frozen Orb",
+      "condition": "always"
+    },
+    {
+      "spellId": 38432,
+      "name": "Invoke External Buff",
+      "condition": "always"
+    },
+    {
+      "spellId": 1247777,
+      "name": "Comet Storm",
+      "condition": "always"
+    },
+    {
+      "spellId": 30455,
+      "name": "Ice Lance",
+      "condition": "always"
+    },
+    {
+      "spellId": 883,
+      "name": "Call Action List",
+      "condition": "always"
+    },
+    {
+      "spellId": 157997,
+      "name": "Ice Nova",
+      "condition": "always"
+    },
+    {
+      "spellId": 120,
+      "name": "Cone Of Cold",
+      "condition": "always"
+    }
+  ]
+}

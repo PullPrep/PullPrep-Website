@@ -1,0 +1,65 @@
+{
+  "class": "Priest",
+  "spec": "Holy",
+  "coreSpells": [
+    {
+      "id": 2061,
+      "name": "Flash Heal"
+    },
+    {
+      "id": 2060,
+      "name": "Heal"
+    },
+    {
+      "id": 33076,
+      "name": "Prayer of Mending"
+    },
+    {
+      "id": 585,
+      "name": "Smite"
+    },
+    {
+      "id": 15487,
+      "name": "Silence"
+    },
+    {
+      "id": 19236,
+      "name": "Desperate Prayer"
+    }
+  ],
+  "cooldowns": [
+    33076
+  ],
+  "interrupts": [
+    15487
+  ],
+  "defensives": [
+    19236
+  ],
+  "healthRecovery": [
+    2061,
+    2060
+  ],
+  "apl": [
+    {
+      "spellId": 33076,
+      "name": "Prayer of Mending",
+      "condition": "off_cooldown"
+    },
+    {
+      "spellId": 2061,
+      "name": "Flash Heal",
+      "condition": "always"
+    },
+    {
+      "spellId": 2060,
+      "name": "Heal",
+      "condition": "always"
+    },
+    {
+      "spellId": 585,
+      "name": "Smite",
+      "condition": "always"
+    }
+  ]
+}

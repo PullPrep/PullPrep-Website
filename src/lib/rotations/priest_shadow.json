@@ -1,0 +1,249 @@
+{
+  "class": "Priest",
+  "spec": "Shadow",
+  "coreSpells": [
+    {
+      "id": 232698,
+      "name": "Shadowform"
+    },
+    {
+      "id": 25046,
+      "name": "Arcane Torrent"
+    },
+    {
+      "id": 1227280,
+      "name": "Tentacle Slam"
+    },
+    {
+      "id": 883,
+      "name": "Call Action List"
+    },
+    {
+      "id": 87840,
+      "name": "Run Action List"
+    },
+    {
+      "id": 265221,
+      "name": "Fireblood"
+    },
+    {
+      "id": 26297,
+      "name": "Berserking"
+    },
+    {
+      "id": 20572,
+      "name": "Blood Fury"
+    },
+    {
+      "id": 274738,
+      "name": "Ancestral Call"
+    },
+    {
+      "id": 38432,
+      "name": "Invoke External Buff"
+    },
+    {
+      "id": 2061,
+      "name": "Flash Heal"
+    },
+    {
+      "id": 10060,
+      "name": "Power Infusion"
+    },
+    {
+      "id": 120517,
+      "name": "Halo"
+    },
+    {
+      "id": 228260,
+      "name": "Voidform"
+    },
+    {
+      "id": 19236,
+      "name": "Desperate Prayer"
+    },
+    {
+      "id": 32379,
+      "name": "Shadow Word Death"
+    },
+    {
+      "id": 17,
+      "name": "Shadow Word Madness"
+    },
+    {
+      "id": 23566,
+      "name": "Void Volley"
+    },
+    {
+      "id": 450405,
+      "name": "Void Blast"
+    },
+    {
+      "id": 263165,
+      "name": "Void Torrent"
+    },
+    {
+      "id": 589,
+      "name": "Shadow Word Pain"
+    },
+    {
+      "id": 8092,
+      "name": "Mind Blast"
+    },
+    {
+      "id": 453,
+      "name": "Mind Flay Insanity"
+    },
+    {
+      "id": 34914,
+      "name": "Vampiric Touch"
+    },
+    {
+      "id": 15407,
+      "name": "Mind Flay"
+    },
+    {
+      "id": 31829,
+      "name": "Use Items"
+    }
+  ],
+  "cooldowns": [],
+  "interrupts": [],
+  "defensives": [],
+  "healthRecovery": [
+    5512,
+    191380
+  ],
+  "apl": [
+    {
+      "spellId": 232698,
+      "name": "Shadowform",
+      "condition": "always"
+    },
+    {
+      "spellId": 25046,
+      "name": "Arcane Torrent",
+      "condition": "always"
+    },
+    {
+      "spellId": 1227280,
+      "name": "Tentacle Slam",
+      "condition": "always"
+    },
+    {
+      "spellId": 883,
+      "name": "Call Action List",
+      "condition": "always"
+    },
+    {
+      "spellId": 87840,
+      "name": "Run Action List",
+      "condition": "always"
+    },
+    {
+      "spellId": 265221,
+      "name": "Fireblood",
+      "condition": "always"
+    },
+    {
+      "spellId": 26297,
+      "name": "Berserking",
+      "condition": "always"
+    },
+    {
+      "spellId": 20572,
+      "name": "Blood Fury",
+      "condition": "always"
+    },
+    {
+      "spellId": 274738,
+      "name": "Ancestral Call",
+      "condition": "always"
+    },
+    {
+      "spellId": 38432,
+      "name": "Invoke External Buff",
+      "condition": "always"
+    },
+    {
+      "spellId": 2061,
+      "name": "Flash Heal",
+      "condition": "always"
+    },
+    {
+      "spellId": 10060,
+      "name": "Power Infusion",
+      "condition": "always"
+    },
+    {
+      "spellId": 120517,
+      "name": "Halo",
+      "condition": "always"
+    },
+    {
+      "spellId": 228260,
+      "name": "Voidform",
+      "condition": "always"
+    },
+    {
+      "spellId": 19236,
+      "name": "Desperate Prayer",
+      "condition": "always"
+    },
+    {
+      "spellId": 32379,
+      "name": "Shadow Word Death",
+      "condition": "always"
+    },
+    {
+      "spellId": 17,
+      "name": "Shadow Word Madness",
+      "condition": "always"
+    },
+    {
+      "spellId": 23566,
+      "name": "Void Volley",
+      "condition": "always"
+    },
+    {
+      "spellId": 450405,
+      "name": "Void Blast",
+      "condition": "always"
+    },
+    {
+      "spellId": 263165,
+      "name": "Void Torrent",
+      "condition": "always"
+    },
+    {
+      "spellId": 589,
+      "name": "Shadow Word Pain",
+      "condition": "always"
+    },
+    {
+      "spellId": 8092,
+      "name": "Mind Blast",
+      "condition": "always"
+    },
+    {
+      "spellId": 453,
+      "name": "Mind Flay Insanity",
+      "condition": "always"
+    },
+    {
+      "spellId": 34914,
+      "name": "Vampiric Touch",
+      "condition": "always"
+    },
+    {
+      "spellId": 15407,
+      "name": "Mind Flay",
+      "condition": "always"
+    },
+    {
+      "spellId": 31829,
+      "name": "Use Items",
+      "condition": "always"
+    }
+  ]
+}

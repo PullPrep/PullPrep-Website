@@ -1,0 +1,159 @@
+{
+  "class": "Mage",
+  "spec": "Fire",
+  "coreSpells": [
+    {
+      "id": 55342,
+      "name": "Mirror Image"
+    },
+    {
+      "id": 431044,
+      "name": "Frostfire Bolt"
+    },
+    {
+      "id": 153561,
+      "name": "Meteor"
+    },
+    {
+      "id": 11366,
+      "name": "Pyroblast"
+    },
+    {
+      "id": 87840,
+      "name": "Run Action List"
+    },
+    {
+      "id": 31829,
+      "name": "Use Items"
+    },
+    {
+      "id": 274738,
+      "name": "Ancestral Call"
+    },
+    {
+      "id": 26297,
+      "name": "Berserking"
+    },
+    {
+      "id": 20572,
+      "name": "Blood Fury"
+    },
+    {
+      "id": 265221,
+      "name": "Fireblood"
+    },
+    {
+      "id": 38432,
+      "name": "Invoke External Buff"
+    },
+    {
+      "id": 2120,
+      "name": "Flamestrike"
+    },
+    {
+      "id": 133,
+      "name": "Fireball"
+    },
+    {
+      "id": 2948,
+      "name": "Scorch"
+    },
+    {
+      "id": 883,
+      "name": "Call Action List"
+    },
+    {
+      "id": 108853,
+      "name": "Fire Blast"
+    }
+  ],
+  "cooldowns": [],
+  "interrupts": [],
+  "defensives": [],
+  "healthRecovery": [
+    5512,
+    191380
+  ],
+  "apl": [
+    {
+      "spellId": 55342,
+      "name": "Mirror Image",
+      "condition": "always"
+    },
+    {
+      "spellId": 431044,
+      "name": "Frostfire Bolt",
+      "condition": "always"
+    },
+    {
+      "spellId": 153561,
+      "name": "Meteor",
+      "condition": "always"
+    },
+    {
+      "spellId": 11366,
+      "name": "Pyroblast",
+      "condition": "always"
+    },
+    {
+      "spellId": 87840,
+      "name": "Run Action List",
+      "condition": "always"
+    },
+    {
+      "spellId": 31829,
+      "name": "Use Items",
+      "condition": "always"
+    },
+    {
+      "spellId": 274738,
+      "name": "Ancestral Call",
+      "condition": "always"
+    },
+    {
+      "spellId": 26297,
+      "name": "Berserking",
+      "condition": "always"
+    },
+    {
+      "spellId": 20572,
+      "name": "Blood Fury",
+      "condition": "always"
+    },
+    {
+      "spellId": 265221,
+      "name": "Fireblood",
+      "condition": "always"
+    },
+    {
+      "spellId": 38432,
+      "name": "Invoke External Buff",
+      "condition": "always"
+    },
+    {
+      "spellId": 2120,
+      "name": "Flamestrike",
+      "condition": "always"
+    },
+    {
+      "spellId": 133,
+      "name": "Fireball",
+      "condition": "always"
+    },
+    {
+      "spellId": 2948,
+      "name": "Scorch",
+      "condition": "always"
+    },
+    {
+      "spellId": 883,
+      "name": "Call Action List",
+      "condition": "always"
+    },
+    {
+      "spellId": 108853,
+      "name": "Fire Blast",
+      "condition": "always"
+    }
+  ]
+}

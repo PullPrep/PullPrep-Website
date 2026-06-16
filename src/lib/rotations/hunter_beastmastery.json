@@ -1,0 +1,125 @@
+{
+  "class": "Hunter",
+  "spec": "Beast Mastery",
+  "coreSpells": [
+    {
+      "id": 883,
+      "name": "Call Action List"
+    },
+    {
+      "id": 26297,
+      "name": "Berserking"
+    },
+    {
+      "id": 20572,
+      "name": "Blood Fury"
+    },
+    {
+      "id": 274738,
+      "name": "Ancestral Call"
+    },
+    {
+      "id": 265221,
+      "name": "Fireblood"
+    },
+    {
+      "id": 1264359,
+      "name": "Wild Thrash"
+    },
+    {
+      "id": 19574,
+      "name": "Bestial Wrath"
+    },
+    {
+      "id": 34026,
+      "name": "Kill Command"
+    },
+    {
+      "id": 193455,
+      "name": "Cobra Shot"
+    },
+    {
+      "id": 217200,
+      "name": "Barbed Shot"
+    },
+    {
+      "id": 466930,
+      "name": "Black Arrow"
+    },
+    {
+      "id": 354831,
+      "name": "Wailing Arrow"
+    }
+  ],
+  "cooldowns": [
+    19574
+  ],
+  "interrupts": [],
+  "defensives": [],
+  "healthRecovery": [
+    5512,
+    191380
+  ],
+  "apl": [
+    {
+      "spellId": 883,
+      "name": "Call Action List",
+      "condition": "always"
+    },
+    {
+      "spellId": 26297,
+      "name": "Berserking",
+      "condition": "always"
+    },
+    {
+      "spellId": 20572,
+      "name": "Blood Fury",
+      "condition": "always"
+    },
+    {
+      "spellId": 274738,
+      "name": "Ancestral Call",
+      "condition": "always"
+    },
+    {
+      "spellId": 265221,
+      "name": "Fireblood",
+      "condition": "always"
+    },
+    {
+      "spellId": 1264359,
+      "name": "Wild Thrash",
+      "condition": "always"
+    },
+    {
+      "spellId": 19574,
+      "name": "Bestial Wrath",
+      "condition": "always"
+    },
+    {
+      "spellId": 34026,
+      "name": "Kill Command",
+      "condition": "always"
+    },
+    {
+      "spellId": 193455,
+      "name": "Cobra Shot",
+      "condition": "always"
+    },
+    {
+      "spellId": 217200,
+      "name": "Barbed Shot",
+      "condition": "always"
+    },
+    {
+      "spellId": 466930,
+      "name": "Black Arrow",
+      "condition": "always"
+    },
+    {
+      "spellId": 354831,
+      "name": "Wailing Arrow",
+      "condition": "always"
+    }
+  ]
+}

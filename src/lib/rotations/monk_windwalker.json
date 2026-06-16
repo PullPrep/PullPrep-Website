@@ -1,0 +1,300 @@
+{
+  "class": "Monk",
+  "spec": "Windwalker",
+  "coreSpells": [
+    {
+      "id": 122470,
+      "name": "Touch Of Karma"
+    },
+    {
+      "id": 109132,
+      "name": "Roll"
+    },
+    {
+      "id": 115008,
+      "name": "Chi Torpedo"
+    },
+    {
+      "id": 101545,
+      "name": "Flying Serpent Kick"
+    },
+    {
+      "id": 116705,
+      "name": "Spear Hand Strike"
+    },
+    {
+      "id": 883,
+      "name": "Call Action List"
+    },
+    {
+      "id": 38432,
+      "name": "Invoke External Buff"
+    },
+    {
+      "id": 25046,
+      "name": "Arcane Torrent"
+    },
+    {
+      "id": 1237885,
+      "name": "Thorn Bloom"
+    },
+    {
+      "id": 287712,
+      "name": "Haymaker"
+    },
+    {
+      "id": 312411,
+      "name": "Bag Of Tricks"
+    },
+    {
+      "id": 260364,
+      "name": "Arcane Pulse"
+    },
+    {
+      "id": 69041,
+      "name": "Rocket Barrage"
+    },
+    {
+      "id": 19750,
+      "name": "Lights Judgment"
+    },
+    {
+      "id": 5217,
+      "name": "Invoke Xuen The White Tiger"
+    },
+    {
+      "id": 443028,
+      "name": "Celestial Conduit"
+    },
+    {
+      "id": 152175,
+      "name": "Whirling Dragon Punch"
+    },
+    {
+      "id": 100784,
+      "name": "Blackout Kick"
+    },
+    {
+      "id": 100780,
+      "name": "Tiger Palm"
+    },
+    {
+      "id": 1272694,
+      "name": "Zenith Stomp"
+    },
+    {
+      "id": 101546,
+      "name": "Spinning Crane Kick"
+    },
+    {
+      "id": 113656,
+      "name": "Fists Of Fury"
+    },
+    {
+      "id": 392983,
+      "name": "Strike Of The Windlord"
+    },
+    {
+      "id": 107428,
+      "name": "Rising Sun Kick"
+    },
+    {
+      "id": 467307,
+      "name": "Rushing Wind Kick"
+    },
+    {
+      "id": 5227,
+      "name": "Touch Of Death"
+    },
+    {
+      "id": 1217413,
+      "name": "Slicing Winds"
+    },
+    {
+      "id": 274738,
+      "name": "Ancestral Call"
+    },
+    {
+      "id": 20572,
+      "name": "Blood Fury"
+    },
+    {
+      "id": 265221,
+      "name": "Fireblood"
+    },
+    {
+      "id": 1249625,
+      "name": "Zenith"
+    }
+  ],
+  "cooldowns": [],
+  "interrupts": [
+    101545,
+    100784,
+    101546,
+    107428,
+    467307
+  ],
+  "defensives": [],
+  "healthRecovery": [
+    5512,
+    191380
+  ],
+  "apl": [
+    {
+      "spellId": 122470,
+      "name": "Touch Of Karma",
+      "condition": "always"
+    },
+    {
+      "spellId": 109132,
+      "name": "Roll",
+      "condition": "always"
+    },
+    {
+      "spellId": 115008,
+      "name": "Chi Torpedo",
+      "condition": "always"
+    },
+    {
+      "spellId": 101545,
+      "name": "Flying Serpent Kick",
+      "condition": "always"
+    },
+    {
+      "spellId": 116705,
+      "name": "Spear Hand Strike",
+      "condition": "always"
+    },
+    {
+      "spellId": 883,
+      "name": "Call Action List",
+      "condition": "always"
+    },
+    {
+      "spellId": 38432,
+      "name": "Invoke External Buff",
+      "condition": "always"
+    },
+    {
+      "spellId": 25046,
+      "name": "Arcane Torrent",
+      "condition": "always"
+    },
+    {
+      "spellId": 1237885,
+      "name": "Thorn Bloom",
+      "condition": "always"
+    },
+    {
+      "spellId": 287712,
+      "name": "Haymaker",
+      "condition": "always"
+    },
+    {
+      "spellId": 312411,
+      "name": "Bag Of Tricks",
+      "condition": "always"
+    },
+    {
+      "spellId": 260364,
+      "name": "Arcane Pulse",
+      "condition": "always"
+    },
+    {
+      "spellId": 69041,
+      "name": "Rocket Barrage",
+      "condition": "always"
+    },
+    {
+      "spellId": 19750,
+      "name": "Lights Judgment",
+      "condition": "always"
+    },
+    {
+      "spellId": 5217,
+      "name": "Invoke Xuen The White Tiger",
+      "condition": "always"
+    },
+    {
+      "spellId": 443028,
+      "name": "Celestial Conduit",
+      "condition": "always"
+    },
+    {
+      "spellId": 152175,
+      "name": "Whirling Dragon Punch",
+      "condition": "always"
+    },
+    {
+      "spellId": 100784,
+      "name": "Blackout Kick",
+      "condition": "always"
+    },
+    {
+      "spellId": 100780,
+      "name": "Tiger Palm",
+      "condition": "always"
+    },
+    {
+      "spellId": 1272694,
+      "name": "Zenith Stomp",
+      "condition": "always"
+    },
+    {
+      "spellId": 101546,
+      "name": "Spinning Crane Kick",
+      "condition": "always"
+    },
+    {
+      "spellId": 113656,
+      "name": "Fists Of Fury",
+      "condition": "always"
+    },
+    {
+      "spellId": 392983,
+      "name": "Strike Of The Windlord",
+      "condition": "always"
+    },
+    {
+      "spellId": 107428,
+      "name": "Rising Sun Kick",
+      "condition": "always"
+    },
+    {
+      "spellId": 467307,
+      "name": "Rushing Wind Kick",
+      "condition": "always"
+    },
+    {
+      "spellId": 5227,
+      "name": "Touch Of Death",
+      "condition": "always"
+    },
+    {
+      "spellId": 1217413,
+      "name": "Slicing Winds",
+      "condition": "always"
+    },
+    {
+      "spellId": 274738,
+      "name": "Ancestral Call",
+      "condition": "always"
+    },
+    {
+      "spellId": 20572,
+      "name": "Blood Fury",
+      "condition": "always"
+    },
+    {
+      "spellId": 265221,
+      "name": "Fireblood",
+      "condition": "always"
+    },
+    {
+      "spellId": 1249625,
+      "name": "Zenith",
+      "condition": "always"
+    }
+  ]
+}

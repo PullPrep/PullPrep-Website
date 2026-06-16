@@ -1,0 +1,186 @@
+{
+  "class": "Death Knight",
+  "spec": "Unholy",
+  "coreSpells": [
+    {
+      "id": 46584,
+      "name": "Raise Dead"
+    },
+    {
+      "id": 883,
+      "name": "Call Action List"
+    },
+    {
+      "id": 85948,
+      "name": "Festering Strike"
+    },
+    {
+      "id": 207317,
+      "name": "Epidemic"
+    },
+    {
+      "id": 47541,
+      "name": "Death Coil"
+    },
+    {
+      "id": 55090,
+      "name": "Scourge Strike"
+    },
+    {
+      "id": 38432,
+      "name": "Invoke External Buff"
+    },
+    {
+      "id": 77575,
+      "name": "Outbreak"
+    },
+    {
+      "id": 42650,
+      "name": "Army Of The Dead"
+    },
+    {
+      "id": 343294,
+      "name": "Soul Reaper"
+    },
+    {
+      "id": 1247378,
+      "name": "Putrefy"
+    },
+    {
+      "id": 63560,
+      "name": "Dark Transformation"
+    },
+    {
+      "id": 260364,
+      "name": "Arcane Pulse"
+    },
+    {
+      "id": 25046,
+      "name": "Arcane Torrent"
+    },
+    {
+      "id": 312411,
+      "name": "Bag Of Tricks"
+    },
+    {
+      "id": 20572,
+      "name": "Blood Fury"
+    },
+    {
+      "id": 26297,
+      "name": "Berserking"
+    },
+    {
+      "id": 265221,
+      "name": "Fireblood"
+    },
+    {
+      "id": 19750,
+      "name": "Lights Judgment"
+    }
+  ],
+  "cooldowns": [],
+  "interrupts": [],
+  "defensives": [],
+  "healthRecovery": [
+    5512,
+    191380
+  ],
+  "apl": [
+    {
+      "spellId": 46584,
+      "name": "Raise Dead",
+      "condition": "always"
+    },
+    {
+      "spellId": 883,
+      "name": "Call Action List",
+      "condition": "always"
+    },
+    {
+      "spellId": 85948,
+      "name": "Festering Strike",
+      "condition": "always"
+    },
+    {
+      "spellId": 207317,
+      "name": "Epidemic",
+      "condition": "always"
+    },
+    {
+      "spellId": 47541,
+      "name": "Death Coil",
+      "condition": "always"
+    },
+    {
+      "spellId": 55090,
+      "name": "Scourge Strike",
+      "condition": "always"
+    },
+    {
+      "spellId": 38432,
+      "name": "Invoke External Buff",
+      "condition": "always"
+    },
+    {
+      "spellId": 77575,
+      "name": "Outbreak",
+      "condition": "always"
+    },
+    {
+      "spellId": 42650,
+      "name": "Army Of The Dead",
+      "condition": "always"
+    },
+    {
+      "spellId": 343294,
+      "name": "Soul Reaper",
+      "condition": "always"
+    },
+    {
+      "spellId": 1247378,
+      "name": "Putrefy",
+      "condition": "always"
+    },
+    {
+      "spellId": 63560,
+      "name": "Dark Transformation",
+      "condition": "always"
+    },
+    {
+      "spellId": 260364,
+      "name": "Arcane Pulse",
+      "condition": "always"
+    },
+    {
+      "spellId": 25046,
+      "name": "Arcane Torrent",
+      "condition": "always"
+    },
+    {
+      "spellId": 312411,
+      "name": "Bag Of Tricks",
+      "condition": "always"
+    },
+    {
+      "spellId": 20572,
+      "name": "Blood Fury",
+      "condition": "always"
+    },
+    {
+      "spellId": 26297,
+      "name": "Berserking",
+      "condition": "always"
+    },
+    {
+      "spellId": 265221,
+      "name": "Fireblood",
+      "condition": "always"
+    },
+    {
+      "spellId": 19750,
+      "name": "Lights Judgment",
+      "condition": "always"
+    }
+  ]
+}

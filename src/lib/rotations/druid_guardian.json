@@ -1,0 +1,260 @@
+{
+  "class": "Druid",
+  "spec": "Guardian",
+  "coreSpells": [
+    {
+      "id": 5487,
+      "name": "Bear Form"
+    },
+    {
+      "id": 768,
+      "name": "Cat Form"
+    },
+    {
+      "id": 883,
+      "name": "Call Action List"
+    },
+    {
+      "id": 106832,
+      "name": "Thrash"
+    },
+    {
+      "id": 6807,
+      "name": "Maul"
+    },
+    {
+      "id": 33917,
+      "name": "Mangle"
+    },
+    {
+      "id": 1822,
+      "name": "Rake"
+    },
+    {
+      "id": 24858,
+      "name": "Moonkin Form"
+    },
+    {
+      "id": 192081,
+      "name": "Ironfur"
+    },
+    {
+      "id": 22568,
+      "name": "Ferocious Bite"
+    },
+    {
+      "id": 1079,
+      "name": "Rip"
+    },
+    {
+      "id": 1252871,
+      "name": "Red Moon"
+    },
+    {
+      "id": 8921,
+      "name": "Moonfire"
+    },
+    {
+      "id": 5221,
+      "name": "Shred"
+    },
+    {
+      "id": 1178,
+      "name": "Swipe Bear"
+    },
+    {
+      "id": 20572,
+      "name": "Blood Fury"
+    },
+    {
+      "id": 26297,
+      "name": "Berserking"
+    },
+    {
+      "id": 265221,
+      "name": "Fireblood"
+    },
+    {
+      "id": 274738,
+      "name": "Ancestral Call"
+    },
+    {
+      "id": 155835,
+      "name": "Bristling Fur"
+    },
+    {
+      "id": 22812,
+      "name": "Barkskin"
+    },
+    {
+      "id": 204066,
+      "name": "Lunar Beam"
+    },
+    {
+      "id": 1261867,
+      "name": "Heart Of The Wild"
+    },
+    {
+      "id": 323764,
+      "name": "Convoke The Spirits"
+    },
+    {
+      "id": 1253799,
+      "name": "Sundering Roar"
+    },
+    {
+      "id": 106951,
+      "name": "Berserk"
+    },
+    {
+      "id": 1269614,
+      "name": "Wild Guardian"
+    }
+  ],
+  "cooldowns": [],
+  "interrupts": [],
+  "defensives": [
+    22812
+  ],
+  "healthRecovery": [
+    5512,
+    191380
+  ],
+  "apl": [
+    {
+      "spellId": 5487,
+      "name": "Bear Form",
+      "condition": "always"
+    },
+    {
+      "spellId": 768,
+      "name": "Cat Form",
+      "condition": "always"
+    },
+    {
+      "spellId": 883,
+      "name": "Call Action List",
+      "condition": "always"
+    },
+    {
+      "spellId": 106832,
+      "name": "Thrash",
+      "condition": "always"
+    },
+    {
+      "spellId": 6807,
+      "name": "Maul",
+      "condition": "always"
+    },
+    {
+      "spellId": 33917,
+      "name": "Mangle",
+      "condition": "always"
+    },
+    {
+      "spellId": 1822,
+      "name": "Rake",
+      "condition": "always"
+    },
+    {
+      "spellId": 24858,
+      "name": "Moonkin Form",
+      "condition": "always"
+    },
+    {
+      "spellId": 192081,
+      "name": "Ironfur",
+      "condition": "always"
+    },
+    {
+      "spellId": 22568,
+      "name": "Ferocious Bite",
+      "condition": "always"
+    },
+    {
+      "spellId": 1079,
+      "name": "Rip",
+      "condition": "always"
+    },
+    {
+      "spellId": 1252871,
+      "name": "Red Moon",
+      "condition": "always"
+    },
+    {
+      "spellId": 8921,
+      "name": "Moonfire",
+      "condition": "always"
+    },
+    {
+      "spellId": 5221,
+      "name": "Shred",
+      "condition": "always"
+    },
+    {
+      "spellId": 1178,
+      "name": "Swipe Bear",
+      "condition": "always"
+    },
+    {
+      "spellId": 20572,
+      "name": "Blood Fury",
+      "condition": "always"
+    },
+    {
+      "spellId": 26297,
+      "name": "Berserking",
+      "condition": "always"
+    },
+    {
+      "spellId": 265221,
+      "name": "Fireblood",
+      "condition": "always"
+    },
+    {
+      "spellId": 274738,
+      "name": "Ancestral Call",
+      "condition": "always"
+    },
+    {
+      "spellId": 155835,
+      "name": "Bristling Fur",
+      "condition": "always"
+    },
+    {
+      "spellId": 22812,
+      "name": "Barkskin",
+      "condition": "always"
+    },
+    {
+      "spellId": 204066,
+      "name": "Lunar Beam",
+      "condition": "always"
+    },
+    {
+      "spellId": 1261867,
+      "name": "Heart Of The Wild",
+      "condition": "always"
+    },
+    {
+      "spellId": 323764,
+      "name": "Convoke The Spirits",
+      "condition": "always"
+    },
+    {
+      "spellId": 1253799,
+      "name": "Sundering Roar",
+      "condition": "always"
+    },
+    {
+      "spellId": 106951,
+      "name": "Berserk",
+      "condition": "always"
+    },
+    {
+      "spellId": 1269614,
+      "name": "Wild Guardian",
+      "condition": "always"
+    }
+  ]
+}

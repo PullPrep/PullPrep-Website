@@ -1,0 +1,206 @@
+{
+  "class": "Monk",
+  "spec": "Brewmaster",
+  "coreSpells": [
+    {
+      "id": 883,
+      "name": "Call Action List"
+    },
+    {
+      "id": 87840,
+      "name": "Run Action List"
+    },
+    {
+      "id": 322507,
+      "name": "Celestial Brew"
+    },
+    {
+      "id": 121253,
+      "name": "Keg Smash"
+    },
+    {
+      "id": 100784,
+      "name": "Blackout Kick"
+    },
+    {
+      "id": 119582,
+      "name": "Purifying Brew"
+    },
+    {
+      "id": 115203,
+      "name": "Fortifying Brew"
+    },
+    {
+      "id": 123986,
+      "name": "Chi Burst"
+    },
+    {
+      "id": 123904,
+      "name": "Invoke Niuzao"
+    },
+    {
+      "id": 100780,
+      "name": "Tiger Palm"
+    },
+    {
+      "id": 325153,
+      "name": "Exploding Keg"
+    },
+    {
+      "id": 1262329,
+      "name": "Empty The Cellar"
+    },
+    {
+      "id": 115181,
+      "name": "Breath Of Fire"
+    },
+    {
+      "id": 116847,
+      "name": "Rushing Jade Wind"
+    },
+    {
+      "id": 322101,
+      "name": "Expel Harm"
+    },
+    {
+      "id": 26297,
+      "name": "Berserking"
+    },
+    {
+      "id": 25046,
+      "name": "Arcane Torrent"
+    },
+    {
+      "id": 19750,
+      "name": "Lights Judgment"
+    },
+    {
+      "id": 265221,
+      "name": "Fireblood"
+    },
+    {
+      "id": 274738,
+      "name": "Ancestral Call"
+    },
+    {
+      "id": 312411,
+      "name": "Bag Of Tricks"
+    }
+  ],
+  "cooldowns": [],
+  "interrupts": [
+    100784
+  ],
+  "defensives": [],
+  "healthRecovery": [
+    5512,
+    191380
+  ],
+  "apl": [
+    {
+      "spellId": 883,
+      "name": "Call Action List",
+      "condition": "always"
+    },
+    {
+      "spellId": 87840,
+      "name": "Run Action List",
+      "condition": "always"
+    },
+    {
+      "spellId": 322507,
+      "name": "Celestial Brew",
+      "condition": "always"
+    },
+    {
+      "spellId": 121253,
+      "name": "Keg Smash",
+      "condition": "always"
+    },
+    {
+      "spellId": 100784,
+      "name": "Blackout Kick",
+      "condition": "always"
+    },
+    {
+      "spellId": 119582,
+      "name": "Purifying Brew",
+      "condition": "always"
+    },
+    {
+      "spellId": 115203,
+      "name": "Fortifying Brew",
+      "condition": "always"
+    },
+    {
+      "spellId": 123986,
+      "name": "Chi Burst",
+      "condition": "always"
+    },
+    {
+      "spellId": 123904,
+      "name": "Invoke Niuzao",
+      "condition": "always"
+    },
+    {
+      "spellId": 100780,
+      "name": "Tiger Palm",
+      "condition": "always"
+    },
+    {
+      "spellId": 325153,
+      "name": "Exploding Keg",
+      "condition": "always"
+    },
+    {
+      "spellId": 1262329,
+      "name": "Empty The Cellar",
+      "condition": "always"
+    },
+    {
+      "spellId": 115181,
+      "name": "Breath Of Fire",
+      "condition": "always"
+    },
+    {
+      "spellId": 116847,
+      "name": "Rushing Jade Wind",
+      "condition": "always"
+    },
+    {
+      "spellId": 322101,
+      "name": "Expel Harm",
+      "condition": "always"
+    },
+    {
+      "spellId": 26297,
+      "name": "Berserking",
+      "condition": "always"
+    },
+    {
+      "spellId": 25046,
+      "name": "Arcane Torrent",
+      "condition": "always"
+    },
+    {
+      "spellId": 19750,
+      "name": "Lights Judgment",
+      "condition": "always"
+    },
+    {
+      "spellId": 265221,
+      "name": "Fireblood",
+      "condition": "always"
+    },
+    {
+      "spellId": 274738,
+      "name": "Ancestral Call",
+      "condition": "always"
+    },
+    {
+      "spellId": 312411,
+      "name": "Bag Of Tricks",
+      "condition": "always"
+    }
+  ]
+}

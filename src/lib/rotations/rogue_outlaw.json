@@ -1,0 +1,280 @@
+{
+  "class": "Rogue",
+  "spec": "Outlaw",
+  "coreSpells": [
+    {
+      "id": 1784,
+      "name": "Stealth"
+    },
+    {
+      "id": 13750,
+      "name": "Adrenaline Rush"
+    },
+    {
+      "id": 315496,
+      "name": "Slice And Dice"
+    },
+    {
+      "id": 193356,
+      "name": "Roll The Bones"
+    },
+    {
+      "id": 1766,
+      "name": "Kick"
+    },
+    {
+      "id": 883,
+      "name": "Call Action List"
+    },
+    {
+      "id": 87840,
+      "name": "Run Action List"
+    },
+    {
+      "id": 25046,
+      "name": "Arcane Torrent"
+    },
+    {
+      "id": 260364,
+      "name": "Arcane Pulse"
+    },
+    {
+      "id": 19750,
+      "name": "Lights Judgment"
+    },
+    {
+      "id": 312411,
+      "name": "Bag Of Tricks"
+    },
+    {
+      "id": 13877,
+      "name": "Blade Flurry"
+    },
+    {
+      "id": 441423,
+      "name": "Coup De Grace"
+    },
+    {
+      "id": 185763,
+      "name": "Pistol Shot"
+    },
+    {
+      "id": 173841,
+      "name": "Pool Resource"
+    },
+    {
+      "id": 8676,
+      "name": "Ambush"
+    },
+    {
+      "id": 193315,
+      "name": "Sinister Strike"
+    },
+    {
+      "id": 1277933,
+      "name": "Preparation"
+    },
+    {
+      "id": 381989,
+      "name": "Keep It Rolling"
+    },
+    {
+      "id": 271877,
+      "name": "Blade Rush"
+    },
+    {
+      "id": 1856,
+      "name": "Vanish"
+    },
+    {
+      "id": 58984,
+      "name": "Shadowmeld"
+    },
+    {
+      "id": 20572,
+      "name": "Blood Fury"
+    },
+    {
+      "id": 26297,
+      "name": "Berserking"
+    },
+    {
+      "id": 265221,
+      "name": "Fireblood"
+    },
+    {
+      "id": 274738,
+      "name": "Ancestral Call"
+    },
+    {
+      "id": 31829,
+      "name": "Use Items"
+    },
+    {
+      "id": 51690,
+      "name": "Killing Spree"
+    },
+    {
+      "id": 2098,
+      "name": "Dispatch"
+    }
+  ],
+  "cooldowns": [
+    13750
+  ],
+  "interrupts": [
+    1766
+  ],
+  "defensives": [],
+  "healthRecovery": [
+    5512,
+    191380
+  ],
+  "apl": [
+    {
+      "spellId": 1784,
+      "name": "Stealth",
+      "condition": "always"
+    },
+    {
+      "spellId": 13750,
+      "name": "Adrenaline Rush",
+      "condition": "always"
+    },
+    {
+      "spellId": 315496,
+      "name": "Slice And Dice",
+      "condition": "always"
+    },
+    {
+      "spellId": 193356,
+      "name": "Roll The Bones",
+      "condition": "always"
+    },
+    {
+      "spellId": 1766,
+      "name": "Kick",
+      "condition": "always"
+    },
+    {
+      "spellId": 883,
+      "name": "Call Action List",
+      "condition": "always"
+    },
+    {
+      "spellId": 87840,
+      "name": "Run Action List",
+      "condition": "always"
+    },
+    {
+      "spellId": 25046,
+      "name": "Arcane Torrent",
+      "condition": "always"
+    },
+    {
+      "spellId": 260364,
+      "name": "Arcane Pulse",
+      "condition": "always"
+    },
+    {
+      "spellId": 19750,
+      "name": "Lights Judgment",
+      "condition": "always"
+    },
+    {
+      "spellId": 312411,
+      "name": "Bag Of Tricks",
+      "condition": "always"
+    },
+    {
+      "spellId": 13877,
+      "name": "Blade Flurry",
+      "condition": "always"
+    },
+    {
+      "spellId": 441423,
+      "name": "Coup De Grace",
+      "condition": "always"
+    },
+    {
+      "spellId": 185763,
+      "name": "Pistol Shot",
+      "condition": "always"
+    },
+    {
+      "spellId": 173841,
+      "name": "Pool Resource",
+      "condition": "always"
+    },
+    {
+      "spellId": 8676,
+      "name": "Ambush",
+      "condition": "always"
+    },
+    {
+      "spellId": 193315,
+      "name": "Sinister Strike",
+      "condition": "always"
+    },
+    {
+      "spellId": 1277933,
+      "name": "Preparation",
+      "condition": "always"
+    },
+    {
+      "spellId": 381989,
+      "name": "Keep It Rolling",
+      "condition": "always"
+    },
+    {
+      "spellId": 271877,
+      "name": "Blade Rush",
+      "condition": "always"
+    },
+    {
+      "spellId": 1856,
+      "name": "Vanish",
+      "condition": "always"
+    },
+    {
+      "spellId": 58984,
+      "name": "Shadowmeld",
+      "condition": "always"
+    },
+    {
+      "spellId": 20572,
+      "name": "Blood Fury",
+      "condition": "always"
+    },
+    {
+      "spellId": 26297,
+      "name": "Berserking",
+      "condition": "always"
+    },
+    {
+      "spellId": 265221,
+      "name": "Fireblood",
+      "condition": "always"
+    },
+    {
+      "spellId": 274738,
+      "name": "Ancestral Call",
+      "condition": "always"
+    },
+    {
+      "spellId": 31829,
+      "name": "Use Items",
+      "condition": "always"
+    },
+    {
+      "spellId": 51690,
+      "name": "Killing Spree",
+      "condition": "always"
+    },
+    {
+      "spellId": 2098,
+      "name": "Dispatch",
+      "condition": "always"
+    }
+  ]
+}

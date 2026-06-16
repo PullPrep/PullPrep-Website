@@ -1,0 +1,188 @@
+{
+  "class": "Paladin",
+  "spec": "Retribution",
+  "coreSpells": [
+    {
+      "id": 96231,
+      "name": "Rebuke"
+    },
+    {
+      "id": 883,
+      "name": "Call Action List"
+    },
+    {
+      "id": 38432,
+      "name": "Invoke External Buff"
+    },
+    {
+      "id": 19750,
+      "name": "Lights Judgment"
+    },
+    {
+      "id": 265221,
+      "name": "Fireblood"
+    },
+    {
+      "id": 343527,
+      "name": "Execution Sentence"
+    },
+    {
+      "id": 31884,
+      "name": "Avenging Wrath"
+    },
+    {
+      "id": 853,
+      "name": "Hammer Of Light"
+    },
+    {
+      "id": 53385,
+      "name": "Divine Storm"
+    },
+    {
+      "id": 85256,
+      "name": "Templars Verdict"
+    },
+    {
+      "id": 184575,
+      "name": "Blade Of Justice"
+    },
+    {
+      "id": 255937,
+      "name": "Wake Of Ashes"
+    },
+    {
+      "id": 304971,
+      "name": "Divine Toll"
+    },
+    {
+      "id": 24275,
+      "name": "Hammer Of Wrath"
+    },
+    {
+      "id": 20271,
+      "name": "Judgment"
+    },
+    {
+      "id": 1752,
+      "name": "Templar Strike"
+    },
+    {
+      "id": 35395,
+      "name": "Crusader Strike"
+    },
+    {
+      "id": 25046,
+      "name": "Arcane Torrent"
+    }
+  ],
+  "cooldowns": [
+    31884,
+    24275,
+    35395
+  ],
+  "interrupts": [
+    96231
+  ],
+  "defensives": [],
+  "healthRecovery": [
+    5512,
+    191380
+  ],
+  "apl": [
+    {
+      "spellId": 96231,
+      "name": "Rebuke",
+      "condition": "always"
+    },
+    {
+      "spellId": 883,
+      "name": "Call Action List",
+      "condition": "always"
+    },
+    {
+      "spellId": 38432,
+      "name": "Invoke External Buff",
+      "condition": "always"
+    },
+    {
+      "spellId": 19750,
+      "name": "Lights Judgment",
+      "condition": "always"
+    },
+    {
+      "spellId": 265221,
+      "name": "Fireblood",
+      "condition": "always"
+    },
+    {
+      "spellId": 343527,
+      "name": "Execution Sentence",
+      "condition": "always"
+    },
+    {
+      "spellId": 31884,
+      "name": "Avenging Wrath",
+      "condition": "always"
+    },
+    {
+      "spellId": 853,
+      "name": "Hammer Of Light",
+      "condition": "always"
+    },
+    {
+      "spellId": 53385,
+      "name": "Divine Storm",
+      "condition": "always"
+    },
+    {
+      "spellId": 85256,
+      "name": "Templars Verdict",
+      "condition": "always"
+    },
+    {
+      "spellId": 184575,
+      "name": "Blade Of Justice",
+      "condition": "always"
+    },
+    {
+      "spellId": 255937,
+      "name": "Wake Of Ashes",
+      "condition": "always"
+    },
+    {
+      "spellId": 304971,
+      "name": "Divine Toll",
+      "condition": "always"
+    },
+    {
+      "spellId": 24275,
+      "name": "Hammer Of Wrath",
+      "condition": "always"
+    },
+    {
+      "spellId": 20271,
+      "name": "Judgment",
+      "condition": "always"
+    },
+    {
+      "spellId": 1752,
+      "name": "Templar Strike",
+      "condition": "always"
+    },
+    {
+      "spellId": 85256,
+      "name": "Templar Slash",
+      "condition": "always"
+    },
+    {
+      "spellId": 35395,
+      "name": "Crusader Strike",
+      "condition": "always"
+    },
+    {
+      "spellId": 25046,
+      "name": "Arcane Torrent",
+      "condition": "always"
+    }
+  ]
+}
