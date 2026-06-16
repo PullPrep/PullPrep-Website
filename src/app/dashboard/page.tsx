@@ -2,6 +2,11 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import {
+  WOW_CLASSES_SPECS,
+  generateDefaultBuild,
+  CLASS_COLORS_HEX
+} from "@/lib/trainingEngine";
 
 interface ImportedButton {
   slot: number;
@@ -43,6 +48,8 @@ interface Session {
 
 export default function Dashboard() {
   const [activeBuild, setActiveBuild] = useState<ImportedBuild | null>(null);
+  const [selectedClass, setSelectedClass] = useState<string>("Demon Hunter");
+  const [selectedSpec, setSelectedSpec] = useState<string>("Havoc");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [importString, setImportString] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
@@ -69,15 +76,45 @@ export default function Dashboard() {
     const saved = localStorage.getItem("pullprep_active_build");
     if (saved) {
       try {
-        setActiveBuild(JSON.parse(saved));
+        const parsed = JSON.parse(saved);
+        setActiveBuild(parsed);
+        setSelectedClass(parsed.class);
+        setSelectedSpec(parsed.spec);
       } catch (e) {
         console.error("Failed to parse saved build", e);
       }
+    } else {
+      setSelectedClass("Demon Hunter");
+      setSelectedSpec("Havoc");
+      const defaultBuild = generateDefaultBuild("Demon Hunter", "Havoc");
+      setActiveBuild(defaultBuild);
+      localStorage.setItem("pullprep_active_build", JSON.stringify(defaultBuild));
     }
 
     // 2. Fetch session
     checkSession();
   }, []);
+
+  const handleClassChange = (className: string) => {
+    setSelectedClass(className);
+    const cls = WOW_CLASSES_SPECS.find(c => c.name === className);
+    const firstSpec = cls && cls.specs.length > 0 ? cls.specs[0] : "";
+    setSelectedSpec(firstSpec);
+    if (className && firstSpec) {
+      const newBuild = generateDefaultBuild(className, firstSpec);
+      setActiveBuild(newBuild);
+      localStorage.setItem("pullprep_active_build", JSON.stringify(newBuild));
+    }
+  };
+
+  const handleSpecChange = (specName: string) => {
+    setSelectedSpec(specName);
+    if (selectedClass && specName) {
+      const newBuild = generateDefaultBuild(selectedClass, specName);
+      setActiveBuild(newBuild);
+      localStorage.setItem("pullprep_active_build", JSON.stringify(newBuild));
+    }
+  };
 
   const checkSession = async () => {
     setIsLoadingSession(true);
@@ -127,6 +164,8 @@ export default function Dashboard() {
       // Save to local storage
       localStorage.setItem("pullprep_active_build", JSON.stringify(parsed));
       setActiveBuild(parsed);
+      setSelectedClass(parsed.class);
+      setSelectedSpec(parsed.spec);
       setIsModalOpen(false);
       setImportString("");
     } catch (e) {
@@ -174,6 +213,8 @@ export default function Dashboard() {
       const parsed = JSON.parse(decoded) as ImportedBuild;
       localStorage.setItem("pullprep_active_build", JSON.stringify(parsed));
       setActiveBuild(parsed);
+      setSelectedClass(parsed.class);
+      setSelectedSpec(parsed.spec);
     } catch (e) {
       console.error("Failed to load layout", e);
     }
@@ -373,6 +414,35 @@ export default function Dashboard() {
                   <span className="text-zinc-400 font-semibold italic">
                     {activeBuild ? "Imported Custom Setup" : "Predefined MVP Template"}
                   </span>
+                </div>
+
+                {/* Class & Spec Selector Presets */}
+                <div className="pt-3 border-t border-zinc-850 space-y-2">
+                  <span className="text-zinc-500 font-bold uppercase block text-[10px] tracking-wide">Change Class & Spec</span>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <select
+                        value={selectedClass}
+                        onChange={(e) => handleClassChange(e.target.value)}
+                        className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2 py-1 text-[11px] text-zinc-200 focus:border-violet-500 focus:outline-none cursor-pointer"
+                      >
+                        {WOW_CLASSES_SPECS.map(c => (
+                          <option key={c.key} value={c.name}>{c.name}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <select
+                        value={selectedSpec}
+                        onChange={(e) => handleSpecChange(e.target.value)}
+                        className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2 py-1 text-[11px] text-zinc-200 focus:border-violet-500 focus:outline-none cursor-pointer"
+                      >
+                        {(WOW_CLASSES_SPECS.find(c => c.name === selectedClass)?.specs || []).map(spec => (
+                          <option key={spec} value={spec}>{spec}</option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>

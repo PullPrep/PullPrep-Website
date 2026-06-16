@@ -700,10 +700,12 @@ export function getScenariosForSpec(specName: string | undefined): Scenario[] {
   const defensives = new Set(rotationData.defensives || []);
   const coreSpells = rotationData.coreSpells || [];
 
-  const cdSpells = coreSpells.filter((s: any) => cds.has(s.id));
-  const fillerSpells = coreSpells.filter((s: any) => !cds.has(s.id) && !interrupts.has(s.id) && !defensives.has(s.id));
+  const realSpells = coreSpells.filter((s: any) => isRealSpell(s.id, s.name));
+  const activeSpells = realSpells.length > 0 ? realSpells : coreSpells;
+  const cdSpells = activeSpells.filter((s: any) => cds.has(s.id));
+  const fillerSpells = activeSpells.filter((s: any) => !cds.has(s.id) && !interrupts.has(s.id) && !defensives.has(s.id));
   
-  const rotationFiller = fillerSpells.length > 0 ? fillerSpells : coreSpells;
+  const rotationFiller = fillerSpells.length > 0 ? fillerSpells : activeSpells;
 
   const sequence = [];
   sequence.push(...cdSpells);
@@ -736,4 +738,124 @@ export function getScenariosForSpec(specName: string | undefined): Scenario[] {
       steps: []
     }
   ];
+}
+
+export const CLASS_COLORS_HEX: Record<string, string> = {
+  "deathknight": "#c41e3a",
+  "demonhunter": "#a330c9",
+  "druid": "#ff7c0a",
+  "evoker": "#33937f",
+  "hunter": "#aad372",
+  "mage": "#3fc7eb",
+  "monk": "#00ff98",
+  "paladin": "#f48cba",
+  "priest": "#ffffff",
+  "rogue": "#fff468",
+  "shaman": "#0070dd",
+  "warlock": "#8788ee",
+  "warrior": "#c69b6d",
+};
+
+export const WOW_CLASSES_SPECS = [
+  { name: "Death Knight", key: "deathknight", specs: ["Blood", "Frost", "Unholy"] },
+  { name: "Demon Hunter", key: "demonhunter", specs: ["Havoc", "Vengeance"] },
+  { name: "Druid", key: "druid", specs: ["Balance", "Feral", "Guardian", "Restoration"] },
+  { name: "Evoker", key: "evoker", specs: ["Augmentation", "Devastation", "Preservation"] },
+  { name: "Hunter", key: "hunter", specs: ["Beast Mastery", "Marksmanship", "Survival"] },
+  { name: "Mage", key: "mage", specs: ["Arcane", "Fire", "Frost"] },
+  { name: "Monk", key: "monk", specs: ["Brewmaster", "Mistweaver", "Windwalker"] },
+  { name: "Paladin", key: "paladin", specs: ["Holy", "Protection", "Retribution"] },
+  { name: "Priest", key: "priest", specs: ["Discipline", "Holy", "Shadow"] },
+  { name: "Rogue", key: "rogue", specs: ["Assassination", "Outlaw", "Subtlety"] },
+  { name: "Shaman", key: "shaman", specs: ["Elemental", "Enhancement", "Restoration"] },
+  { name: "Warlock", key: "warlock", specs: ["Affliction", "Demonology", "Destruction"] },
+  { name: "Warrior", key: "warrior", specs: ["Arms", "Fury", "Protection"] }
+];
+
+export function isRealSpell(spellId: number, name: string): boolean {
+  if (spellId < 1000) return false;
+  
+  const lowerName = name.toLowerCase();
+  const blacklistedNames = [
+    "invoke external buff",
+    "call action list",
+    "run action list",
+    "cancel action",
+    "use items",
+    "cycling variable",
+    "retarget auto attack",
+    "pick up fragment",
+    "wait",
+    "precombat",
+    "potion",
+    "flask",
+    "food",
+    "trinket",
+    "berserking",
+    "blood fury",
+    "fireblood",
+    "ancestral call",
+    "arcane pulse",
+    "arcane torrent",
+    "lights judgment",
+    "bag of tricks",
+    "shadowmeld",
+    "quaking",
+    "seismic",
+    "volcanic",
+    "pool resource"
+  ];
+  
+  return !blacklistedNames.some(blacklisted => lowerName.includes(blacklisted));
+}
+
+export function generateDefaultBuild(className: string, specName: string): ImportedBuild {
+  const classKey = className.toLowerCase().replace(/ /g, "");
+  const specKey = specName.toLowerCase().replace(/ /g, "");
+  const rotationKey = `${classKey}_${specKey}`;
+  const rotationData = ROTATIONS_DB[rotationKey];
+  
+  const coreSpells = rotationData?.coreSpells || [];
+  const realSpells = coreSpells.filter((s: any) => isRealSpell(s.id, s.name));
+  
+  const defaultKeys = ["1", "2", "3", "4", "5", "6", "Q", "E", "R", "F", "Z", "X"];
+  const buttons: ImportedButton[] = [];
+  
+  let slot = 1;
+  realSpells.forEach((spell: any, idx: number) => {
+    if (slot <= 12) {
+      buttons.push({
+        slot,
+        type: "spell",
+        id: spell.id,
+        name: spell.name,
+        key: defaultKeys[idx] || `${idx + 1}`,
+        icon: spell.id
+      });
+      slot++;
+    }
+  });
+  
+  while (slot <= 12) {
+    buttons.push({
+      slot,
+      type: "empty",
+      id: 0,
+      name: "",
+      key: defaultKeys[slot - 1] || `${slot}`,
+      icon: 0
+    });
+    slot++;
+  }
+  
+  return {
+    class: className,
+    spec: specName,
+    actionBars: [
+      {
+        barName: "ActionBar1",
+        buttons
+      }
+    ]
+  };
 }

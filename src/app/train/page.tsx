@@ -17,7 +17,10 @@ import {
   ImportedBar,
   ImportedButton,
   getScenariosForSpec,
-  SPELL_GROUP_MAPPINGS
+  SPELL_GROUP_MAPPINGS,
+  generateDefaultBuild,
+  WOW_CLASSES_SPECS,
+  CLASS_COLORS_HEX
 } from "@/lib/trainingEngine";
 
 
@@ -224,17 +227,47 @@ export default function Train() {
   }, []);
 
   const [activeBuild, setActiveBuild] = useState<ImportedBuild | null>(null);
+  const [selectedClass, setSelectedClass] = useState<string>("Demon Hunter");
+  const [selectedSpec, setSelectedSpec] = useState<string>("Havoc");
 
   useEffect(() => {
     const saved = localStorage.getItem("pullprep_active_build");
     if (saved) {
       try {
-        setActiveBuild(JSON.parse(saved));
+        const parsed = JSON.parse(saved);
+        setActiveBuild(parsed);
+        setSelectedClass(parsed.class);
+        setSelectedSpec(parsed.spec);
       } catch (e) {
         console.error("Failed to parse saved build", e);
       }
+    } else {
+      const defaultBuild = generateDefaultBuild("Demon Hunter", "Havoc");
+      setActiveBuild(defaultBuild);
+      localStorage.setItem("pullprep_active_build", JSON.stringify(defaultBuild));
     }
   }, []);
+
+  const handleClassChange = (className: string) => {
+    setSelectedClass(className);
+    const cls = WOW_CLASSES_SPECS.find(c => c.name === className);
+    const firstSpec = cls && cls.specs.length > 0 ? cls.specs[0] : "";
+    setSelectedSpec(firstSpec);
+    if (className && firstSpec) {
+      const newBuild = generateDefaultBuild(className, firstSpec);
+      setActiveBuild(newBuild);
+      localStorage.setItem("pullprep_active_build", JSON.stringify(newBuild));
+    }
+  };
+
+  const handleSpecChange = (specName: string) => {
+    setSelectedSpec(specName);
+    if (selectedClass && specName) {
+      const newBuild = generateDefaultBuild(selectedClass, specName);
+      setActiveBuild(newBuild);
+      localStorage.setItem("pullprep_active_build", JSON.stringify(newBuild));
+    }
+  };
 
   useEffect(() => {
     const specScenarios = getScenariosForSpec(activeBuild?.spec);
@@ -272,12 +305,15 @@ export default function Train() {
   };
 
   const getMappedSpell = (spellId: number): Spell => {
+    const currentClassKey = activeBuild?.class?.toLowerCase().replace(/ /g, "") || "";
+    const classColorHex = CLASS_COLORS_HEX[currentClassKey] || "#a855f7";
+
     const defaultSpell = DEMON_HUNTER_SPELLS[spellId] || {
       id: spellId,
       name: `Spell ${spellId}`,
       keybind: "",
       icon: "chaos-strike",
-      color: "#a855f7",
+      color: classColorHex,
       description: `Spell ${spellId}`
     };
 
@@ -941,6 +977,43 @@ export default function Train() {
               <div className="space-y-2">
                 <h2 className="text-2xl font-black text-white">Select Drill & Launch</h2>
                 <p className="text-zinc-400 text-sm">Choose a practice drill. Place your fingers on your bindings and hit Start.</p>
+              </div>
+
+              {/* Class & Spec Selector */}
+              <div className="p-4 rounded-xl border border-zinc-900 bg-zinc-900/40 text-left space-y-3">
+                <div className="flex items-center space-x-2 text-violet-400 font-extrabold text-xs uppercase tracking-wider">
+                  <svg fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" className="size-4">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.43l-1.003.828c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.43l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+                  </svg>
+                  <span>Select Class & Specialization</span>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-[10px] text-zinc-500 font-extrabold uppercase tracking-wide block mb-1">Class</label>
+                    <select
+                      value={selectedClass}
+                      onChange={(e) => handleClassChange(e.target.value)}
+                      className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2 py-1.5 text-xs text-zinc-200 focus:border-violet-500 focus:outline-none cursor-pointer"
+                    >
+                      {WOW_CLASSES_SPECS.map(c => (
+                        <option key={c.key} value={c.name}>{c.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="text-[10px] text-zinc-500 font-extrabold uppercase tracking-wide block mb-1">Specialization</label>
+                    <select
+                      value={selectedSpec}
+                      onChange={(e) => handleSpecChange(e.target.value)}
+                      className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2 py-1.5 text-xs text-zinc-200 focus:border-violet-500 focus:outline-none cursor-pointer"
+                    >
+                      {(WOW_CLASSES_SPECS.find(c => c.name === selectedClass)?.specs || []).map(spec => (
+                        <option key={spec} value={spec}>{spec}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
               </div>
 
               {/* Spell Audit Warning Card */}
