@@ -127,14 +127,95 @@ export const DEMON_HUNTER_SPELLS: Record<number, Spell> = {
     color: "#eab308", // Amber
     description: "Leap into the air and transform into a demon, empowering your abilities.",
   },
+  // Vengeance Spells
+  187827: {
+    id: 187827,
+    name: "Metamorphosis",
+    keybind: "4",
+    icon: "metamorphosis",
+    color: "#eab308", // Amber
+    description: "Transform into a demon, increasing current and maximum health by 50% and armor by 200%.",
+  },
+  212084: {
+    id: 212084,
+    name: "Fel Devastation",
+    keybind: "3",
+    icon: "eye-beam",
+    color: "#8b5cf6", // Purple
+    description: "Unleash the fel within, damaging enemies in front of you and healing yourself.",
+  },
+  228477: {
+    id: 228477,
+    name: "Soul Cleave",
+    keybind: "2",
+    icon: "blade-dance",
+    color: "#10b981", // Emerald
+    description: "Viciously strike enemies in front of you, dealing physical damage and healing yourself.",
+  },
+  247454: {
+    id: 247454,
+    name: "Spirit Bomb",
+    keybind: "5",
+    icon: "spirit-bomb",
+    color: "#a855f7", // Fuchsia
+    description: "Consume up to 5 Soul Fragments to damage enemies and apply Frailty, healing you for 8% of damage dealt.",
+  },
+  207407: {
+    id: 207407,
+    name: "Soul Carver",
+    keybind: "6",
+    icon: "soul-carver",
+    color: "#f43f5e", // Rose
+    description: "Carve into the target's soul, dealing fire damage and spawning Soul Fragments.",
+  },
+  204021: {
+    id: 204021,
+    name: "Fiery Brand",
+    keybind: "E",
+    icon: "fiery-brand",
+    color: "#f97316", // Orange
+    description: "Brand an enemy, dealing fire damage and reducing the damage they deal to you by 40%.",
+  },
+  227084: {
+    id: 227084,
+    name: "Fracture",
+    keybind: "1",
+    icon: "chaos-strike",
+    color: "#ef4444", // Red
+    description: "Slam your target, dealing physical damage and carving 2 Soul Fragments from them.",
+  },
+  225919: {
+    id: 225919,
+    name: "Shear",
+    keybind: "1",
+    icon: "chaos-strike",
+    color: "#ef4444", // Red
+    description: "Shear your target, dealing physical damage and having a chance to spawn a Soul Fragment.",
+  },
+  203720: {
+    id: 203720,
+    name: "Demon Spikes",
+    keybind: "Q",
+    icon: "demon-spikes",
+    color: "#06b6d4", // Cyan
+    description: "Surge with fel power, increasing your armor and parry chance.",
+  }
 };
 
 // Mutually exclusive spells or alternate IDs (e.g. Fracture vs Shear)
-const SPELL_GROUP_MAPPINGS: Record<number, number[]> = {
+export const SPELL_GROUP_MAPPINGS: Record<number, number[]> = {
   227084: [227084, 225919, 263642, 203782], // Fracture/Shear group
   225919: [227084, 225919, 263642, 203782],
   263642: [227084, 225919, 263642, 203782],
-  203782: [227084, 225919, 263642, 203782]
+  203782: [227084, 225919, 263642, 203782],
+  // Cross-spec fallback mappings for common mappings
+  191427: [191427, 187827],
+  187827: [191427, 187827],
+  198013: [198013, 212084],
+  212084: [198013, 212084],
+  188499: [188499, 228477, 247454],
+  228477: [188499, 228477, 247454],
+  162794: [162794, 227084, 225919]
 };
 
 // Scan character layout for missing core spells
@@ -518,4 +599,70 @@ export function compileStats(
     transitionFatigues,
     keybindAudits
   };
+}
+
+export function getScenariosForSpec(specName: string | undefined): Scenario[] {
+  const isVengeance = specName?.toLowerCase().includes("vengeance");
+  if (isVengeance) {
+    return [
+      {
+        id: "vdh-rotation",
+        name: "Vengeance Demon Hunter Rotation",
+        description: "Practice the optimal single-target Vengeance tanking and damage rotation.",
+        duration: 20,
+        steps: [
+          { time: 0.5, spellId: 204021 }, // Fiery Brand
+          { time: 2.0, spellId: 187827 }, // Metamorphosis
+          { time: 3.5, spellId: 227084 }, // Fracture (alternates with Shear)
+          { time: 5.0, spellId: 207407 }, // Soul Carver
+          { time: 6.5, spellId: 247454 }, // Spirit Bomb
+          { time: 8.0, spellId: 212084 }, // Fel Devastation
+          { time: 9.5, spellId: 228477 }, // Soul Cleave
+          { time: 11.0, spellId: 227084 }, // Fracture
+          { time: 12.5, spellId: 227084 }, // Fracture
+          { time: 14.0, spellId: 247454 }, // Spirit Bomb
+          { time: 15.5, spellId: 228477 }, // Soul Cleave
+          { time: 17.0, spellId: 227084 }, // Fracture
+          { time: 18.5, spellId: 227084 }, // Fracture
+        ],
+      },
+      {
+        id: "proc-reaction",
+        name: "Proc Reaction Speed Drill",
+        description: "React to randomized, rapid spell procs. Hit the highlighted button as fast as you can.",
+        duration: 20,
+        isProcReaction: true,
+        steps: [],
+      }
+    ];
+  }
+
+  // Default: Havoc DH
+  return [
+    {
+      id: "dh-opener",
+      name: "Havoc Demon Hunter Opener",
+      description: "Practice the perfect single-target Havoc DH opener sequence. Build keybind muscle memory.",
+      duration: 15,
+      steps: [
+        { time: 0.5, spellId: 191427 }, // Metamorphosis
+        { time: 2.0, spellId: 198013 }, // Eye Beam
+        { time: 3.5, spellId: 188499 }, // Blade Dance
+        { time: 5.0, spellId: 162794 }, // Chaos Strike
+        { time: 6.5, spellId: 162794 }, // Chaos Strike
+        { time: 8.0, spellId: 188499 }, // Blade Dance
+        { time: 9.5, spellId: 162794 }, // Chaos Strike
+        { time: 11.0, spellId: 198013 }, // Eye Beam
+        { time: 12.5, spellId: 188499 }, // Blade Dance
+      ],
+    },
+    {
+      id: "proc-reaction",
+      name: "Proc Reaction Speed Drill",
+      description: "React to randomized, rapid spell procs. Hit the highlighted button as fast as you can.",
+      duration: 20,
+      isProcReaction: true,
+      steps: [],
+    }
+  ];
 }

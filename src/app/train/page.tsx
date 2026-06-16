@@ -15,8 +15,11 @@ import {
   checkMissingCoreSpells,
   ImportedBuild,
   ImportedBar,
-  ImportedButton
+  ImportedButton,
+  getScenariosForSpec,
+  SPELL_GROUP_MAPPINGS
 } from "@/lib/trainingEngine";
+
 
 // Web Audio API Synthesizer for premium instant feedback
 class SoundSynthesizer {
@@ -149,6 +152,7 @@ const getSpellIconSVG = (name: string) => {
 };
 
 export default function Train() {
+  const [scenarios, setScenarios] = useState<Scenario[]>(TRAINING_SCENARIOS);
   const [selectedScenario, setSelectedScenario] = useState<Scenario>(TRAINING_SCENARIOS[0]);
   const [gameState, setGameState] = useState<"idle" | "countdown" | "running" | "finished">("idle");
   const [countdown, setCountdown] = useState<number>(3);
@@ -232,11 +236,24 @@ export default function Train() {
     }
   }, []);
 
+  useEffect(() => {
+    const specScenarios = getScenariosForSpec(activeBuild?.spec);
+    setScenarios(specScenarios);
+    if (specScenarios.length > 0) {
+      setSelectedScenario(specScenarios[0]);
+    }
+  }, [activeBuild]);
+
   const getSpellKeybind = (spellId: number): string => {
     if (activeBuild) {
+      const targetIds = new Set<number>([spellId]);
+      const alternates = SPELL_GROUP_MAPPINGS[spellId];
+      if (alternates) {
+        alternates.forEach(id => targetIds.add(id));
+      }
       for (const bar of activeBuild.actionBars) {
         for (const btn of bar.buttons) {
-          if (btn.id === spellId && btn.key) {
+          if (btn.type !== "empty" && btn.id && targetIds.has(btn.id) && btn.key) {
             return btn.key;
           }
         }
@@ -254,71 +271,43 @@ export default function Train() {
     return `/icons/${targetId}.jpg`;
   };
 
-  const getMappedSpell = (havocSpellId: number): Spell => {
-    const defaultSpell = DEMON_HUNTER_SPELLS[havocSpellId];
+  const getMappedSpell = (spellId: number): Spell => {
+    const defaultSpell = DEMON_HUNTER_SPELLS[spellId] || {
+      id: spellId,
+      name: `Spell ${spellId}`,
+      keybind: "",
+      icon: "chaos-strike",
+      color: "#a855f7",
+      description: `Spell ${spellId}`
+    };
+
     if (!activeBuild) return defaultSpell;
 
-    const isVengeance = activeBuild.class?.toUpperCase() === "DEMONHUNTER" && activeBuild.spec?.toLowerCase().includes("vengeance");
-    if (!isVengeance) return defaultSpell;
-
-    // Search terms for Vengeance counterpart spells
-    let searchNames: string[] = [];
-    let fallbackId = havocSpellId;
-    let fallbackName = defaultSpell.name;
-    let fallbackColor = defaultSpell.color;
-    let fallbackIcon = defaultSpell.icon;
-
-    if (havocSpellId === 191427) { // Metamorphosis
-      searchNames = ["metamorphosis"];
-      fallbackId = 187827;
-      fallbackName = "Metamorphosis";
-    } else if (havocSpellId === 198013) { // Eye Beam -> Fel Devastation
-      searchNames = ["fel devastation", "eye beam"];
-      fallbackId = 212084;
-      fallbackName = "Fel Devastation";
-      fallbackColor = "#10b981"; // green
-      fallbackIcon = "eye-beam";
-    } else if (havocSpellId === 188499) { // Blade Dance -> Soul Cleave / Spirit Bomb
-      searchNames = ["soul cleave", "spirit bomb", "blade dance"];
-      fallbackId = 228477;
-      fallbackName = "Soul Cleave";
-      fallbackColor = "#ef4444"; // red
-      fallbackIcon = "blade-dance";
-    } else if (havocSpellId === 162794) { // Chaos Strike -> Fracture / Shear
-      searchNames = ["fracture", "shear", "chaos strike"];
-      fallbackId = 227084;
-      fallbackName = "Fracture";
-      fallbackColor = "#eab308"; // yellow/orange
-      fallbackIcon = "chaos-strike";
+    const targetIds = new Set<number>([spellId]);
+    const alternates = SPELL_GROUP_MAPPINGS[spellId];
+    if (alternates) {
+      alternates.forEach(id => targetIds.add(id));
     }
 
-    // Try to find the spell on their bars
     for (const bar of activeBuild.actionBars) {
       for (const btn of bar.buttons) {
-        if (btn.type !== "empty" && btn.name) {
-          const nameLower = btn.name.toLowerCase();
-          if (searchNames.some(sName => nameLower.includes(sName))) {
-            return {
-              id: btn.id,
-              name: btn.name,
-              keybind: btn.key,
-              icon: fallbackIcon,
-              color: fallbackColor,
-              description: btn.name,
-            };
-          }
+        if (btn.type !== "empty" && btn.id && targetIds.has(btn.id)) {
+          const matchedDefault = DEMON_HUNTER_SPELLS[btn.id] || defaultSpell;
+          return {
+            id: btn.id,
+            name: btn.name || matchedDefault.name,
+            keybind: btn.key || matchedDefault.keybind,
+            icon: matchedDefault.icon,
+            color: matchedDefault.color,
+            description: btn.name || matchedDefault.description,
+          };
         }
       }
     }
 
-    // Fallback if not found on their bar
     return {
-      id: fallbackId,
-      name: fallbackName,
-      keybind: getSpellKeybind(fallbackId) || defaultSpell.keybind,
-      icon: fallbackIcon,
-      color: fallbackColor,
-      description: fallbackName,
+      ...defaultSpell,
+      keybind: getSpellKeybind(spellId) || defaultSpell.keybind,
     };
   };
 
@@ -495,8 +484,9 @@ export default function Train() {
       steps = [];
       const numSteps = Math.floor(selectedScenario.duration / 2);
       let currTime = 1.0;
+      const coreIds = activeCoreSpells.map((s: any) => s.id).filter((id: number) => id !== 191427 && id !== 187827);
+      const spellIds = coreIds.length > 0 ? coreIds : [162794, 188499, 198013];
       for (let i = 0; i < numSteps; i++) {
-        const spellIds = [162794, 188499, 198013];
         const randomId = spellIds[Math.floor(Math.random() * spellIds.length)];
         steps.push({ time: currTime, spellId: randomId });
         currTime += 1.8 + Math.random() * 1.5;
@@ -846,6 +836,12 @@ export default function Train() {
 
   // Spell Auditing Setup
   const specKey = activeBuild ? `${activeBuild.class.toLowerCase().replace(' ', '')}_${activeBuild.spec.toLowerCase().replace(' ', '')}` : "demonhunter_havoc";
+  const activeCoreSpells = ROTATIONS_DB[specKey]?.coreSpells || [
+    { id: 191427, name: "Metamorphosis" },
+    { id: 198013, name: "Eye Beam" },
+    { id: 188499, name: "Blade Dance" },
+    { id: 162794, name: "Chaos Strike" }
+  ];
   const missingSpells = checkMissingCoreSpells(activeBuild, specKey);
 
   return (
@@ -965,7 +961,7 @@ export default function Train() {
               )}
 
               <div className="flex flex-col space-y-2">
-                {TRAINING_SCENARIOS.map((scen) => (
+                {scenarios.map((scen) => (
                   <button
                     key={scen.id}
                     onClick={() => setSelectedScenario(scen)}
@@ -1556,7 +1552,7 @@ export default function Train() {
               Keyboard Monitor (Real-time)
             </span>
             <div className="flex flex-wrap items-center justify-center gap-1.5 font-mono text-xs text-zinc-500">
-              {([191427, 198013, 188499, 162794].map(id => getMappedSpell(id).keybind)).map((k) => (
+              {Array.from(new Set(activeCoreSpells.map((core: any) => getMappedSpell(core.id).keybind).filter(Boolean))).map((k) => (
                 <div
                   key={k}
                   className={`px-3 h-7 rounded border flex items-center justify-center font-extrabold transition-all select-none min-w-[28px] ${
