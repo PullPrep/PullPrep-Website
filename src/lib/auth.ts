@@ -10,8 +10,7 @@ export function getSession(request: NextRequest): SessionUser | null {
   const cookie = request.cookies.get("pullprep_session");
   if (!cookie || !cookie.value) return null;
 
-  const clientSecret = process.env.BLIZZARD_CLIENT_SECRET;
-  if (!clientSecret) return null;
+  const clientSecret = process.env.BLIZZARD_CLIENT_SECRET || "fallback_secret";
 
   try {
     const parts = cookie.value.split(".");
