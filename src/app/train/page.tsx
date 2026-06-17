@@ -957,7 +957,7 @@ export default function Train() {
             : Object.values(DEMON_HUNTER_SPELLS).find(s => s.id === c.expectedSpellId);
           keyMap[c.expectedSpellId] = {
             times: [],
-            key: btn?.key || DEMON_HUNTER_SPELLS[c.expectedSpellId]?.keybind || "Unbound",
+            key: (btn && "key" in btn ? btn.key : (btn as any)?.keybind) || DEMON_HUNTER_SPELLS[c.expectedSpellId]?.keybind || "Unbound",
             name: btn?.name || DEMON_HUNTER_SPELLS[c.expectedSpellId]?.name || `Spell ${c.expectedSpellId}`
           };
         }
