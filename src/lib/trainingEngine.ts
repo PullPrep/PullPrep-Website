@@ -316,7 +316,11 @@ export function checkMissingCoreSpells(
 
   const missing: { id: number; name: string }[] = [];
 
-  rotationData.coreSpells.forEach((core: { id: number; name: string }) => {
+  const realCoreSpells = rotationData.coreSpells.filter((core: { id: number; name: string }) =>
+    isRealSpell(core.id, core.name)
+  );
+
+  realCoreSpells.forEach((core: { id: number; name: string }) => {
     const alternates = SPELL_GROUP_MAPPINGS[core.id];
     if (alternates) {
       const isAnyBound = alternates.some((altId) => boundSpellIds.has(altId));
@@ -355,7 +359,7 @@ export function auditKeybindLayout(
         
         // Find if this button is a core spell
         const isCore = rotationData.coreSpells.some((core: any) => 
-          core.id === btn.id || SPELL_GROUP_MAPPINGS[core.id]?.includes(btn.id)
+          (core.id === btn.id || SPELL_GROUP_MAPPINGS[core.id]?.includes(btn.id)) && isRealSpell(core.id, core.name)
         );
 
         if (isCore && isAwkward) {
@@ -678,7 +682,73 @@ export function compileStats(
   };
 }
 
-export function getScenariosForSpec(specName: string | undefined): Scenario[] {
+export const CUSTOM_OPENERS: Record<string, number[]> = {
+  "druid_balance": [5176, 5176, 8921, 93402, 194223, 323764, 78674, 78674, 190984, 5176, 5176], // Wrath, Wrath, Moonfire, Sunfire, Celestial Alignment, Convoke, Starsurge, Starsurge, Starfire
+  "demonhunter_havoc": [258920, 232893, 198013, 191427, 188499, 162794, 258860, 188499, 162794], // Immo Aura, Felblade, Eye Beam, Meta, Death Sweep, Annihilation, Ess Break, Death Sweep
+  "demonhunter_vengeance": [204596, 227084, 204021, 212084, 247454, 228477, 227084, 228477], // Sigil of Flame, Fracture, Fiery Brand, Fel Devastation, Spirit Bomb, Soul Cleave
+  "warrior_fury": [100, 152277, 107574, 1719, 184367, 385059, 23881, 85288, 184367], // Charge, Ravager, Avatar, Recklessness, Rampage, Odyn's Fury, Bloodthirst, Raging Blow, Rampage
+  "mage_fire": [133, 108853, 190319, 11366, 108853, 11366, 215705, 11366, 108853, 11366], // Fireball, Fire Blast, Combustion, Pyroblast, Fire Blast, Pyroblast, Phoenix Flames, Pyroblast
+  "mage_frost": [44614, 12472, 84714, 30455, 30455, 116, 44614, 30455, 30455], // Flurry, Icy Veins, Frozen Orb, Ice Lance, Ice Lance, Frostbolt, Flurry, Ice Lance
+  "mage_arcane": [12051, 30451, 30451, 30451, 30451, 365350, 326059, 44425], // Evocation, Arcane Blast x4, Arcane Surge, Touch of the Magi, Arcane Barrage
+  "paladin_retribution": [184575, 20271, 31884, 85256, 255937, 85256, 375576, 85256], // Blade of Justice, Judgment, Avenging Wrath, Final Verdict, Wake of Ashes, Final Verdict, Divine Toll, Final Verdict
+  "priest_shadow": [589, 34914, 8092, 2944, 228260, 15407, 205065], // SW:P, VT, Mind Blast, Devouring Plague, Void Eruption, Mind Flay, Void Bolt
+  "rogue_assassination": [703, 1943, 1329, 5171, 3264, 381753, 385627], // Garrote, Rupture, Mutilate, Slice and Dice, Envenom, Deathmark, Kingsbane
+  "warlock_destruction": [348, 17962, 1122, 116858, 17962, 116858, 29722], // Immolate, Conflagrate, Summon Infernal, Chaos Bolt, Conflagrate, Chaos Bolt, Incinerate
+  "hunter_beastmastery": [217200, 217200, 19574, 34026, 193530, 34026, 217200], // Barbed Shot, Barbed Shot, Bestial Wrath, Kill Command, Cobra Shot, Kill Command, Barbed Shot
+  "shaman_elemental": [188196, 2894, 375982, 51505, 8042, 57620], // Flame Shock, Fire Elemental, Primordial Wave, Lava Burst, Earth Shock, Lightning Bolt
+};
+
+export const SPELL_COOLDOWNS: Record<number, number> = {
+  // Druid
+  194223: 180, // Celestial Alignment (3m)
+  323764: 120, // Convoke the Spirits (2m)
+  202770: 60,  // Fury of Elune (1m)
+  37846: 60,   // Force of Nature (1m)
+  // Shaman
+  114050: 180, // Ascendance (3m)
+  114051: 180, // Ascendance (3m)
+  114052: 180, // Ascendance (3m)
+  375982: 45,  // Primordial Wave (45s)
+  51505: 8,    // Lava Burst (8s)
+  // Demon Hunter
+  191427: 240, // Metamorphosis (4m)
+  187827: 240, // Metamorphosis (4m)
+  198013: 40,  // Eye Beam (40s)
+  212084: 45,  // Fel Devastation (45s)
+  188499: 9,   // Blade Dance (9s)
+  258920: 30,  // Immolation Aura (30s)
+  323639: 90,  // The Hunt (90s)
+  258860: 40,  // Essence Break (40s)
+  // Warrior
+  152277: 45,  // Ravager (45s)
+  107574: 90,  // Avatar (90s)
+  1719: 90,    // Recklessness (90s)
+  385059: 45,  // Odyn's Fury (45s)
+  // Mage
+  190319: 120, // Combustion (2m)
+  12472: 180,  // Icy Veins (3m)
+  84714: 60,   // Frozen Orb (1m)
+  365350: 120, // Arcane Surge (2m)
+  326059: 45,  // Touch of the Magi (45s)
+  12051: 180,  // Evocation (3m)
+  // Paladin
+  31884: 120,  // Avenging Wrath (2m)
+  255937: 45,  // Wake of Ashes (45s)
+  375576: 60,  // Divine Toll (1m)
+  // Priest
+  228260: 120, // Void Eruption / Dark Ascension (2m)
+  // Rogue
+  381753: 120, // Deathmark (2m)
+  385627: 45,  // Kingsbane (45s)
+  // Warlock
+  1122: 180,   // Summon Infernal (3m)
+  17962: 12,   // Conflagrate (12s)
+  // Hunter
+  19574: 120,  // Bestial Wrath (2m)
+  34026: 6,    // Kill Command (6s)
+};
+
+export function getScenariosForSpec(specName: string | undefined, durationSeconds?: number): Scenario[] {
   if (!specName) {
     return TRAINING_SCENARIOS;
   }
@@ -694,40 +764,119 @@ export function getScenariosForSpec(specName: string | undefined): Scenario[] {
   const className = rotationData.class;
   const specDisplayName = rotationData.spec;
 
-  // Generate steps sequence dynamically from coreSpells (excluding cooldowns/interrupts/defensives from active gcd filler loop)
-  const cds = new Set(rotationData.cooldowns || []);
-  const interrupts = new Set(rotationData.interrupts || []);
-  const defensives = new Set(rotationData.defensives || []);
   const coreSpells = rotationData.coreSpells || [];
-
   const realSpells = coreSpells.filter((s: any) => isRealSpell(s.id, s.name));
-  const activeSpells = realSpells.length > 0 ? realSpells : coreSpells;
-  const cdSpells = activeSpells.filter((s: any) => cds.has(s.id));
-  const fillerSpells = activeSpells.filter((s: any) => !cds.has(s.id) && !interrupts.has(s.id) && !defensives.has(s.id));
-  
-  const rotationFiller = fillerSpells.length > 0 ? fillerSpells : activeSpells;
 
-  const sequence = [];
-  sequence.push(...cdSpells);
+  // --- 1. Generate Opener Scenario (always 20s) ---
+  const openerSequence: any[] = [];
+  const customOpenerIds = CUSTOM_OPENERS[matchedKey];
   
-  let fillerIdx = 0;
-  while (sequence.length < 13) {
-    sequence.push(rotationFiller[fillerIdx % rotationFiller.length]);
-    fillerIdx++;
+  if (customOpenerIds) {
+    customOpenerIds.forEach((id) => {
+      const spell = realSpells.find((s: any) => s.id === id) || { id, name: `Spell ${id}` };
+      openerSequence.push(spell);
+    });
+  } else {
+    // Cooldown-first dynamic fallback
+    const cds = realSpells.filter((s: any) => {
+      const nameLower = s.name.toLowerCase();
+      return rotationData.cooldowns?.includes(s.id) || 
+             ["metamorphosis", "alignment", "convoke", "avatar", "recklessness", "combustion", "veins", "surge", "wrath", "ascension", "eruption", "deathmark", "infernal", "elemental", "berserk", "incarnation"].some(kw => nameLower.includes(kw));
+    });
+    const fillers = realSpells.filter((s: any) => {
+      const nameLower = s.name.toLowerCase();
+      const isCd = rotationData.cooldowns?.includes(s.id) || 
+                   ["metamorphosis", "alignment", "convoke", "avatar", "recklessness", "combustion", "veins", "surge", "wrath", "ascension", "eruption", "deathmark", "infernal", "elemental", "berserk", "incarnation"].some(kw => nameLower.includes(kw));
+      return !isCd && !rotationData.interrupts?.includes(s.id) && !rotationData.defensives?.includes(s.id);
+    });
+
+    openerSequence.push(...cds.slice(0, 3));
+    let fillerIdx = 0;
+    while (openerSequence.length < 12 && fillers.length > 0) {
+      openerSequence.push(fillers[fillerIdx % fillers.length]);
+      fillerIdx++;
+    }
   }
 
-  const steps = sequence.map((spell: any, idx: number) => ({
+  const openerSteps = openerSequence.map((spell: any, idx: number) => ({
     time: 0.5 + idx * 1.5,
     spellId: spell.id
   }));
 
+  // --- 2. Generate Sustained Rotation Scenario ---
+  const duration = durationSeconds || 60;
+  
+  // Priority simulation respecting cooldowns, starting 60s into combat
+  const cdsList = realSpells.filter((s: any) => {
+    const nameLower = s.name.toLowerCase();
+    return rotationData.cooldowns?.includes(s.id) || 
+           SPELL_COOLDOWNS[s.id] !== undefined ||
+           ["metamorphosis", "alignment", "convoke", "avatar", "recklessness", "combustion", "veins", "surge", "avenging wrath", "ascension", "eruption", "deathmark", "infernal", "elemental", "berserk", "incarnation", "bloodlust", "heroism", "time warp"].some(kw => nameLower.includes(kw));
+  });
+
+  const fillerList = realSpells.filter((s: any) => {
+    const nameLower = s.name.toLowerCase();
+    const isCd = rotationData.cooldowns?.includes(s.id) || 
+                 SPELL_COOLDOWNS[s.id] !== undefined ||
+                 ["metamorphosis", "alignment", "convoke", "avatar", "recklessness", "combustion", "veins", "surge", "avenging wrath", "ascension", "eruption", "deathmark", "infernal", "elemental", "berserk", "incarnation", "bloodlust", "heroism", "time warp"].some(kw => nameLower.includes(kw));
+    return !isCd && !rotationData.interrupts?.includes(s.id) && !rotationData.defensives?.includes(s.id);
+  });
+
+  // Track simulated cooldown ends.
+  // Since we start 60s in, any cooldown spell is set to: Max(0, cooldown - 60)
+  const cooldownEnds: Record<number, number> = {};
+  cdsList.forEach((s: any) => {
+    const cdVal = SPELL_COOLDOWNS[s.id] || 120; // default to 2m
+    cooldownEnds[s.id] = Math.max(0, cdVal - 60);
+  });
+
+  const rotationSteps = [];
+  let simTime = 0.5;
+  while (simTime < duration) {
+    // Find highest priority available spell
+    let castSpell = null;
+
+    // Check CDs first
+    for (const cdSpell of cdsList) {
+      const cdEnd = cooldownEnds[cdSpell.id] || 0;
+      if (simTime >= cdEnd) {
+        castSpell = cdSpell;
+        const cooldownVal = SPELL_COOLDOWNS[cdSpell.id] || 120;
+        cooldownEnds[cdSpell.id] = simTime + cooldownVal;
+        break;
+      }
+    }
+
+    // Fall back to fillers (cycle through them in order of priority)
+    if (!castSpell && fillerList.length > 0) {
+      const idx = Math.floor(simTime / 1.5) % fillerList.length;
+      castSpell = fillerList[idx];
+    }
+
+    if (castSpell) {
+      rotationSteps.push({
+        time: parseFloat(simTime.toFixed(2)),
+        spellId: castSpell.id
+      });
+    }
+
+    simTime += 1.5; // GCD step
+  }
+
   return [
     {
-      id: `${matchedKey}-rotation`,
-      name: `${className} (${specDisplayName}) Practice Drill`,
-      description: `Practice the core rotational priority and muscle memory for ${specDisplayName} ${className}.`,
+      id: `${matchedKey}-opener`,
+      name: `${className} (${specDisplayName}) Opener Drill`,
+      description: `Practice the perfect single-target opening sequence to lock down the opener layout.`,
       duration: 20,
-      steps
+      steps: openerSteps
+    },
+    {
+      id: `${matchedKey}-sustained`,
+      name: `${className} (${specDisplayName}) Sustained Rotation`,
+      description: `Filler priorities 60s in (cooldowns start on CD and refresh dynamically in real-time).`,
+      duration,
+      steps: rotationSteps
     },
     {
       id: "proc-reaction",
@@ -803,7 +952,16 @@ export function isRealSpell(spellId: number, name: string): boolean {
     "quaking",
     "seismic",
     "volcanic",
-    "pool resource"
+    "pool resource",
+    // Shapeshifts, forms, stances, blessings, auras, presence, stealth, mounts
+    "form",
+    "stance",
+    "presence",
+    "aura",
+    "stealth",
+    "prowl",
+    "blessing",
+    "mount"
   ];
   
   return !blacklistedNames.some(blacklisted => lowerName.includes(blacklisted));
