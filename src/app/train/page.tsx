@@ -1516,7 +1516,7 @@ export default function Train() {
                     onClick={() => {
                       const newMuted = !isMuted;
                       setIsMuted(newMuted);
-                      if (gameState === "running") {
+                      if ((gameState as string) === "running") {
                         if (newMuted) synthRef.current?.stopHeartbeat();
                         else synthRef.current?.startHeartbeat(false);
                       }
