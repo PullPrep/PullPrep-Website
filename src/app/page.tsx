@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   WOW_CLASSES_SPECS,
-  generateDefaultBuild
+  generateDefaultBuild,
+  CLASS_COLORS_HEX
 } from "@/lib/trainingEngine";
 
 interface Session {
