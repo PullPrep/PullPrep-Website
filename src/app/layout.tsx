@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Outfit, Cinzel } from "next/font/google";
+import { Outfit, Russo_One } from "next/font/google";
 import "./globals.css";
 
 const outfit = Outfit({
@@ -7,10 +7,10 @@ const outfit = Outfit({
   variable: "--font-outfit",
 });
 
-const cinzel = Cinzel({
+const russo = Russo_One({
   subsets: ["latin"],
-  variable: "--font-cinzel",
-  weight: ["400", "700", "900"],
+  variable: "--font-russo-one",
+  weight: "400",
 });
 
 export const metadata: Metadata = {
@@ -24,7 +24,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${outfit.variable} ${cinzel.variable} h-full antialiased dark`}>
+    <html lang="en" className={`${outfit.variable} ${russo.variable} h-full antialiased dark`}>
       <body className="min-h-full bg-zinc-950 text-zinc-100 font-sans selection:bg-violet-500 selection:text-white">
         {children}
       </body>

@@ -9,7 +9,7 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-outfit), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
-  --font-serif: var(--font-cinzel), Georgia, serif;
+  --font-serif: var(--font-russo-one), sans-serif;
 }
 
 body {
