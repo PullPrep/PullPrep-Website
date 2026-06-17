@@ -341,9 +341,9 @@ export default function Train() {
       const isReaction = selectedScenario?.id?.includes("reaction");
       
       let matched = null;
-      if (isOpener) matched = specScenarios.find(s => s.id.endsWith("-opener"));
-      else if (isSustained) matched = specScenarios.find(s => s.id.endsWith("-sustained"));
-      else if (isReaction) matched = specScenarios.find(s => s.id === "proc-reaction");
+      if (isOpener) matched = specScenarios.find((s: any) => s.id.endsWith("-opener"));
+      else if (isSustained) matched = specScenarios.find((s: any) => s.id.endsWith("-sustained"));
+      else if (isReaction) matched = specScenarios.find((s: any) => s.id === "proc-reaction");
 
       setSelectedScenario(matched || specScenarios[0]);
     }
@@ -1563,7 +1563,7 @@ export default function Train() {
                 <span>Action Bar Masked (Hardcore Mode Active)</span>
               </div>
             ) : (
-              activeCoreSpells.map((coreSpell) => {
+              activeCoreSpells.map((coreSpell: any) => {
                 const spell = getMappedSpell(coreSpell.id);
                 const isSpellActive = activeSpell?.id === spell.id;
                 const keybind = spell.keybind;
