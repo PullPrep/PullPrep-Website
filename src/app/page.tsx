@@ -57,6 +57,8 @@ export default function Home() {
   const [selectedClass, setSelectedClass] = useState("Demon Hunter");
   const [selectedSpec, setSelectedSpec] = useState("Havoc");
   const [imageErrors, setImageErrors] = useState<Record<number, boolean>>({});
+  const [hoveredSpell, setHoveredSpell] = useState<string | null>(null);
+  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
 
   useEffect(() => {
     async function checkSession() {
@@ -344,10 +346,22 @@ export default function Home() {
                           const spellName = getSpellName(spellId, specKey);
                           const targetId = idMap[spellId] || spellId;
                           return (
-                            <div key={idx} className="flex items-center space-x-1.5 shrink-0 group relative">
+                            <div
+                              key={idx}
+                              className="flex items-center space-x-1.5 shrink-0 group"
+                              onMouseEnter={() => {
+                                setHoveredSpell(spellName);
+                                setHoveredIdx(idx);
+                              }}
+                              onMouseLeave={() => {
+                                setHoveredSpell(null);
+                                setHoveredIdx(null);
+                              }}
+                            >
                               <div
                                 className="w-8 h-8 rounded border border-zinc-800 bg-zinc-950/60 p-0.5 flex items-center justify-center transition-all hover:scale-105 hover:border-amber-500/50 cursor-help"
                                 style={{ borderColor: activeColor }}
+                                title={`${idx + 1}. ${spellName}`}
                               >
                                 {imageErrors[spellId] ? (
                                   <div className="w-full h-full rounded flex items-center justify-center text-[9px] font-black uppercase tracking-wider" style={{ color: activeColor, backgroundColor: `${activeColor}10` }}>
@@ -363,14 +377,6 @@ export default function Home() {
                                 )}
                               </div>
 
-                              {/* Tooltip */}
-                              <div
-                                className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2.5 py-1 bg-zinc-950 border text-[9px] font-black uppercase tracking-wider rounded shadow-lg pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity z-50 whitespace-nowrap"
-                                style={{ borderColor: activeColor, color: activeColor }}
-                              >
-                                {idx + 1}. {spellName}
-                              </div>
-
                               {idx < openerSteps.length - 1 && (
                                 <svg fill="none" viewBox="0 0 24 24" strokeWidth="3.5" stroke="currentColor" className="size-2.5 text-zinc-800">
                                   <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
@@ -379,6 +385,16 @@ export default function Home() {
                             </div>
                           );
                         })}
+                      </div>
+
+                      {/* Centralized Hover Feedback Text */}
+                      <div
+                        className="h-4 text-[10px] font-black uppercase tracking-widest text-center transition-colors duration-150"
+                        style={{ color: hoveredSpell ? activeColor : '#52525b' }}
+                      >
+                        {hoveredSpell && hoveredIdx !== null
+                          ? `Step ${hoveredIdx + 1}: ${hoveredSpell}`
+                          : "Hover icons to preview opener sequence"}
                       </div>
                     </div>
                   )}
