@@ -6,7 +6,10 @@ import { useRouter } from "next/navigation";
 import {
   WOW_CLASSES_SPECS,
   generateDefaultBuild,
-  CLASS_COLORS_HEX
+  CLASS_COLORS_HEX,
+  getScenariosForSpec,
+  ROTATIONS_DB,
+  DEMON_HUNTER_SPELLS
 } from "@/lib/trainingEngine";
 
 interface Session {
@@ -53,6 +56,7 @@ export default function Home() {
   // Preset Selector States
   const [selectedClass, setSelectedClass] = useState("Demon Hunter");
   const [selectedSpec, setSelectedSpec] = useState("Havoc");
+  const [imageErrors, setImageErrors] = useState<Record<number, boolean>>({});
 
   useEffect(() => {
     async function checkSession() {
@@ -111,6 +115,38 @@ export default function Home() {
       localStorage.setItem("pullprep_active_build", JSON.stringify(defaultBuild));
       router.push("/train");
     }
+  // Resolve class/spec details for opener timeline
+  const classKey = WOW_CLASSES_SPECS.find((c) => c.name === selectedClass)?.key || "";
+  const activeColor = CLASS_COLORS_HEX[classKey] || "#a855f7";
+  const specKey = `${classKey}_${selectedSpec.toLowerCase().replace(/ /g, "")}`;
+  
+  // Safe scenarios resolver
+  let openerSteps: { time: number; spellId: number }[] = [];
+  try {
+    const specScenarios = getScenariosForSpec(selectedSpec);
+    const openerScenario = specScenarios.find((s) => s.id.endsWith("-opener"));
+    if (openerScenario) {
+      openerSteps = openerScenario.steps.slice(0, 8); // Limit preview to first 8 steps to prevent overflow
+    }
+  } catch (err) {
+    console.error("Failed to load scenarios for preset", err);
+  }
+
+  const getSpellName = (spellId: number, specKey: string): string => {
+    const rotationData = ROTATIONS_DB[specKey];
+    const coreSpells = rotationData?.coreSpells || [];
+    const spell = coreSpells.find((s: any) => s.id === spellId);
+    if (spell) return spell.name;
+    return DEMON_HUNTER_SPELLS[spellId]?.name || `Spell ${spellId}`;
+  };
+
+  const idMap: Record<number, number> = {
+    227084: 263642, // Fracture internal/talent -> Fracture spell
+    225919: 203782, // Shear internal/talent -> Shear spell
+    37846: 33917,   // Force of Nature -> working asset
+    46832: 190984,  // Solar Eclipse -> Starfire
+    48518: 5176,    // Lunar Eclipse -> Wrath
+    1239669: 190984 // Eclipse -> Starfire
   };
 
   return (
@@ -293,6 +329,57 @@ export default function Home() {
                       {selectedSpec} {selectedClass}
                     </span>
                   </p>
+
+                  {/* Simulationcraft Opener Timeline Preview */}
+                  {openerSteps.length > 0 && (
+                    <div className="space-y-3 py-2 border-t border-zinc-900/60 mt-3 select-none">
+                      <span className="text-[9px] text-zinc-500 font-extrabold uppercase tracking-widest block">
+                        Simulationcraft Opener Timeline
+                      </span>
+                      <div className="flex items-center justify-center space-x-1.5 overflow-x-auto py-1.5 px-2 scrollbar-none">
+                        {openerSteps.map((step, idx) => {
+                          const spellId = step.spellId;
+                          const spellName = getSpellName(spellId, specKey);
+                          const targetId = idMap[spellId] || spellId;
+                          return (
+                            <div key={idx} className="flex items-center space-x-1.5 shrink-0 group relative">
+                              <div
+                                className="w-8 h-8 rounded border border-zinc-800 bg-zinc-950/60 p-0.5 flex items-center justify-center transition-all hover:scale-105 hover:border-amber-500/50 cursor-help"
+                                style={{ borderColor: activeColor }}
+                              >
+                                {imageErrors[spellId] ? (
+                                  <div className="w-full h-full rounded flex items-center justify-center text-[9px] font-black uppercase tracking-wider" style={{ color: activeColor, backgroundColor: `${activeColor}10` }}>
+                                    {spellName.substring(0, 2)}
+                                  </div>
+                                ) : (
+                                  <img
+                                    src={`/icons/${targetId}.jpg`}
+                                    alt={spellName}
+                                    className="w-full h-full rounded object-cover"
+                                    onError={() => setImageErrors((prev) => ({ ...prev, [spellId]: true }))}
+                                  />
+                                )}
+                              </div>
+
+                              {/* Tooltip */}
+                              <div
+                                className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-2.5 py-1 bg-zinc-950 border text-[9px] font-black uppercase tracking-wider rounded shadow-lg pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity z-50 whitespace-nowrap"
+                                style={{ borderColor: activeColor, color: activeColor }}
+                              >
+                                {idx + 1}. {spellName}
+                              </div>
+
+                              {idx < openerSteps.length - 1 && (
+                                <svg fill="none" viewBox="0 0 24 24" strokeWidth="3.5" stroke="currentColor" className="size-2.5 text-zinc-800">
+                                  <path strokeLinecap="round" strokeLinejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                                </svg>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
 
                   <button
                     type="submit"
