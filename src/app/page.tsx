@@ -115,6 +115,8 @@ export default function Home() {
       localStorage.setItem("pullprep_active_build", JSON.stringify(defaultBuild));
       router.push("/train");
     }
+  };
+
   // Resolve class/spec details for opener timeline
   const classKey = WOW_CLASSES_SPECS.find((c) => c.name === selectedClass)?.key || "";
   const activeColor = CLASS_COLORS_HEX[classKey] || "#a855f7";
