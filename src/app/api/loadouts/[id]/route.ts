@@ -13,7 +13,7 @@ export async function DELETE(
 
   try {
     const { id } = await params;
-    const deleted = LocalDb.deleteLoadout(id, session.id);
+    const deleted = await LocalDb.deleteLoadout(id, session.id);
 
     if (deleted) {
       return NextResponse.json({ success: true });

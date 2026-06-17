@@ -29,6 +29,7 @@ import {
 // Web Audio API Synthesizer for premium instant feedback
 class SoundSynthesizer {
   private ctx: AudioContext | null = null;
+  private heartbeatInterval: any = null;
 
   private init() {
     if (!this.ctx) {
@@ -99,10 +100,53 @@ class SoundSynthesizer {
     osc.start();
     osc.stop(this.ctx.currentTime + 0.25);
   }
+
+  startHeartbeat(isMuted: boolean) {
+    this.stopHeartbeat();
+    if (isMuted) return;
+
+    this.init();
+    if (!this.ctx) return;
+
+    const playThump = () => {
+      if (!this.ctx || this.ctx.state === "suspended") return;
+      const now = this.ctx.currentTime;
+
+      // Double beat pattern: lub-dub
+      const beats = [0, 0.22];
+      beats.forEach((delay) => {
+        const osc = this.ctx!.createOscillator();
+        const gain = this.ctx!.createGain();
+
+        osc.connect(gain);
+        gain.connect(this.ctx!.destination);
+
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(55, now + delay); // Low pitch thump at 55 Hz
+        
+        gain.gain.setValueAtTime(0, now + delay);
+        gain.gain.linearRampToValueAtTime(0.35, now + delay + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + delay + 0.22);
+
+        osc.start(now + delay);
+        osc.stop(now + delay + 0.25);
+      });
+    };
+
+    playThump();
+    this.heartbeatInterval = setInterval(playThump, 1000);
+  }
+
+  stopHeartbeat() {
+    if (this.heartbeatInterval) {
+      clearInterval(this.heartbeatInterval);
+      this.heartbeatInterval = null;
+    }
+  }
 }
 
 interface EncounterAlert {
-  type: "interrupt" | "health" | "defensive";
+  type: "interrupt" | "health" | "defensive" | "dispel";
   prompt: string;
   key: string;
   expiresAt: number;
@@ -214,7 +258,133 @@ const getSpellIconSVG = (name: string) => {
       <path strokeLinecap="round" strokeLinejoin="round" d="M3 21l3-3m-3 0l3 3" />
     </svg>
   );
-};
+};function TunnelVisionOrb({
+  active,
+  onOrbRedTrigger,
+  onOrbClicked,
+}: {
+  active: boolean;
+  onOrbRedTrigger: (maxPoints: number) => void;
+  onOrbClicked: (score: number) => void;
+}) {
+  const [pos, setPos] = useState({ x: 50, y: 50 });
+  const [isRed, setIsRed] = useState(false);
+  const [pointsAvailable, setPointsAvailable] = useState(10);
+  
+  const velRef = useRef({ dx: 0.15, dy: 0.12 });
+  const posRef = useRef({ x: 50, y: 50 });
+  const isRedRef = useRef(false);
+  const nextChangeTimeRef = useRef(0);
+  const redExpiresRef = useRef(0);
+
+  useEffect(() => {
+    if (!active) return;
+
+    // Randomize initial velocities and paths
+    const angle = Math.random() * Math.PI * 2;
+    velRef.current = {
+      dx: Math.cos(angle) * 0.18,
+      dy: Math.sin(angle) * 0.18,
+    };
+
+    nextChangeTimeRef.current = Date.now() + 5000 + Math.random() * 5000; // turn red in 5-10s
+
+    let animFrame: number;
+    let pointTimer: any;
+
+    const update = () => {
+      let { x, y } = posRef.current;
+      let { dx, dy } = velRef.current;
+
+      x += dx;
+      y += dy;
+
+      // Bounce on border boundaries
+      if (x <= 4 || x >= 96) {
+        dx = -dx;
+        x = Math.max(4, Math.min(96, x));
+      }
+      if (y <= 4 || y >= 96) {
+        dy = -dy;
+        y = Math.max(4, Math.min(96, y));
+      }
+
+      velRef.current = { dx, dy };
+      posRef.current = { x, y };
+      setPos({ x, y });
+
+      const now = Date.now();
+      // Handle random red trigger
+      if (!isRedRef.current && now >= nextChangeTimeRef.current) {
+        isRedRef.current = true;
+        setIsRed(true);
+        setPointsAvailable(10);
+        redExpiresRef.current = now + 10000; // 10s to click
+
+        onOrbRedTrigger(10);
+
+        // Start countdown timer for points
+        let pts = 10;
+        if (pointTimer) clearInterval(pointTimer);
+        pointTimer = setInterval(() => {
+          pts -= 1;
+          setPointsAvailable(pts);
+          if (pts <= 0) {
+            clearInterval(pointTimer);
+            isRedRef.current = false;
+            setIsRed(false);
+            nextChangeTimeRef.current = Date.now() + 8000 + Math.random() * 7000;
+          }
+        }, 1000);
+      }
+
+      // Handle red timeout expiration
+      if (isRedRef.current && now >= redExpiresRef.current) {
+        isRedRef.current = false;
+        setIsRed(false);
+        if (pointTimer) clearInterval(pointTimer);
+        nextChangeTimeRef.current = now + 8000 + Math.random() * 7000;
+      }
+
+      animFrame = requestAnimationFrame(update);
+    };
+
+    animFrame = requestAnimationFrame(update);
+
+    return () => {
+      cancelAnimationFrame(animFrame);
+      if (pointTimer) clearInterval(pointTimer);
+    };
+  }, [active, onOrbRedTrigger, onOrbClicked]);
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!isRed) return;
+
+    onOrbClicked(pointsAvailable);
+    setIsRed(false);
+    isRedRef.current = false;
+    nextChangeTimeRef.current = Date.now() + 8000 + Math.random() * 7000;
+  };
+
+  return (
+    <div
+      onClick={handleClick}
+      className={`absolute w-6 h-6 rounded-full cursor-pointer pointer-events-auto transition-all active:scale-90 flex items-center justify-center font-mono text-[9px] font-black z-40 select-none ${
+        isRed
+          ? "bg-rose-600 border-2 border-rose-400 text-white shadow-[0_0_20px_rgba(244,63,94,0.7)]"
+          : "bg-white/80 hover:bg-white border border-zinc-400 text-zinc-800 shadow-[0_0_10px_rgba(255,255,255,0.4)]"
+      }`}
+      style={{
+        left: `${pos.x}%`,
+        top: `${pos.y}%`,
+        transform: "translate(-50%, -50%)",
+      }}
+    >
+      {isRed ? pointsAvailable : ""}
+    </div>
+  );
+}
 
 export default function Train() {
   const [scenarios, setScenarios] = useState<Scenario[]>(TRAINING_SCENARIOS);
@@ -236,6 +406,11 @@ export default function Train() {
 
   const [lastCastTime, setLastCastTime] = useState<number | null>(null);
   const [drillDuration, setDrillDuration] = useState<number>(60); // default 60s
+
+  // Tunnel Vision Mode states
+  const [tunnelVisionActive, setTunnelVisionActive] = useState<boolean>(false);
+  const [orbTotalPossible, setOrbTotalPossible] = useState<number>(0);
+  const [orbScoreEarned, setOrbScoreEarned] = useState<number>(0);
 
   // Active key pressed tracking for UI visualizer
   const [pressedKeys, setPressedKeys] = useState<Record<string, boolean>>({});
@@ -261,7 +436,9 @@ export default function Train() {
     lastCastTime,
     activeAlert,
     isHardcore,
-    isGuidedMode
+    isGuidedMode,
+    orbTotalPossible,
+    orbScoreEarned
   });
 
   // Update ref to read latest states inside timers/listeners
@@ -277,9 +454,11 @@ export default function Train() {
       lastCastTime,
       activeAlert,
       isHardcore,
-      isGuidedMode
+      isGuidedMode,
+      orbTotalPossible,
+      orbScoreEarned
     };
-  }, [gameState, elapsedTime, activeStepIndex, activeSpell, activePromptTime, casts, combo, lastCastTime, activeAlert, isHardcore, isGuidedMode]);
+  }, [gameState, elapsedTime, activeStepIndex, activeSpell, activePromptTime, casts, combo, lastCastTime, activeAlert, isHardcore, isGuidedMode, orbTotalPossible, orbScoreEarned]);
 
   // Lazy initialize Synthesizer
   useEffect(() => {
@@ -515,7 +694,7 @@ export default function Train() {
     if (!activeBuild) return;
 
     // Scan bar keys to check which reactive spells are available
-    const availableCategories: ("interrupt" | "health" | "defensive")[] = [];
+    const availableCategories: ("interrupt" | "health" | "defensive" | "dispel")[] = [];
     const bindMap: Record<string, { key: string; name: string }> = {};
 
     activeBuild.actionBars.forEach((bar) => {
@@ -543,6 +722,21 @@ export default function Train() {
             availableCategories.push("defensive");
             bindMap["defensive"] = { key: btn.key, name: btn.name };
           }
+
+          // Dispels / Decurses
+          const isDispel = nameLower.includes("nature's cure") || 
+                           nameLower.includes("remove corruption") || 
+                           nameLower.includes("purify") || 
+                           nameLower.includes("mass dispel") || 
+                           nameLower.includes("remove curse") || 
+                           nameLower.includes("cleanse") || 
+                           nameLower.includes("detox") || 
+                           nameLower.includes("cleanse spirit") || 
+                           nameLower.includes("purify spirit");
+          if (isDispel && !availableCategories.includes("dispel")) {
+            availableCategories.push("dispel");
+            bindMap["dispel"] = { key: btn.key, name: btn.name };
+          }
         }
       });
     });
@@ -558,7 +752,8 @@ export default function Train() {
     const prompts = {
       interrupt: `Spell Cast! Interrupt with ${bind.name}!`,
       health: `LOW HEALTH (1%)! Use ${bind.name}!`,
-      defensive: `Incoming Big Damage! Cast ${bind.name}!`
+      defensive: `Incoming Big Damage! Cast ${bind.name}!`,
+      dispel: `Afflicted! Dispel/Decurse with ${bind.name}!`
     };
 
     setActiveAlert({
@@ -626,6 +821,9 @@ export default function Train() {
   const startGame = () => {
     setGameState("running");
     setElapsedTime(0);
+    setOrbTotalPossible(0);
+    setOrbScoreEarned(0);
+    synthRef.current?.startHeartbeat(isMuted);
 
     let steps = [...selectedScenario.steps];
     
@@ -722,6 +920,8 @@ export default function Train() {
     setActiveSpell(null);
     setActiveStepIndex(null);
     
+    synthRef.current?.stopHeartbeat();
+
     // Evaluate final stats
     const { casts: finalCasts } = stateRef.current;
     
@@ -739,7 +939,69 @@ export default function Train() {
     });
 
     const stats = compileStats(finalCasts, selectedScenario, totalDowntime, activeBuild);
+
+    // Submit stats
+    const drillType = selectedScenario.id.includes("opener")
+      ? "opener"
+      : selectedScenario.id.includes("sustained")
+      ? "sustained"
+      : "proc";
+
+    // Extract slowest 3 keys from casts
+    const keyMap: Record<number, { times: number[]; key: string; name: string }> = {};
+    finalCasts.forEach(c => {
+      if (c.reactionTime !== null && c.status !== "incorrect" && c.expectedSpellId) {
+        if (!keyMap[c.expectedSpellId]) {
+          const btn = activeBuild
+            ? activeBuild.actionBars.flatMap(b => b.buttons).find(b => b.id === c.expectedSpellId)
+            : Object.values(DEMON_HUNTER_SPELLS).find(s => s.id === c.expectedSpellId);
+          keyMap[c.expectedSpellId] = {
+            times: [],
+            key: btn?.key || DEMON_HUNTER_SPELLS[c.expectedSpellId]?.keybind || "Unbound",
+            name: btn?.name || DEMON_HUNTER_SPELLS[c.expectedSpellId]?.name || `Spell ${c.expectedSpellId}`
+          };
+        }
+        keyMap[c.expectedSpellId].times.push(c.reactionTime);
+      }
+    });
+
+    const slowestKeysList = Object.entries(keyMap).map(([idStr, details]) => {
+      const avg = Math.round(details.times.reduce((a, b) => a + b, 0) / details.times.length);
+      return {
+        id: Number(idStr),
+        key: details.key,
+        spell: details.name,
+        avg_time_ms: avg
+      };
+    }).sort((a, b) => b.avg_time_ms - a.avg_time_ms).slice(0, 3);
+
+    const pScore = stateRef.current.orbTotalPossible > 0
+      ? Math.round((stateRef.current.orbScoreEarned / stateRef.current.orbTotalPossible) * 100)
+      : 0;
+
+    if (tunnelVisionActive && pScore > 0) {
+      stats.feedback.push(`Peripheral Focus: You caught ${pScore}% of the awareness orbs (${stateRef.current.orbScoreEarned}/${stateRef.current.orbTotalPossible} points).`);
+    } else if (tunnelVisionActive) {
+      stats.feedback.push(`Peripheral Focus: You missed 100% of the awareness orbs. Stare less at your action bars!`);
+    }
+
     setFinalStats(stats);
+
+    fetch("/api/sessions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        class: activeBuild?.class || "Demon Hunter",
+        spec: activeBuild?.spec || "Havoc",
+        drillType,
+        duration: selectedScenario.duration,
+        accuracy: stats.accuracy,
+        avgReaction: stats.avgReactionTime,
+        grade: stats.accuracy >= 95 ? "S" : stats.accuracy >= 90 ? "A" : stats.accuracy >= 80 ? "B" : stats.accuracy >= 70 ? "C" : "F",
+        slowestKeys: slowestKeysList,
+        peripheralScore: tunnelVisionActive ? pScore : 0
+      })
+    }).catch(e => console.error("Failed to submit session stats", e));
   };
 
   const resetGame = () => {
@@ -755,6 +1017,9 @@ export default function Train() {
     setLastCastTime(null);
     setActiveAlert(null);
     setWipedReason(null);
+    setOrbTotalPossible(0);
+    setOrbScoreEarned(0);
+    synthRef.current?.stopHeartbeat();
   };
 
   // Keyboard events
@@ -1022,6 +1287,21 @@ export default function Train() {
       {/* Background Gradients */}
       <div className="absolute top-0 left-0 w-[500px] h-[500px] rounded-full bg-violet-900/5 blur-[120px] pointer-events-none" />
       
+      {/* Tunnel Vision Peripheral Awareness Canvas Overlay */}
+      {gameState === "running" && tunnelVisionActive && (
+        <div className="absolute inset-0 pointer-events-none z-30 select-none overflow-hidden">
+          <TunnelVisionOrb
+            active={gameState === "running"}
+            onOrbRedTrigger={(maxPoints) => {
+              setOrbTotalPossible((prev) => prev + maxPoints);
+            }}
+            onOrbClicked={(score) => {
+              setOrbScoreEarned((prev) => prev + score);
+            }}
+          />
+        </div>
+      )}
+
       {/* Header */}
       <header className="border-b border-zinc-900 bg-zinc-950/70 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
@@ -1223,6 +1503,59 @@ export default function Train() {
                   </button>
                 </div>
 
+                {/* Heartbeat Sound switch */}
+                <div className="flex items-center justify-between p-4 rounded-xl border border-zinc-850 bg-zinc-900/20 w-full">
+                  <div className="text-left space-y-0.5">
+                    <div className="flex items-center space-x-1.5">
+                      <span className="font-extrabold text-xs text-white uppercase tracking-wider">Metronome Beat</span>
+                      <span className="px-1.5 py-0.5 rounded text-[8px] font-black bg-violet-950/60 border border-violet-900 text-violet-400 uppercase tracking-widest">SFX</span>
+                    </div>
+                    <span className="text-[10px] text-zinc-500 block leading-tight">Plays a low heartbeat metronome to simulate high-stress raids.</span>
+                  </div>
+                  <button
+                    onClick={() => {
+                      const newMuted = !isMuted;
+                      setIsMuted(newMuted);
+                      if (gameState === "running") {
+                        if (newMuted) synthRef.current?.stopHeartbeat();
+                        else synthRef.current?.startHeartbeat(false);
+                      }
+                    }}
+                    className={`w-11 h-6 rounded-full p-1 transition-colors duration-200 focus:outline-none ${
+                      !isMuted ? "bg-violet-600" : "bg-zinc-800"
+                    }`}
+                  >
+                    <div
+                      className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform duration-200 ${
+                        !isMuted ? "translate-x-5" : "translate-x-0"
+                      }`}
+                    />
+                  </button>
+                </div>
+
+                {/* Tunnel Vision switch */}
+                <div className="flex items-center justify-between p-4 rounded-xl border border-zinc-850 bg-zinc-900/20 w-full">
+                  <div className="text-left space-y-0.5">
+                    <div className="flex items-center space-x-1.5">
+                      <span className="font-extrabold text-xs text-white uppercase tracking-wider">Tunnel Vision</span>
+                      <span className="px-1.5 py-0.5 rounded text-[8px] font-black bg-amber-950/60 border border-amber-900 text-amber-450 uppercase tracking-widest">Awareness</span>
+                    </div>
+                    <span className="text-[10px] text-zinc-500 block leading-tight">Spawns moving target spheres to train peripheral zone awareness.</span>
+                  </div>
+                  <button
+                    onClick={() => setTunnelVisionActive(!tunnelVisionActive)}
+                    className={`w-11 h-6 rounded-full p-1 transition-colors duration-200 focus:outline-none ${
+                      tunnelVisionActive ? "bg-amber-600" : "bg-zinc-800"
+                    }`}
+                  >
+                    <div
+                      className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform duration-200 ${
+                        tunnelVisionActive ? "translate-x-5" : "translate-x-0"
+                      }`}
+                    />
+                  </button>
+                </div>
+
                 {/* Sustained Duration Selector */}
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-xl border border-zinc-850 bg-zinc-900/20 w-full sm:col-span-2 gap-3">
                   <div className="text-left space-y-0.5">
@@ -1269,6 +1602,7 @@ export default function Train() {
               <div className={`w-32 h-32 rounded-2xl bg-zinc-950 border-4 ${
                 activeAlert.type === "interrupt" ? "border-amber-500 shadow-amber-500/20" :
                 activeAlert.type === "health" ? "border-rose-600 shadow-rose-600/20" :
+                activeAlert.type === "dispel" ? "border-emerald-500 shadow-emerald-500/20" :
                 "border-indigo-500 shadow-indigo-500/20"
               } flex flex-col items-center justify-center relative shadow-2xl transition-all`}>
                 
@@ -1286,6 +1620,11 @@ export default function Train() {
                   {activeAlert.type === "defensive" && (
                     <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-14 text-indigo-400">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75 11.25 15 15 9.75m-3-7.036A11.959 11.959 0 0 1 3.598 6 11.99 11.99 0 0 0 3 9.749c0 5.592 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285Z" />
+                    </svg>
+                  )}
+                  {activeAlert.type === "dispel" && (
+                    <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-14 text-emerald-400 animate-pulse">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9.813 15.904 9 21m0 0-.813-5.096A7.5 7.5 0 1 1 18.259 8.28a7.5 7.5 0 0 1-8.446 7.624ZM12 8.25a2.25 2.25 0 1 0 0-4.5 2.25 2.25 0 0 0 0 4.5Z" />
                     </svg>
                   )}
                 </div>
@@ -1313,10 +1652,12 @@ export default function Train() {
                 <span className={`text-xs font-bold uppercase tracking-widest ${
                   activeAlert.type === "health" ? "text-rose-500 animate-pulse" :
                   activeAlert.type === "interrupt" ? "text-amber-500" :
+                  activeAlert.type === "dispel" ? "text-emerald-400 animate-pulse" :
                   "text-indigo-400"
                 }`}>
                   {activeAlert.type === "health" ? "SURVIVAL ALERT!" :
                    activeAlert.type === "interrupt" ? "INTERRUPT MECHANIC!" :
+                   activeAlert.type === "dispel" ? "DISPEL / DECURSE!" :
                    "DEFENSIVE NEEDED!"}
                 </span>
                 <h3 className="text-2xl font-black text-white">

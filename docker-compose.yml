@@ -1,6 +1,27 @@
 services:
   # ----------------------------------------------------------------------------
-  # 1. Application Layer (Next.js Node Server)
+  # 1. Database Layer (PostgreSQL)
+  # ----------------------------------------------------------------------------
+  db:
+    image: postgres:16-alpine
+    container_name: pullprep-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: pullprep
+      POSTGRES_PASSWORD: pullprep_secure_pass
+      POSTGRES_DB: pullprep
+    volumes:
+      - pullprep_db_data:/var/lib/postgresql/data
+    networks:
+      - pullprep_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U pullprep -d pullprep"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ----------------------------------------------------------------------------
+  # 2. Application Layer (Next.js Node Server)
   # ----------------------------------------------------------------------------
   web:
     image: ghcr.io/pullprep/pullprep-website:latest
@@ -15,11 +36,15 @@ services:
     environment:
       - BLIZZARD_CLIENT_ID=${BLIZZARD_CLIENT_ID}
       - BLIZZARD_CLIENT_SECRET=${BLIZZARD_CLIENT_SECRET}
+      - DATABASE_URL=postgresql://pullprep:pullprep_secure_pass@db:5432/pullprep
+    depends_on:
+      db:
+        condition: service_healthy
     networks:
       - pullprep_network
 
   # ----------------------------------------------------------------------------
-  # 2. Delivery Layer (Cloudflare Zero-Trust Tunnel)
+  # 3. Delivery Layer (Cloudflare Zero-Trust Tunnel)
   # ----------------------------------------------------------------------------
   tunnel:
     image: cloudflare/cloudflared:latest
@@ -40,4 +65,5 @@ networks:
 
 volumes:
   pullprep_data:
+  pullprep_db_data:
 

@@ -69,7 +69,7 @@ export async function GET(request: NextRequest) {
     const battletag = userData.battletag;
 
     // 3. Save to local database
-    LocalDb.saveUser(userId, battletag);
+    await LocalDb.saveUser(userId, battletag);
 
     // 4. Create signed session cookie payload
     const sessionData = { id: userId, battletag };

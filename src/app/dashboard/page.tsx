@@ -61,14 +61,10 @@ export default function Dashboard() {
   const [newLoadoutName, setNewLoadoutName] = useState("");
   const [isSavingLoadout, setIsSavingLoadout] = useState(false);
 
-  // Mock recent sessions
-  const recentSessions = [
-    { id: 1, scenario: "Havoc DH Opener", date: "Today, 10:12 AM", accuracy: 96, speed: "262ms", score: "S" },
-    { id: 2, scenario: "Proc Reaction Drill", date: "Yesterday, 8:40 PM", accuracy: 88, speed: "348ms", score: "A" },
-    { id: 3, scenario: "Havoc DH Opener", date: "Jun 12, 4:15 PM", accuracy: 84, speed: "410ms", score: "B" },
-    { id: 4, scenario: "Proc Reaction Drill", date: "Jun 11, 2:10 PM", accuracy: 92, speed: "298ms", score: "A" },
-    { id: 5, scenario: "Havoc DH Opener", date: "Jun 10, 11:30 AM", accuracy: 78, speed: "490ms", score: "C" },
-  ];
+  // DB-driven Dashboard States
+  const [leaderboard, setLeaderboard] = useState<any[]>([]);
+  const [progressHistory, setProgressHistory] = useState<any[]>([]);
+  const [slowestKeys, setSlowestKeys] = useState<any[]>([]);
 
   // Fetch session & load active build from localStorage on mount
   useEffect(() => {
@@ -91,9 +87,35 @@ export default function Dashboard() {
       localStorage.setItem("pullprep_active_build", JSON.stringify(defaultBuild));
     }
 
-    // 2. Fetch session
+    // 2. Fetch session and global leaderboard
+    fetchLeaderboard();
     checkSession();
   }, []);
+
+  const fetchLeaderboard = async () => {
+    try {
+      const res = await fetch("/api/leaderboard");
+      const data = await res.json();
+      if (data.success) {
+        setLeaderboard(data.leaderboard);
+      }
+    } catch (e) {
+      console.error("Failed to fetch leaderboard", e);
+    }
+  };
+
+  const fetchDashboardData = async () => {
+    try {
+      const res = await fetch("/api/sessions");
+      const data = await res.json();
+      if (data.success) {
+        setProgressHistory(data.history || []);
+        setSlowestKeys(data.slowestKeys || []);
+      }
+    } catch (e) {
+      console.error("Failed to fetch user progress history", e);
+    }
+  };
 
   const handleClassChange = (className: string) => {
     setSelectedClass(className);
@@ -124,6 +146,7 @@ export default function Dashboard() {
       setSession(data);
       if (data.loggedIn) {
         fetchLoadouts();
+        fetchDashboardData();
       }
     } catch (e) {
       console.error("Failed to fetch session", e);
@@ -278,6 +301,93 @@ export default function Dashboard() {
     } catch (e) {
       return false;
     }
+  };
+
+  const getClassTag = (cls: string) => {
+    const key = cls.toUpperCase().replace(/ /g, "");
+    return classColors[key] || "from-violet-600 to-zinc-900 border-violet-500/30 text-violet-400";
+  };
+
+  const getRecommendation = (key: string, spellName: string) => {
+    const keyClean = key.toUpperCase().replace(/(SHIFT-|CTRL-|ALT-)/g, "");
+    const easyKeys = ["1", "2", "3", "4", "5", "Q", "W", "E", "R", "T", "A", "S", "D", "F", "G", "Z", "X", "C", "V", "SPACE"];
+    if (!easyKeys.includes(keyClean)) {
+      return `Key "${key}" is far from movement keys (WASD). Rebind ${spellName} to a closer key like E, Q, R, or F to reduce finger travel and reaction times.`;
+    }
+    return `Spell ${spellName} on "${key}" is close to WASD but reaction time is high. Consider practicing this transition or mapping it to a more natural finger index slot.`;
+  };
+
+  const renderChart = () => {
+    if (progressHistory.length === 0) {
+      return (
+        <div className="h-44 flex flex-col items-center justify-center border border-dashed border-zinc-800 rounded-xl bg-zinc-950/20 text-center px-4 py-8">
+          <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-8 text-zinc-600 mb-2">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 13.5h3.86a2.25 2.25 0 0 1 2.008 1.24l.885 1.77a2.25 2.25 0 0 0 2.007 1.2411h1.98a2.25 2.25 0 0 0 2.007-1.24l.885-1.77a2.25 2.25 0 0 1 2.007-1.24h3.86m-18 0h18M2.25 13.5v-2.25a2.25 2.25 0 0 1 2.25-2.25h15a2.25 2.25 0 0 1 2.25 2.25v2.25m-18 0A2.25 2.25 0 0 0 2.25 15.75v2.25a2.25 2.25 0 0 0 2.25 2.25h15a2.25 2.25 0 0 0 2.25-2.25v-2.25a2.25 2.25 0 0 0-2.25-2.25" />
+          </svg>
+          <span className="text-xs font-bold text-zinc-400 uppercase tracking-wide">No History Recorded</span>
+          <p className="text-[10px] text-zinc-500 max-w-xs mt-1 leading-snug">
+            Complete some rotation or opener practice drills to populate your accuracy improvement curve.
+          </p>
+        </div>
+      );
+    }
+
+    const n = progressHistory.length;
+    // Map accuracy from 0-100% to Y coordinate from 130 to 20
+    const points = progressHistory.map((s, index) => {
+      const x = n > 1 ? 15 + (index * 470) / (n - 1) : 250;
+      const y = 130 - (s.accuracy / 100) * 110;
+      return { x, y, accuracy: s.accuracy, label: `S${index + 1}` };
+    });
+
+    let dArea = "";
+    let dLine = "";
+
+    if (n === 1) {
+      dArea = `M 230,${points[0].y} L 270,${points[0].y} L 270,140 L 230,140 Z`;
+      dLine = `M 230,${points[0].y} L 270,${points[0].y}`;
+    } else {
+      dArea = `M ${points[0].x},${points[0].y} ` + points.slice(1).map(p => `L ${p.x},${p.y}`).join(" ") + ` L ${points[n-1].x},140 L ${points[0].x},140 Z`;
+      dLine = `M ${points[0].x},${points[0].y} ` + points.slice(1).map(p => `L ${p.x},${p.y}`).join(" ");
+    }
+
+    return (
+      <div className="w-full bg-zinc-950/40 rounded-xl border border-zinc-850/50 p-4 relative">
+        <svg className="w-full h-44 overflow-visible" viewBox="0 0 500 150">
+          {/* Grid Lines */}
+          <line x1="0" y1="30" x2="500" y2="30" stroke="#1f1f2e" strokeWidth="1" strokeDasharray="4" />
+          <line x1="0" y1="75" x2="500" y2="75" stroke="#1f1f2e" strokeWidth="1" strokeDasharray="4" />
+          <line x1="0" y1="120" x2="500" y2="120" stroke="#1f1f2e" strokeWidth="1" strokeDasharray="4" />
+
+          {/* SVG Gradient */}
+          <defs>
+            <linearGradient id="chart-grad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.4" />
+              <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0" />
+            </linearGradient>
+          </defs>
+
+          {/* Gradient Area Fill */}
+          <path d={dArea} fill="url(#chart-grad)" />
+
+          {/* Smooth Line Path */}
+          <path d={dLine} fill="none" stroke="#8b5cf6" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round" />
+
+          {/* Data Point Circles & Text */}
+          {points.map((p, idx) => (
+            <g key={idx}>
+              <circle cx={p.x} cy={p.y} r="5" fill="#fafafa" stroke="#8b5cf6" strokeWidth="2" />
+              <text x={p.x} y="145" fill="#71717a" fontSize="9" fontWeight="bold" textAnchor={n > 1 && idx === n - 1 ? "end" : "middle"}>
+                {p.label}
+              </text>
+              <text x={p.x + 5} y={p.y - 8} fill="#a855f7" fontSize="9" fontWeight="extrabold">
+                {p.accuracy}%
+              </text>
+            </g>
+          ))}
+        </svg>
+      </div>
+    );
   };
 
   return (
@@ -591,69 +701,70 @@ export default function Dashboard() {
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="font-black text-sm text-white uppercase tracking-wider">Accuracy Improvement History</h3>
-                  <span className="text-xs text-zinc-400">Your performance curve over the last 5 sessions</span>
+                  <span className="text-xs text-zinc-400">Your performance curve over the last 10 sessions</span>
                 </div>
                 <div className="flex items-center space-x-3 text-xs">
                   <span className="flex items-center space-x-1">
                     <span className="w-2 h-2 rounded-full bg-violet-500" />
-                    <span className="text-zinc-400">Opener Drill</span>
+                    <span className="text-zinc-400">Active Drills</span>
                   </span>
                 </div>
               </div>
 
-              {/* Custom SVG Line Chart */}
-              <div className="w-full bg-zinc-950/40 rounded-xl border border-zinc-850/50 p-4 relative">
-                <svg className="w-full h-44 overflow-visible" viewBox="0 0 500 150">
-                  {/* Grid Lines */}
-                  <line x1="0" y1="30" x2="500" y2="30" stroke="#1f1f2e" strokeWidth="1" strokeDasharray="4" />
-                  <line x1="0" y1="75" x2="500" y2="75" stroke="#1f1f2e" strokeWidth="1" strokeDasharray="4" />
-                  <line x1="0" y1="120" x2="500" y2="120" stroke="#1f1f2e" strokeWidth="1" strokeDasharray="4" />
+              {renderChart()}
+            </div>
 
-                  {/* SVG Gradient */}
-                  <defs>
-                    <linearGradient id="chart-grad" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" stopColor="#8b5cf6" stopOpacity="0.4" />
-                      <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0" />
-                    </linearGradient>
-                  </defs>
-
-                  {/* Gradient Area Fill */}
-                  <path
-                    d="M 10,123 L 130,111 L 250,87 L 370,45 L 490,21 L 490,150 L 10,150 Z"
-                    fill="url(#chart-grad)"
-                  />
-
-                  {/* Smooth Line Path */}
-                  <path
-                    d="M 10,123 L 130,111 L 250,87 L 370,45 L 490,21"
-                    fill="none"
-                    stroke="#8b5cf6"
-                    strokeWidth="3.5"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  />
-
-                  {/* Data Point Circles */}
-                  <circle cx="10" cy="123" r="5" fill="#fafafa" stroke="#8b5cf6" strokeWidth="2" />
-                  <circle cx="130" cy="111" r="5" fill="#fafafa" stroke="#8b5cf6" strokeWidth="2" />
-                  <circle cx="250" cy="87" r="5" fill="#fafafa" stroke="#8b5cf6" strokeWidth="2" />
-                  <circle cx="370" cy="45" r="5" fill="#fafafa" stroke="#8b5cf6" strokeWidth="2" />
-                  <circle cx="490" cy="21" r="5" fill="#fafafa" stroke="#8b5cf6" strokeWidth="2" />
-
-                  {/* Text values */}
-                  <text x="10" y="142" fill="#71717a" fontSize="10" fontWeight="bold" textAnchor="middle">Session 1</text>
-                  <text x="130" y="142" fill="#71717a" fontSize="10" fontWeight="bold" textAnchor="middle">Session 2</text>
-                  <text x="250" y="142" fill="#71717a" fontSize="10" fontWeight="bold" textAnchor="middle">Session 3</text>
-                  <text x="370" y="142" fill="#71717a" fontSize="10" fontWeight="bold" textAnchor="middle">Session 4</text>
-                  <text x="490" y="142" fill="#71717a" fontSize="10" fontWeight="bold" textAnchor="end">Session 5</text>
-
-                  <text x="15" y="118" fill="#a855f7" fontSize="10" fontWeight="extrabold">78%</text>
-                  <text x="135" y="106" fill="#a855f7" fontSize="10" fontWeight="extrabold">84%</text>
-                  <text x="255" y="82" fill="#a855f7" fontSize="10" fontWeight="extrabold">88%</text>
-                  <text x="375" y="40" fill="#a855f7" fontSize="10" fontWeight="extrabold">92%</text>
-                  <text x="480" y="16" fill="#a855f7" fontSize="10" fontWeight="extrabold">96%</text>
-                </svg>
+            {/* Rotational Pain Points / Keybind Coaching */}
+            <div className="bg-zinc-900/40 border border-zinc-850 p-6 rounded-2xl backdrop-blur-sm space-y-4">
+              <div>
+                <h3 className="font-black text-sm text-white uppercase tracking-wider">Rotational Pain Points</h3>
+                <p className="text-xs text-zinc-400">Coaching diagnostics identifying your historically slowest actions</p>
               </div>
+
+              {slowestKeys.length === 0 ? (
+                <div className="p-4 bg-zinc-950/30 border border-zinc-850 rounded-xl text-center space-y-1">
+                  <span className="text-[10px] text-zinc-500 font-extrabold uppercase block tracking-wider">No Diagnostic Data</span>
+                  <p className="text-[10px] text-zinc-400 leading-snug">
+                    Complete training drills with multiple spell inputs to evaluate reaction time patterns.
+                  </p>
+                </div>
+              ) : (
+                <div className="space-y-4">
+                  {slowestKeys.map((item, idx) => {
+                    const reaction = item.avg_time_ms;
+                    // target 300ms. If speed > 600, show danger.
+                    const barColor = reaction >= 600 ? "bg-rose-500" : reaction >= 450 ? "bg-amber-500" : "bg-yellow-500";
+                    const textColor = reaction >= 600 ? "text-rose-400" : reaction >= 450 ? "text-amber-400" : "text-yellow-400";
+                    return (
+                      <div key={idx} className="bg-zinc-950/40 border border-zinc-850/80 p-3.5 rounded-xl space-y-2">
+                        <div className="flex justify-between items-center text-xs">
+                          <div className="flex items-center space-x-2">
+                            <span className="px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-[10px] font-black text-zinc-300 font-mono">
+                              {item.key}
+                            </span>
+                            <span className="font-bold text-white">{item.spell}</span>
+                          </div>
+                          <span className={`font-extrabold font-mono ${textColor}`}>
+                            {reaction}ms avg
+                          </span>
+                        </div>
+
+                        {/* Visual Progress Bar */}
+                        <div className="w-full h-1.5 bg-zinc-900 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full rounded-full ${barColor}`}
+                            style={{ width: `${Math.min(100, (reaction / 1000) * 100)}%` }}
+                          />
+                        </div>
+
+                        <p className="text-[10px] text-zinc-400 leading-relaxed">
+                          💡 <span className="font-bold text-zinc-300">Advice:</span> {getRecommendation(item.key, item.spell)}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             {/* Recent Training Sessions */}
@@ -672,32 +783,118 @@ export default function Dashboard() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-zinc-900">
-                    {recentSessions.map((session) => (
-                      <tr key={session.id} className="hover:bg-zinc-900/20 transition-colors">
-                        <td className="py-3 font-extrabold text-white">{session.scenario}</td>
-                        <td className="py-3 text-zinc-400">{session.date}</td>
-                        <td className="py-3 text-center">
-                          <span className={`font-extrabold ${session.accuracy >= 90 ? 'text-emerald-400' : session.accuracy >= 80 ? 'text-amber-400' : 'text-rose-400'}`}>
-                            {session.accuracy}%
-                          </span>
-                        </td>
-                        <td className="py-3 text-center text-zinc-300 font-mono">{session.speed}</td>
-                        <td className="py-3 text-right">
-                          <span className={`inline-block font-black px-2 py-0.5 rounded text-[10px] ${
-                            session.score === 'S' ? 'bg-violet-950 text-violet-400 border border-violet-900' :
-                            session.score === 'A' ? 'bg-emerald-950 text-emerald-400 border border-emerald-900' :
-                            session.score === 'B' ? 'bg-amber-950 text-amber-400 border border-amber-900' :
-                            'bg-zinc-800 text-zinc-400'
-                          }`}>
-                            {session.score}
-                          </span>
+                    {progressHistory.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="py-6 text-center text-zinc-550 italic">
+                          No recent sessions. Set up your character and run a training sim!
                         </td>
                       </tr>
-                    ))}
+                    ) : (
+                      progressHistory.slice().reverse().map((session) => {
+                        const dateFormatted = new Date(session.createdAt).toLocaleDateString() + " " + new Date(session.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        return (
+                          <tr key={session.id} className="hover:bg-zinc-900/20 transition-colors">
+                            <td className="py-3 font-extrabold text-white">
+                              {session.spec} {session.class} ({session.drillType})
+                            </td>
+                            <td className="py-3 text-zinc-400">{dateFormatted}</td>
+                            <td className="py-3 text-center">
+                              <span className={`font-extrabold ${session.accuracy >= 90 ? 'text-emerald-400' : session.accuracy >= 80 ? 'text-amber-400' : 'text-rose-400'}`}>
+                                {session.accuracy}%
+                              </span>
+                            </td>
+                            <td className="py-3 text-center text-zinc-300 font-mono">{session.avgReactionMs}ms</td>
+                            <td className="py-3 text-right">
+                              <span className={`inline-block font-black px-2 py-0.5 rounded text-[10px] ${
+                                session.scoreGrade === 'S' ? 'bg-violet-950 text-violet-400 border border-violet-900' :
+                                session.scoreGrade === 'A' ? 'bg-emerald-950 text-emerald-400 border border-emerald-900' :
+                                session.scoreGrade === 'B' ? 'bg-amber-950 text-amber-400 border border-amber-900' :
+                                'bg-zinc-800 text-zinc-400'
+                              }`}>
+                                {session.scoreGrade}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
                   </tbody>
                 </table>
               </div>
             </div>
+
+            {/* Weekly High Scores Leaderboard */}
+            <div className="bg-zinc-900/40 border border-zinc-850 p-6 rounded-2xl backdrop-blur-sm space-y-4">
+              <div>
+                <h3 className="font-black text-sm text-white uppercase tracking-wider">This Week's High Scores</h3>
+                <p className="text-xs text-zinc-400">Weekly leaderboard across all players (past 7 days)</p>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs">
+                  <thead>
+                    <tr className="border-b border-zinc-850 text-zinc-500 uppercase font-black tracking-wider">
+                      <th className="pb-3 font-bold w-12 text-center">Rank</th>
+                      <th className="pb-3 font-bold">Player</th>
+                      <th className="pb-3 font-bold">Class / Spec</th>
+                      <th className="pb-3 font-bold text-center">Drill</th>
+                      <th className="pb-3 font-bold text-center">Accuracy</th>
+                      <th className="pb-3 font-bold text-center">Reaction</th>
+                      <th className="pb-3 font-bold text-right">Zone Awareness</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-zinc-900">
+                    {leaderboard.length === 0 ? (
+                      <tr>
+                        <td colSpan={7} className="py-8 text-center text-zinc-500 italic">
+                          No high scores recorded this week. Be the first to claim a rank!
+                        </td>
+                      </tr>
+                    ) : (
+                      leaderboard.map((item, idx) => {
+                        const rankStyle = idx === 0 ? "text-yellow-400 bg-yellow-950/40 border-yellow-800/60" :
+                                          idx === 1 ? "text-zinc-300 bg-zinc-800/40 border-zinc-700/60" :
+                                          idx === 2 ? "text-amber-600 bg-amber-950/40 border-amber-900/60" :
+                                          "text-zinc-500 border-transparent";
+                        
+                        const classStyle = getClassTag(item.class);
+
+                        return (
+                          <tr key={item.id} className="hover:bg-zinc-900/20 transition-colors">
+                            <td className="py-3 text-center">
+                              <span className={`inline-block w-6 h-6 leading-6 text-[10px] font-black rounded-full border text-center ${rankStyle}`}>
+                                {idx + 1}
+                              </span>
+                            </td>
+                            <td className="py-3 font-extrabold text-white">
+                              {item.battletag}
+                            </td>
+                            <td className="py-3">
+                              <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-extrabold tracking-wide uppercase border bg-gradient-to-tr ${classStyle}`}>
+                                {item.spec} {item.class}
+                              </span>
+                            </td>
+                            <td className="py-3 text-center text-zinc-300 font-bold capitalize">
+                              {item.drillType}
+                            </td>
+                            <td className="py-3 text-center font-extrabold text-emerald-400">
+                              {item.accuracy}%
+                            </td>
+                            <td className="py-3 text-center text-zinc-300 font-mono">
+                              {item.avgReactionMs}ms
+                            </td>
+                            <td className="py-3 text-right text-zinc-300 font-mono">
+                              {item.peripheralScore > 0 ? `${item.peripheralScore}%` : "—"}
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
           </div>
         </div>
       </main>

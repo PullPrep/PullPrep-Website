@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const loadouts = LocalDb.getLoadouts(session.id);
+    const loadouts = await LocalDb.getLoadouts(session.id);
     return NextResponse.json({ loadouts });
   } catch (error: any) {
     console.error("Failed to fetch loadouts", error);
@@ -45,7 +45,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid action bar configuration string" }, { status: 400 });
     }
 
-    const loadout = LocalDb.addLoadout(session.id, name.trim(), className, specName, data);
+    const loadout = await LocalDb.addLoadout(session.id, name.trim(), className, specName, data);
     return NextResponse.json({ success: true, loadout });
   } catch (error: any) {
     console.error("Failed to save loadout", error);
