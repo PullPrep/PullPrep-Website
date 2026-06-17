@@ -9,7 +9,8 @@ import {
   CLASS_COLORS_HEX,
   getScenariosForSpec,
   ROTATIONS_DB,
-  DEMON_HUNTER_SPELLS
+  DEMON_HUNTER_SPELLS,
+  SPELL_COOLDOWNS
 } from "@/lib/trainingEngine";
 
 interface Session {
@@ -387,14 +388,59 @@ export default function Home() {
                         })}
                       </div>
 
-                      {/* Centralized Hover Feedback Text */}
-                      <div
-                        className="h-4 text-[10px] font-black uppercase tracking-widest text-center transition-colors duration-150"
-                        style={{ color: hoveredSpell ? activeColor : '#52525b' }}
-                      >
-                        {hoveredSpell && hoveredIdx !== null
-                          ? `Step ${hoveredIdx + 1}: ${hoveredSpell}`
-                          : "Hover icons to preview opener sequence"}
+                      {/* Warcraft-style Spell Tooltip Frame */}
+                      <div className="mx-auto w-full max-w-sm rounded bg-zinc-950/90 border border-zinc-800 p-4 text-left shadow-2xl relative select-none" style={{ borderColor: hoveredSpell ? activeColor : 'rgba(245, 158, 11, 0.15)' }}>
+                        {/* Gold Corner Accents */}
+                        <div className="absolute top-0 left-0 w-1.5 h-1.5 border-t border-l border-amber-500/30" />
+                        <div className="absolute top-0 right-0 w-1.5 h-1.5 border-t border-r border-amber-500/30" />
+                        <div className="absolute bottom-0 left-0 w-1.5 h-1.5 border-b border-l border-amber-500/30" />
+                        <div className="absolute bottom-0 right-0 w-1.5 h-1.5 border-b border-r border-amber-500/30" />
+
+                        {hoveredSpell && hoveredIdx !== null && openerSteps[hoveredIdx] ? (
+                          <div className="space-y-1.5 animate-fade-in-up">
+                            {/* Header */}
+                            <div className="flex justify-between items-start">
+                              <h4 className="text-sm font-black tracking-wide" style={{ color: activeColor }}>
+                                {hoveredSpell}
+                              </h4>
+                              <span className="text-[9px] font-bold text-zinc-500 tracking-wider uppercase">
+                                Step #{hoveredIdx + 1}
+                              </span>
+                            </div>
+
+                            {/* Subtitle / Type */}
+                            <div className="flex justify-between text-[10px] text-amber-400 font-bold font-serif uppercase tracking-wider">
+                              <span>Instant Cast</span>
+                              {SPELL_COOLDOWNS[openerSteps[hoveredIdx].spellId] ? (
+                                <span>{SPELL_COOLDOWNS[openerSteps[hoveredIdx].spellId]}s CD</span>
+                              ) : (
+                                <span>Rotational Filler</span>
+                              )}
+                            </div>
+
+                            {/* Divider */}
+                            <div className="h-[1px] bg-zinc-900" />
+
+                            {/* Description */}
+                            <p className="text-[11px] text-zinc-400 leading-relaxed font-medium">
+                              {DEMON_HUNTER_SPELLS[openerSteps[hoveredIdx].spellId]?.description || 
+                               `Part of the Simulationcraft single-target optimal DPS opener. Cast at ${openerSteps[hoveredIdx].time.toFixed(1)}s into combat.`}
+                            </p>
+
+                            <p className="text-[9px] text-zinc-600 font-bold uppercase tracking-widest pt-1">
+                              Spell ID: {openerSteps[hoveredIdx].spellId}
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="space-y-1.5 text-zinc-500">
+                            <h4 className="text-sm font-black tracking-wide font-serif text-zinc-400">
+                              Quest Details
+                            </h4>
+                            <p className="text-[11px] text-zinc-400 leading-relaxed font-medium">
+                              Hover over the spell icons in the timeline above to inspect the optimal DPS opening sequence.
+                            </p>
+                          </div>
+                        )}
                       </div>
                     </div>
                   )}
