@@ -21,7 +21,8 @@ import {
   generateDefaultBuild,
   WOW_CLASSES_SPECS,
   CLASS_COLORS_HEX,
-  isRealSpell
+  isRealSpell,
+  SPELL_COOLDOWNS
 } from "@/lib/trainingEngine";
 
 
@@ -348,6 +349,42 @@ export default function Train() {
       setSelectedScenario(matched || specScenarios[0]);
     }
   }, [activeBuild, drillDuration]);
+
+  const getLastCastTimeForSpell = (spellId: number): number | null => {
+    const targetIds = new Set<number>([spellId]);
+    const alternates = SPELL_GROUP_MAPPINGS[spellId];
+    if (alternates) {
+      alternates.forEach(id => targetIds.add(id));
+    }
+    
+    let lastCast = -Infinity;
+    casts.forEach((c) => {
+      if (c.actualSpellId && targetIds.has(c.actualSpellId) && ["perfect", "early", "late"].includes(c.status)) {
+        if (c.actualTime !== null && c.actualTime > lastCast) {
+          lastCast = c.actualTime;
+        }
+      }
+    });
+    return lastCast === -Infinity ? null : lastCast;
+  };
+
+  const getRemainingCooldown = (spellId: number): number => {
+    const lastCast = getLastCastTimeForSpell(spellId);
+    const cdVal = SPELL_COOLDOWNS[spellId] || 0;
+    if (lastCast === null || cdVal === 0) {
+      // In Sustained mode, check if it started on cooldown
+      const isSustained = selectedScenario?.id?.endsWith("-sustained");
+      if (isSustained && cdVal > 60) {
+        const initialCdRemaining = cdVal - 60;
+        if (elapsedTime < initialCdRemaining) {
+          return initialCdRemaining - elapsedTime;
+        }
+      }
+      return 0;
+    }
+    const remaining = (lastCast + cdVal) - elapsedTime;
+    return Math.max(0, remaining);
+  };
 
   const getSpellKeybind = (spellId: number): string => {
     if (activeBuild) {
@@ -1567,6 +1604,7 @@ export default function Train() {
                 const spell = getMappedSpell(coreSpell.id);
                 const isSpellActive = activeSpell?.id === spell.id;
                 const keybind = spell.keybind;
+                const remainingCd = getRemainingCooldown(coreSpell.id);
                 return (
                   <div
                     key={spell.id}
@@ -1616,16 +1654,30 @@ export default function Train() {
                       </span>
                     )}
 
-                    {/* GCD Swipe Overlay */}
-                    {isGcdActive && (
-                      <div
-                        className="absolute inset-0 pointer-events-none"
-                        style={{
-                          background: `conic-gradient(rgba(9, 9, 11, 0.75) ${gcdPercent}%, transparent ${gcdPercent}%)`,
-                          transform: 'rotate(-90deg)',
-                          borderRadius: 'inherit',
-                        }}
-                      />
+                    {/* Cooldown Overlay & Text */}
+                    {remainingCd > 0 ? (
+                      <div className="absolute inset-0 bg-black/65 rounded-xl flex flex-col items-center justify-center pointer-events-none select-none z-20">
+                        <span className="font-mono text-base font-black text-amber-400 drop-shadow-[0_1.5px_3px_rgba(0,0,0,0.85)]">
+                          {remainingCd > 60 
+                            ? `${Math.ceil(remainingCd / 60)}m` 
+                            : remainingCd > 5 
+                              ? Math.ceil(remainingCd) 
+                              : remainingCd.toFixed(1)
+                          }
+                        </span>
+                      </div>
+                    ) : (
+                      /* GCD Swipe Overlay */
+                      isGcdActive && (
+                        <div
+                          className="absolute inset-0 pointer-events-none"
+                          style={{
+                            background: `conic-gradient(rgba(9, 9, 11, 0.75) ${gcdPercent}%, transparent ${gcdPercent}%)`,
+                            transform: 'rotate(-90deg)',
+                            borderRadius: 'inherit',
+                          }}
+                        />
+                      )
                     )}
                   </div>
                 );
