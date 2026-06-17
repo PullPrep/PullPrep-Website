@@ -9,6 +9,7 @@
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-outfit), ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+  --font-serif: var(--font-cinzel), Georgia, serif;
 }
 
 body {
@@ -101,5 +102,18 @@ body {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #3f3f46;
+}
+
+/* WoW themed borders and glow elements */
+.wow-border {
+  border: 1px solid rgba(245, 158, 11, 0.12);
+  box-shadow: inset 0 0 12px rgba(245, 158, 11, 0.02), 0 4px 20px -2px rgba(0, 0, 0, 0.5);
+}
+.wow-border-active {
+  border-color: rgba(245, 158, 11, 0.45);
+  box-shadow: inset 0 0 18px rgba(245, 158, 11, 0.08), 0 0 25px -3px rgba(245, 158, 11, 0.15);
+}
+.wow-glow-amber {
+  box-shadow: 0 0 15px -3px rgba(245, 158, 11, 0.3);
 }
 

@@ -403,35 +403,35 @@ export default function Dashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <Link href="/" className="flex items-center space-x-3 group">
-              <div className="w-9 h-9 rounded-lg bg-gradient-to-tr from-violet-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-500/20 group-hover:scale-105 transition-transform">
-                <span className="font-bold text-white text-lg tracking-wider">P</span>
+              <div className="w-8 h-8 rounded bg-gradient-to-tr from-amber-600 to-amber-400 flex items-center justify-center shadow-lg shadow-amber-500/20 group-hover:scale-105 transition-transform">
+                <span className="font-serif font-black text-zinc-950 text-base">P</span>
               </div>
-              <span className="font-extrabold text-xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-zinc-50 to-zinc-400">
-                PULLPREP<span className="text-violet-500">.COM</span>
+              <span className="font-serif font-black text-lg tracking-wider text-amber-500">
+                PULLPREP<span className="text-zinc-400">.COM</span>
               </span>
             </Link>
           </div>
           <nav className="flex items-center space-x-6">
             <Link
               href="/"
-              className="text-sm font-semibold text-zinc-400 hover:text-zinc-100 transition-colors"
+              className="text-xs font-bold font-serif uppercase tracking-wider text-zinc-400 hover:text-amber-400 transition-colors"
             >
               Home
             </Link>
 
             {isLoadingSession ? (
-              <div className="w-24 h-7 bg-zinc-900 rounded-lg animate-pulse" />
+              <div className="w-24 h-7 bg-zinc-900 rounded animate-pulse" />
             ) : session?.loggedIn ? (
               <div className="flex items-center space-x-4">
-                <div className="flex items-center space-x-1.5 px-3 py-1 bg-zinc-900 border border-zinc-800 rounded-lg">
-                  <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+                <div className="flex items-center space-x-1.5 px-3 py-1 bg-zinc-900/50 border border-zinc-800 rounded">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                   <span className="text-xs font-bold text-zinc-300 font-mono">
                     {session.user?.battletag}
                   </span>
                 </div>
                 <a
                   href="/api/auth/logout"
-                  className="text-xs font-extrabold text-rose-500 hover:text-rose-450 transition-colors uppercase tracking-wider"
+                  className="text-[10px] font-black text-rose-500 hover:text-rose-450 transition-colors uppercase tracking-wider font-serif"
                 >
                   Sign Out
                 </a>
@@ -439,11 +439,8 @@ export default function Dashboard() {
             ) : (
               <a
                 href="/api/auth/login"
-                className="flex items-center space-x-1.5 px-3.5 py-2 text-xs font-black text-white bg-blue-600 hover:bg-blue-500 rounded-lg transition-all shadow-md shadow-blue-500/10 hover:shadow-blue-500/20 active:scale-95"
+                className="flex items-center space-x-1 px-3 py-1.5 text-[10px] font-extrabold font-serif uppercase tracking-wider text-zinc-950 bg-amber-500 hover:bg-amber-400 rounded transition-all active:scale-95"
               >
-                <svg fill="currentColor" viewBox="0 0 24 24" className="size-4">
-                  <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
-                </svg>
                 <span>Battle.net Login</span>
               </a>
             )}

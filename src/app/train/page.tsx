@@ -1310,18 +1310,18 @@ export default function Train() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <Link href="/" className="flex items-center space-x-3 group">
-              <div className="w-9 h-9 rounded-lg bg-gradient-to-tr from-violet-600 to-indigo-600 flex items-center justify-center shadow-lg shadow-violet-500/20 group-hover:scale-105 transition-transform">
-                <span className="font-bold text-white text-lg tracking-wider">P</span>
+              <div className="w-8 h-8 rounded bg-gradient-to-tr from-amber-600 to-amber-400 flex items-center justify-center shadow-lg shadow-amber-500/20 group-hover:scale-105 transition-transform">
+                <span className="font-serif font-black text-zinc-950 text-base">P</span>
               </div>
-              <span className="font-extrabold text-xl tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-zinc-50 to-zinc-400">
-                PULLPREP<span className="text-violet-500">.COM</span>
+              <span className="font-serif font-black text-lg tracking-wider text-amber-500">
+                PULLPREP<span className="text-zinc-400">.COM</span>
               </span>
             </Link>
           </div>
           <nav className="flex items-center space-x-6">
             <Link
               href="/dashboard"
-              className="text-sm font-semibold text-zinc-400 hover:text-zinc-100 transition-colors"
+              className="text-xs font-bold font-serif uppercase tracking-wider text-zinc-400 hover:text-amber-400 transition-colors"
             >
               Dashboard
             </Link>
