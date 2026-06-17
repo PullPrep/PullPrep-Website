@@ -47,6 +47,46 @@ body {
   animation: proc-glow 1.2s infinite;
 }
 
+/* Keypress down tactile feedback */
+.key-pressed-visual {
+  transform: scale(0.92) translateY(1px);
+  filter: brightness(0.85);
+  border-color: rgba(139, 92, 246, 0.7) !important;
+  box-shadow: 0 0 12px 2px rgba(139, 92, 246, 0.3) !important;
+}
+
+/* Vignette pulse for alerts */
+@keyframes red-vignette-pulse {
+  0%, 100% {
+    box-shadow: inset 0 0 50px rgba(239, 68, 68, 0.3);
+    border-color: rgba(239, 68, 68, 0.5);
+  }
+  50% {
+    box-shadow: inset 0 0 90px rgba(239, 68, 68, 0.65);
+    border-color: rgba(239, 68, 68, 0.9);
+  }
+}
+
+.alert-vignette-active {
+  animation: red-vignette-pulse 1s infinite ease-in-out;
+}
+
+/* Tab/fade animations */
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
 /* Custom scrollbars */
 ::-webkit-scrollbar {
   width: 8px;
@@ -62,3 +102,4 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: #3f3f46;
 }
+

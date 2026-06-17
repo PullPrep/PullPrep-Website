@@ -425,6 +425,9 @@ export default function Train() {
   const [wipedReason, setWipedReason] = useState<string | null>(null);
   const nextAlertTimeRef = useRef<number>(Infinity);
 
+  // UI Panels states
+  const [showAdvancedModifiers, setShowAdvancedModifiers] = useState<boolean>(false);
+
   const stateRef = useRef({ 
     gameState, 
     elapsedTime, 
@@ -1281,7 +1284,7 @@ export default function Train() {
 
       {/* Low-health screen vignette alert filter */}
       {gameState === "running" && activeAlert?.type === "health" && (
-        <div className="absolute inset-0 pointer-events-none border-[12px] border-rose-600/80 animate-pulse z-40" style={{ boxShadow: "inset 0 0 80px rgba(225,29,72,0.45)" }} />
+        <div className="absolute inset-0 pointer-events-none z-40 alert-vignette-active" />
       )}
 
       {/* Background Gradients */}
@@ -1449,140 +1452,152 @@ export default function Train() {
                 ))}
               </div>
 
-              {/* Simulator Modes Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl w-full select-none mx-auto">
-                {/* Hardcore switch */}
-                <div className="flex items-center justify-between p-4 rounded-xl border border-zinc-850 bg-zinc-900/20 w-full">
-                  <div className="text-left space-y-0.5">
-                    <div className="flex items-center space-x-1.5">
-                      <span className="font-extrabold text-xs text-white uppercase tracking-wider">Hardcore Mode</span>
-                      <span className="px-1.5 py-0.5 rounded text-[8px] font-black bg-rose-950/60 border border-rose-900 text-rose-400 uppercase tracking-widest">High Stakes</span>
-                    </div>
-                    <span className="text-[10px] text-zinc-500 block leading-tight">Hides action bars and keybind helps. Any mistake is fatal.</span>
-                  </div>
-                  <button
-                    onClick={() => {
-                      setIsHardcore(!isHardcore);
-                      if (!isHardcore) setIsGuidedMode(false);
-                    }}
-                    className={`w-11 h-6 rounded-full p-1 transition-colors duration-200 focus:outline-none ${
-                      isHardcore ? "bg-rose-600" : "bg-zinc-800"
-                    }`}
-                  >
-                    <div
-                      className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform duration-200 ${
-                        isHardcore ? "translate-x-5" : "translate-x-0"
-                      }`}
-                    />
-                  </button>
-                </div>
-
-                {/* Training Wheels switch */}
-                <div className="flex items-center justify-between p-4 rounded-xl border border-zinc-850 bg-zinc-900/20 w-full">
-                  <div className="text-left space-y-0.5">
-                    <div className="flex items-center space-x-1.5">
-                      <span className="font-extrabold text-xs text-white uppercase tracking-wider">Training Wheels</span>
-                      <span className="px-1.5 py-0.5 rounded text-[8px] font-black bg-emerald-950/60 border border-emerald-900 text-emerald-400 uppercase tracking-widest">Guided</span>
-                    </div>
-                    <span className="text-[10px] text-zinc-500 block leading-tight">Highlights the next spell on action bars in green.</span>
-                  </div>
-                  <button
-                    onClick={() => {
-                      setIsGuidedMode(!isGuidedMode);
-                      if (!isGuidedMode) setIsHardcore(false);
-                    }}
-                    className={`w-11 h-6 rounded-full p-1 transition-colors duration-200 focus:outline-none ${
-                      isGuidedMode ? "bg-emerald-600" : "bg-zinc-800"
-                    }`}
-                  >
-                    <div
-                      className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform duration-200 ${
-                        isGuidedMode ? "translate-x-5" : "translate-x-0"
-                      }`}
-                    />
-                  </button>
-                </div>
-
-                {/* Heartbeat Sound switch */}
-                <div className="flex items-center justify-between p-4 rounded-xl border border-zinc-850 bg-zinc-900/20 w-full">
-                  <div className="text-left space-y-0.5">
-                    <div className="flex items-center space-x-1.5">
-                      <span className="font-extrabold text-xs text-white uppercase tracking-wider">Metronome Beat</span>
-                      <span className="px-1.5 py-0.5 rounded text-[8px] font-black bg-violet-950/60 border border-violet-900 text-violet-400 uppercase tracking-widest">SFX</span>
-                    </div>
-                    <span className="text-[10px] text-zinc-500 block leading-tight">Plays a low heartbeat metronome to simulate high-stress raids.</span>
-                  </div>
-                  <button
-                    onClick={() => {
-                      const newMuted = !isMuted;
-                      setIsMuted(newMuted);
-                      if ((gameState as string) === "running") {
-                        if (newMuted) synthRef.current?.stopHeartbeat();
-                        else synthRef.current?.startHeartbeat(false);
-                      }
-                    }}
-                    className={`w-11 h-6 rounded-full p-1 transition-colors duration-200 focus:outline-none ${
-                      !isMuted ? "bg-violet-600" : "bg-zinc-800"
-                    }`}
-                  >
-                    <div
-                      className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform duration-200 ${
-                        !isMuted ? "translate-x-5" : "translate-x-0"
-                      }`}
-                    />
-                  </button>
-                </div>
-
-                {/* Tunnel Vision switch */}
-                <div className="flex items-center justify-between p-4 rounded-xl border border-zinc-850 bg-zinc-900/20 w-full">
-                  <div className="text-left space-y-0.5">
-                    <div className="flex items-center space-x-1.5">
-                      <span className="font-extrabold text-xs text-white uppercase tracking-wider">Tunnel Vision</span>
-                      <span className="px-1.5 py-0.5 rounded text-[8px] font-black bg-amber-950/60 border border-amber-900 text-amber-450 uppercase tracking-widest">Awareness</span>
-                    </div>
-                    <span className="text-[10px] text-zinc-500 block leading-tight">Spawns moving target spheres to train peripheral zone awareness.</span>
-                  </div>
-                  <button
-                    onClick={() => setTunnelVisionActive(!tunnelVisionActive)}
-                    className={`w-11 h-6 rounded-full p-1 transition-colors duration-200 focus:outline-none ${
-                      tunnelVisionActive ? "bg-amber-600" : "bg-zinc-800"
-                    }`}
-                  >
-                    <div
-                      className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform duration-200 ${
-                        tunnelVisionActive ? "translate-x-5" : "translate-x-0"
-                      }`}
-                    />
-                  </button>
-                </div>
-
-                {/* Sustained Duration Selector */}
-                <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-xl border border-zinc-850 bg-zinc-900/20 w-full sm:col-span-2 gap-3">
-                  <div className="text-left space-y-0.5">
-                    <span className="font-extrabold text-xs text-white uppercase tracking-wider">Rotation Drill Duration</span>
-                    <span className="text-[10px] text-zinc-500 block leading-tight">Configure the length of your sustained rotation practice sessions.</span>
-                  </div>
-                  <div className="flex space-x-1.5 bg-zinc-950 p-1 rounded-lg border border-zinc-800 shrink-0">
-                    {[60, 180, 300, 600].map((dur) => (
-                      <button
-                        key={dur}
-                        onClick={() => setDrillDuration(dur)}
-                        className={`px-3 py-1 text-[10px] font-black rounded-md uppercase font-mono transition-all ${
-                          drillDuration === dur
-                            ? "bg-violet-600 text-white shadow"
-                            : "text-zinc-400 hover:text-zinc-200"
-                        }`}
-                      >
-                        {dur >= 60 ? `${dur / 60}m` : `${dur}s`}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+              {/* Collapsible Advanced Gameplay Modifiers */}
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={() => setShowAdvancedModifiers(!showAdvancedModifiers)}
+                  className="text-xs font-black text-zinc-500 hover:text-zinc-350 transition-colors uppercase tracking-wider flex items-center justify-center space-x-1 mx-auto cursor-pointer"
+                >
+                  <span>{showAdvancedModifiers ? "Hide Advanced Settings ▴" : "Show Advanced Settings ▾"}</span>
+                </button>
               </div>
+
+              {showAdvancedModifiers && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl w-full select-none mx-auto animate-fade-in-up">
+                  {/* Hardcore switch */}
+                  <div className="flex items-center justify-between p-4 rounded-xl border border-zinc-850 bg-zinc-900/20 w-full">
+                    <div className="text-left space-y-0.5">
+                      <div className="flex items-center space-x-1.5">
+                        <span className="font-extrabold text-xs text-white uppercase tracking-wider">Hardcore Mode</span>
+                        <span className="px-1.5 py-0.5 rounded text-[8px] font-black bg-rose-950/60 border border-rose-900 text-rose-400 uppercase tracking-widest">High Stakes</span>
+                      </div>
+                      <span className="text-[10px] text-zinc-500 block leading-tight">Hides action bars and keybind helps. Any mistake is fatal.</span>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setIsHardcore(!isHardcore);
+                        if (!isHardcore) setIsGuidedMode(false);
+                      }}
+                      className={`w-11 h-6 rounded-full p-1 transition-colors duration-200 focus:outline-none cursor-pointer ${
+                        isHardcore ? "bg-rose-600" : "bg-zinc-800"
+                      }`}
+                    >
+                      <div
+                        className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform duration-200 ${
+                          isHardcore ? "translate-x-5" : "translate-x-0"
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  {/* Training Wheels switch */}
+                  <div className="flex items-center justify-between p-4 rounded-xl border border-zinc-850 bg-zinc-900/20 w-full">
+                    <div className="text-left space-y-0.5">
+                      <div className="flex items-center space-x-1.5">
+                        <span className="font-extrabold text-xs text-white uppercase tracking-wider">Training Wheels</span>
+                        <span className="px-1.5 py-0.5 rounded text-[8px] font-black bg-emerald-950/60 border border-emerald-900 text-emerald-400 uppercase tracking-widest">Guided</span>
+                      </div>
+                      <span className="text-[10px] text-zinc-500 block leading-tight">Highlights the next spell on action bars in green.</span>
+                    </div>
+                    <button
+                      onClick={() => {
+                        setIsGuidedMode(!isGuidedMode);
+                        if (!isGuidedMode) setIsHardcore(false);
+                      }}
+                      className={`w-11 h-6 rounded-full p-1 transition-colors duration-200 focus:outline-none cursor-pointer ${
+                        isGuidedMode ? "bg-emerald-600" : "bg-zinc-800"
+                      }`}
+                    >
+                      <div
+                        className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform duration-200 ${
+                          isGuidedMode ? "translate-x-5" : "translate-x-0"
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  {/* Heartbeat Sound switch */}
+                  <div className="flex items-center justify-between p-4 rounded-xl border border-zinc-850 bg-zinc-900/20 w-full">
+                    <div className="text-left space-y-0.5">
+                      <div className="flex items-center space-x-1.5">
+                        <span className="font-extrabold text-xs text-white uppercase tracking-wider">Metronome Beat</span>
+                        <span className="px-1.5 py-0.5 rounded text-[8px] font-black bg-violet-950/60 border border-violet-900 text-violet-400 uppercase tracking-widest">SFX</span>
+                      </div>
+                      <span className="text-[10px] text-zinc-500 block leading-tight">Plays a low heartbeat metronome to simulate high-stress raids.</span>
+                    </div>
+                    <button
+                      onClick={() => {
+                        const newMuted = !isMuted;
+                        setIsMuted(newMuted);
+                        if ((gameState as string) === "running") {
+                          if (newMuted) synthRef.current?.stopHeartbeat();
+                          else synthRef.current?.startHeartbeat(false);
+                        }
+                      }}
+                      className={`w-11 h-6 rounded-full p-1 transition-colors duration-200 focus:outline-none cursor-pointer ${
+                        !isMuted ? "bg-violet-600" : "bg-zinc-800"
+                      }`}
+                    >
+                      <div
+                        className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform duration-200 ${
+                          !isMuted ? "translate-x-5" : "translate-x-0"
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  {/* Tunnel Vision switch */}
+                  <div className="flex items-center justify-between p-4 rounded-xl border border-zinc-850 bg-zinc-900/20 w-full">
+                    <div className="text-left space-y-0.5">
+                      <div className="flex items-center space-x-1.5">
+                        <span className="font-extrabold text-xs text-white uppercase tracking-wider">Tunnel Vision</span>
+                        <span className="px-1.5 py-0.5 rounded text-[8px] font-black bg-amber-950/60 border border-amber-900 text-amber-450 uppercase tracking-widest">Awareness</span>
+                      </div>
+                      <span className="text-[10px] text-zinc-500 block leading-tight">Spawns moving target spheres to train peripheral zone awareness.</span>
+                    </div>
+                    <button
+                      onClick={() => setTunnelVisionActive(!tunnelVisionActive)}
+                      className={`w-11 h-6 rounded-full p-1 transition-colors duration-200 focus:outline-none cursor-pointer ${
+                        tunnelVisionActive ? "bg-amber-600" : "bg-zinc-800"
+                      }`}
+                    >
+                      <div
+                        className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform duration-200 ${
+                          tunnelVisionActive ? "translate-x-5" : "translate-x-0"
+                        }`}
+                      />
+                    </button>
+                  </div>
+
+                  {/* Sustained Duration Selector */}
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-xl border border-zinc-850 bg-zinc-900/20 w-full sm:col-span-2 gap-3">
+                    <div className="text-left space-y-0.5">
+                      <span className="font-extrabold text-xs text-white uppercase tracking-wider">Rotation Drill Duration</span>
+                      <span className="text-[10px] text-zinc-500 block leading-tight">Configure the length of your sustained rotation practice sessions.</span>
+                    </div>
+                    <div className="flex space-x-1.5 bg-zinc-950 p-1 rounded-lg border border-zinc-800 shrink-0">
+                      {[60, 180, 300, 600].map((dur) => (
+                        <button
+                          key={dur}
+                          onClick={() => setDrillDuration(dur)}
+                          className={`px-3 py-1 text-[10px] font-black rounded-md uppercase font-mono transition-all cursor-pointer ${
+                            drillDuration === dur
+                              ? "bg-violet-600 text-white shadow"
+                              : "text-zinc-400 hover:text-zinc-200"
+                          }`}
+                        >
+                          {dur >= 60 ? `${dur / 60}m` : `${dur}s`}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
 
               <button
                 onClick={startCountdown}
-                className="w-full py-4 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-extrabold rounded-xl shadow-lg shadow-violet-500/25 active:scale-98 transition-all"
+                className="w-full py-4 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-extrabold rounded-xl shadow-lg shadow-violet-500/25 active:scale-98 transition-all cursor-pointer"
               >
                 Start Training Simulator
               </button>
@@ -1670,71 +1685,88 @@ export default function Train() {
           {gameState === "running" && !activeAlert && (
             <div className="flex flex-col items-center justify-center space-y-8">
               {activeSpell ? (
-                <div className="flex flex-col items-center space-y-4">
-                  {/* Glowing Target Ring */}
-                  <div className={`w-28 h-28 rounded-2xl bg-zinc-900 border-2 border-zinc-800 flex flex-col items-center justify-center relative shadow-2xl transition-all ${
-                    isGuidedMode || selectedScenario.isProcReaction ? "proc-highlight" : "spell-highlight"
-                  }`}>
-                    {/* SVG abstract icon inside target based on spell identifier */}
-                    <div className="w-12 h-12 flex items-center justify-center relative">
-                      {!failedIcons[activeSpell.id] ? (
-                        <img
-                          src={getSpellIconUrl(activeSpell.id)}
-                          alt={activeSpell.name}
-                          onError={() => setFailedIcons(prev => ({ ...prev, [activeSpell.id]: true }))}
-                          className="w-full h-full rounded-xl object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center" style={{ color: activeSpell.color }}>
-                          {activeSpell.icon === "metamorphosis" && (
-                            <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-10">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z" />
-                            </svg>
-                          )}
-                          {activeSpell.icon === "eye-beam" && (
-                            <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-10">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                            </svg>
-                          )}
-                          {activeSpell.icon === "blade-dance" && (
-                            <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-10">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="m9 9 6-6m0 0 6 6m-6-6v12m0 3.75a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0Z" />
-                            </svg>
-                          )}
-                          {activeSpell.icon === "chaos-strike" && (
-                            <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-10">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="M15.362 5.214A8.252 8.252 0 0 1 12 21 8.25 8.25 0 0 1 6.038 7.047 8.287 8.287 0 0 0 9 9.601a8.983 8.983 0 0 1 3.361-6.867 8.21 8.21 0 0 0 3 2.48Z" />
-                            </svg>
-                          )}
-                        </div>
-                      )}
+                <div className="flex flex-col items-center space-y-4 w-full max-w-xl">
+                  {/* Sequence Lane Container */}
+                  <div className="w-full bg-zinc-950/60 border border-zinc-900 rounded-3xl p-4 flex flex-col items-center relative overflow-hidden backdrop-blur-sm shadow-[0_0_30px_rgba(0,0,0,0.5)] animate-fade-in-up">
+                    
+                    {/* Horizontal Connector Dotted Line */}
+                    <div className="absolute top-[48px] left-[12%] right-[12%] border-t-2 border-dashed border-zinc-800/40 z-0" />
+                    
+                    {/* Spell Timeline Row */}
+                    <div className="flex items-center justify-center space-x-6 relative z-10 w-full select-none">
+                      {/* We show the next 4 spells */}
+                      {[0, 1, 2, 3].map((offset) => {
+                        const targetIdx = activeStepIndex !== null ? activeStepIndex + offset : offset;
+                        const step = selectedScenario.steps[targetIdx];
+                        if (!step) return null;
+                        
+                        const spell = getMappedSpell(step.spellId);
+                        const isCurrent = offset === 0;
+                        
+                        return (
+                          <div
+                            key={targetIdx}
+                            className={`flex flex-col items-center transition-all duration-300 ${
+                              isCurrent
+                                ? "scale-105"
+                                : "opacity-45 scale-90"
+                            }`}
+                          >
+                            <div className={`w-16 h-16 rounded-xl bg-zinc-900 border flex flex-col items-center justify-center relative shadow-lg ${
+                              isCurrent
+                                ? isGuidedMode || selectedScenario.isProcReaction
+                                  ? "proc-highlight border-emerald-500/80"
+                                  : "spell-highlight border-violet-500/80"
+                                : "border-zinc-800"
+                            }`}>
+                              <div className="w-7 h-7 flex items-center justify-center relative">
+                                {!failedIcons[spell.id] ? (
+                                  <img
+                                    src={getSpellIconUrl(spell.id)}
+                                    alt={spell.name}
+                                    onError={() => setFailedIcons(prev => ({ ...prev, [spell.id]: true }))}
+                                    className="w-full h-full rounded-lg object-cover"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full flex items-center justify-center" style={{ color: spell.color }}>
+                                    {getSpellIconSVG(spell.name)}
+                                  </div>
+                                )}
+                              </div>
+                              
+                              {/* Display keybind helper */}
+                              {!isHardcore && (
+                                <span className={`absolute -top-1.5 -right-1.5 px-1.5 py-0.5 rounded-md font-mono text-[9px] font-black border transition-all ${
+                                  isCurrent
+                                    ? "bg-violet-600 border-violet-500 text-white shadow-sm"
+                                    : "bg-zinc-950 border-zinc-850 text-zinc-350"
+                                }`}>
+                                  {spell.keybind || "Unbound"}
+                                </span>
+                              )}
+                            </div>
+                            
+                            <span className={`text-[9px] font-black uppercase mt-1.5 tracking-wider ${
+                              isCurrent ? "text-zinc-200" : "text-zinc-500"
+                            } truncate max-w-[75px] px-1 text-center`}>
+                              {spell.name}
+                            </span>
+                          </div>
+                        );
+                      })}
                     </div>
-                    <span className="text-[10px] font-black mt-2 uppercase tracking-widest text-zinc-300">
-                      {activeSpell.name}
-                    </span>
-                    {!isHardcore && (
-                      <span className={`absolute top-1.5 right-2 px-1.5 py-0.5 rounded-md font-mono text-[10px] font-black border transition-all ${
-                        pressedKeys[activeSpell.keybind]
-                          ? isGuidedMode
-                            ? "bg-emerald-600 border-emerald-500 text-white scale-95 shadow-md shadow-emerald-500/20"
-                            : "bg-violet-600 border-violet-500 text-white scale-95 shadow-md shadow-violet-500/20"
-                          : "bg-zinc-950/90 border-zinc-800 text-zinc-200"
-                      }`}>
-                        Key: {activeSpell.keybind}
-                      </span>
-                    )}
                   </div>
 
+                  {/* Active prompt status text */}
                   <div className="text-center space-y-1">
-                    <span className="text-xs font-bold text-zinc-500 uppercase tracking-widest">
-                      Simulated Prompt
+                    <span className="text-[10px] text-zinc-500 font-extrabold uppercase tracking-widest block">
+                      {selectedScenario.isProcReaction ? "Proc Alert" : "Current Rotation Step"}
                     </span>
-                    <h3 className="text-2xl font-black text-white">
+                    <h3 className="text-xl font-black text-white">
                       {isHardcore ? (
-                        <span className="text-rose-500 font-extrabold uppercase tracking-widest text-lg animate-pulse">HARDCORE MEMORY TEST</span>
+                        <span className="text-rose-500 font-extrabold uppercase tracking-widest text-sm animate-pulse">HARDCORE MEMORY TEST</span>
                       ) : (
-                        <>Press Key: <span className={`${isGuidedMode ? 'text-emerald-400 bg-emerald-950/40 border-emerald-900' : 'text-violet-400 bg-violet-950/40 border-violet-900'} font-mono text-3xl px-2 py-0.5 rounded border`}>{activeSpell.keybind}</span></>
+                        <>Press Key: <span className={`${isGuidedMode ? 'text-emerald-400 bg-emerald-950/40 border-emerald-900' : 'text-violet-400 bg-violet-950/40 border-violet-900'} font-mono text-2xl px-2 py-0.5 rounded border`}>{activeSpell.keybind || "Unbound"}</span></>
                       )}
                     </h3>
                   </div>
@@ -1951,6 +1983,8 @@ export default function Train() {
                   <div
                     key={spell.id}
                     className={`w-16 h-16 rounded-xl bg-zinc-900 border flex flex-col items-center justify-center relative cursor-default transition-all select-none ${
+                      pressedKeys[keybind] ? "key-pressed-visual scale-95" : ""
+                    } ${
                       isSpellActive
                         ? isGuidedMode || selectedScenario.isProcReaction
                           ? "proc-highlight border-emerald-500/80 scale-105"

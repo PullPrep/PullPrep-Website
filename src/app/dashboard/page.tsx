@@ -66,6 +66,9 @@ export default function Dashboard() {
   const [progressHistory, setProgressHistory] = useState<any[]>([]);
   const [slowestKeys, setSlowestKeys] = useState<any[]>([]);
 
+  // Dashboard Tab State
+  const [dashTab, setDashTab] = useState<"profile" | "diagnostics" | "leaderboards">("profile");
+
   // Fetch session & load active build from localStorage on mount
   useEffect(() => {
     // 1. Load active build
@@ -479,241 +482,333 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* Dashboard Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          
-          {/* Character & Build Setup (Left Col) */}
-          <div className="lg:col-span-4 space-y-8">
-            
-            {/* Character Card */}
-            <div className="bg-zinc-900/40 border border-zinc-850 p-6 rounded-2xl relative overflow-hidden backdrop-blur-sm">
-              <div className="absolute top-0 right-0 w-28 h-28 bg-emerald-500/5 rounded-full blur-2xl pointer-events-none" />
-              
-              <div className="flex items-center space-x-4 mb-6">
-                {/* Spec Icon Avatar */}
-                <div className={`w-14 h-14 rounded-xl bg-gradient-to-tr ${currentClassStyle} flex items-center justify-center shadow-lg border`}>
-                  <span className="font-extrabold text-lg uppercase">
-                    {activeBuild ? activeBuild.class.substring(0, 2) : "DH"}
-                  </span>
+        {/* Tab Selector Buttons */}
+        <div className="flex bg-zinc-950 p-1 rounded-xl border border-zinc-900 relative z-10 max-w-lg">
+          <button
+            onClick={() => setDashTab("profile")}
+            className={`flex-1 text-center py-2 text-xs font-black rounded-lg uppercase tracking-wider transition-all cursor-pointer ${
+              dashTab === "profile"
+                ? "bg-violet-600 text-white shadow shadow-violet-500/10"
+                : "text-zinc-500 hover:text-zinc-300"
+            }`}
+          >
+            My Profile & History
+          </button>
+          <button
+            onClick={() => setDashTab("diagnostics")}
+            className={`flex-1 text-center py-2 text-xs font-black rounded-lg uppercase tracking-wider transition-all cursor-pointer ${
+              dashTab === "diagnostics"
+                ? "bg-violet-600 text-white shadow shadow-violet-500/10"
+                : "text-zinc-500 hover:text-zinc-300"
+            }`}
+          >
+            Diagnostics
+          </button>
+          <button
+            onClick={() => setDashTab("leaderboards")}
+            className={`flex-1 text-center py-2 text-xs font-black rounded-lg uppercase tracking-wider transition-all cursor-pointer ${
+              dashTab === "leaderboards"
+                ? "bg-violet-600 text-white shadow shadow-violet-500/10"
+                : "text-zinc-500 hover:text-zinc-300"
+            }`}
+          >
+            Leaderboards
+          </button>
+        </div>
+
+        {dashTab === "profile" && (
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 animate-fade-in-up">
+            {/* Character & Build Setup (Left Col) */}
+            <div className="lg:col-span-5 space-y-6">
+              {/* Character Card */}
+              <div className="bg-zinc-900/40 border border-zinc-850 p-6 rounded-2xl relative overflow-hidden backdrop-blur-sm">
+                <div className="absolute top-0 right-0 w-28 h-28 bg-emerald-500/5 rounded-full blur-2xl pointer-events-none" />
+                
+                <div className="flex items-center space-x-4 mb-6">
+                  {/* Spec Icon Avatar */}
+                  <div className={`w-14 h-14 rounded-xl bg-gradient-to-tr ${currentClassStyle} flex items-center justify-center shadow-lg border`}>
+                    <span className="font-extrabold text-lg uppercase">
+                      {activeBuild ? activeBuild.class.substring(0, 2) : "DH"}
+                    </span>
+                  </div>
+                  <div>
+                    <h2 className="font-black text-lg text-white">
+                      {activeBuild ? "Imported Character" : "IllidariPro"}
+                    </h2>
+                    <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-extrabold tracking-wide uppercase ${
+                      activeBuild ? "bg-zinc-800/80 border border-zinc-700 text-zinc-300" : "bg-emerald-950/50 border border-emerald-900/60 text-emerald-400"
+                    }`}>
+                      {activeBuild ? `${activeBuild.spec} ${activeBuild.class}` : "HAVOC DEMON HUNTER"}
+                    </span>
+                  </div>
                 </div>
-                <div>
-                  <h2 className="font-black text-lg text-white">
-                    {activeBuild ? "Imported Character" : "IllidariPro"}
-                  </h2>
-                  <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-extrabold tracking-wide uppercase ${
-                    activeBuild ? "bg-zinc-800/80 border border-zinc-700 text-zinc-300" : "bg-emerald-950/50 border border-emerald-900/60 text-emerald-400"
-                  }`}>
-                    {activeBuild ? `${activeBuild.spec} ${activeBuild.class}` : "HAVOC DEMON HUNTER"}
-                  </span>
+
+                <div className="space-y-3 pt-3 border-t border-zinc-850 text-xs">
+                  <div className="flex justify-between">
+                    <span className="text-zinc-500 font-bold uppercase">Active Spec</span>
+                    <span className="text-zinc-200 font-semibold">
+                      {activeBuild ? activeBuild.spec : "Havoc (Rotational Core)"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-zinc-500 font-bold uppercase">Action Bars</span>
+                    <span className="text-zinc-200 font-semibold">{totalSpells} Active Spells</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-zinc-500 font-bold uppercase">Import Status</span>
+                    <span className="text-zinc-400 font-semibold italic">
+                      {activeBuild ? "Imported Custom Setup" : "Predefined MVP Template"}
+                    </span>
+                  </div>
+
+                  {/* Class & Spec Selector Presets */}
+                  <div className="pt-3 border-t border-zinc-850 space-y-2">
+                    <span className="text-zinc-500 font-bold uppercase block text-[10px] tracking-wide">Change Class & Spec</span>
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <select
+                          value={selectedClass}
+                          onChange={(e) => handleClassChange(e.target.value)}
+                          className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2 py-1.5 text-[11px] text-zinc-200 focus:border-violet-500 focus:outline-none cursor-pointer"
+                        >
+                          {WOW_CLASSES_SPECS.map(c => (
+                            <option key={c.key} value={c.name}>{c.name}</option>
+                          ))}
+                        </select>
+                      </div>
+                      <div>
+                        <select
+                          value={selectedSpec}
+                          onChange={(e) => handleSpecChange(e.target.value)}
+                          className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2 py-1.5 text-[11px] text-zinc-200 focus:border-violet-500 focus:outline-none cursor-pointer"
+                        >
+                          {(WOW_CLASSES_SPECS.find(c => c.name === selectedClass)?.specs || []).map(spec => (
+                            <option key={spec} value={spec}>{spec}</option>
+                          ))}
+                        </select>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
 
-              <div className="space-y-3 pt-3 border-t border-zinc-850 text-xs">
-                <div className="flex justify-between">
-                  <span className="text-zinc-500 font-bold uppercase">Active Spec</span>
-                  <span className="text-zinc-200 font-semibold">
-                    {activeBuild ? activeBuild.spec : "Havoc (Rotational Core)"}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-zinc-500 font-bold uppercase">Action Bars</span>
-                  <span className="text-zinc-200 font-semibold">{totalSpells} Active Spells</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-zinc-500 font-bold uppercase">Import Status</span>
-                  <span className="text-zinc-400 font-semibold italic">
-                    {activeBuild ? "Imported Custom Setup" : "Predefined MVP Template"}
+              {/* Character Setups & Database Loadouts */}
+              <div className="bg-zinc-900/40 border border-zinc-850 p-6 rounded-2xl backdrop-blur-sm space-y-4">
+                <div className="flex justify-between items-center">
+                  <h3 className="font-black text-sm text-white uppercase tracking-wider">Saved Loadouts</h3>
+                  <span className="text-[10px] font-extrabold text-violet-400">
+                    {session?.loggedIn ? `${savedLoadouts.length} SAVED` : "LOCAL ONLY"}
                   </span>
                 </div>
 
-                {/* Class & Spec Selector Presets */}
-                <div className="pt-3 border-t border-zinc-850 space-y-2">
-                  <span className="text-zinc-500 font-bold uppercase block text-[10px] tracking-wide">Change Class & Spec</span>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div>
-                      <select
-                        value={selectedClass}
-                        onChange={(e) => handleClassChange(e.target.value)}
-                        className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2 py-1 text-[11px] text-zinc-200 focus:border-violet-500 focus:outline-none cursor-pointer"
-                      >
-                        {WOW_CLASSES_SPECS.map(c => (
-                          <option key={c.key} value={c.name}>{c.name}</option>
-                        ))}
-                      </select>
+                <div className="space-y-3">
+                  {/* Active local setup status */}
+                  <div className="bg-zinc-950/60 p-3 rounded-xl border border-zinc-850/80 flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-2 h-2 rounded-full bg-violet-500 animate-pulse" />
+                      <div>
+                        <span className="font-bold text-xs block text-white">
+                          {activeBuild ? `${activeBuild.spec} ${activeBuild.class}` : "Default DH Spec"}
+                        </span>
+                        <span className="text-[10px] text-zinc-500">
+                          {activeBuild ? "Active Temporary Setup" : "MVP Standard Template"}
+                        </span>
+                      </div>
                     </div>
-                    <div>
-                      <select
-                        value={selectedSpec}
-                        onChange={(e) => handleSpecChange(e.target.value)}
-                        className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2 py-1 text-[11px] text-zinc-200 focus:border-violet-500 focus:outline-none cursor-pointer"
-                      >
-                        {(WOW_CLASSES_SPECS.find(c => c.name === selectedClass)?.specs || []).map(spec => (
-                          <option key={spec} value={spec}>{spec}</option>
-                        ))}
-                      </select>
-                    </div>
+                    <span className="text-[10px] font-extrabold text-emerald-400 bg-emerald-950/40 border border-emerald-900/60 px-1.5 py-0.5 rounded">
+                      ACTIVE
+                    </span>
                   </div>
+
+                  {/* Show saved loadouts if logged in */}
+                  {session?.loggedIn ? (
+                    savedLoadouts.map((loadout) => {
+                      const isSelected = isActiveBuildMatch(loadout);
+                      return (
+                        <div
+                          key={loadout.id}
+                          onClick={() => handleSelectLoadout(loadout)}
+                          className={`p-3.5 rounded-xl border flex items-center justify-between cursor-pointer transition-all hover:bg-zinc-900/40 ${
+                            isSelected
+                              ? "bg-zinc-900/80 border-violet-500/40"
+                              : "bg-zinc-950/30 border-zinc-850"
+                          }`}
+                        >
+                          <div className="flex items-center space-x-3">
+                            <div className={`w-1.5 h-1.5 rounded-full ${isSelected ? "bg-violet-400" : "bg-zinc-600"}`} />
+                            <div>
+                              <span className="font-bold text-xs block text-white">{loadout.name}</span>
+                              <span className="text-[9px] text-zinc-500 uppercase tracking-wide">
+                                {loadout.spec} {loadout.class}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                            {isSelected && (
+                              <span className="text-[9px] font-black text-violet-400 bg-violet-950/40 border border-violet-900/60 px-1 py-0.5 rounded uppercase tracking-wider">
+                                LOADED
+                              </span>
+                            )}
+                            <button
+                              onClick={(e) => handleDeleteLoadout(loadout.id, e)}
+                              className="p-1 text-zinc-600 hover:text-rose-500 rounded hover:bg-rose-950/20 transition-all"
+                              title="Delete Loadout"
+                            >
+                              <svg fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="size-3.5">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })
+                  ) : (
+                    <div className="p-4 bg-zinc-950/40 border border-zinc-850 rounded-xl text-center space-y-2">
+                      <span className="text-[10px] text-zinc-500 font-extrabold uppercase block tracking-wider">Multi-character Sync</span>
+                      <p className="text-[10px] text-zinc-400 leading-snug">
+                        Sign in with your Battle.net account to persist your characters in the cloud and switch profiles seamlessly.
+                      </p>
+                      <a
+                        href="/api/auth/login"
+                        className="inline-block px-3 py-1.5 text-[10px] font-black text-sky-400 bg-sky-950/40 border border-sky-900/50 hover:bg-sky-900/30 hover:text-sky-300 rounded-lg transition-all"
+                      >
+                        Login to Battle.net
+                      </a>
+                    </div>
+                  )}
+
+                  {/* Save Current Layout Form */}
+                  {session?.loggedIn && activeBuild && (
+                    <form
+                      onSubmit={handleSaveActiveAsLoadout}
+                      className="pt-3 border-t border-zinc-850 space-y-2"
+                    >
+                      <span className="text-[10px] text-zinc-500 font-extrabold uppercase tracking-wide block">
+                        Save Active Setup as Loadout
+                      </span>
+                      <div className="flex space-x-2">
+                        <input
+                          type="text"
+                          required
+                          value={newLoadoutName}
+                          onChange={(e) => setNewLoadoutName(e.target.value)}
+                          placeholder="e.g. My Mythic+ Spec"
+                          className="flex-grow bg-zinc-950 border border-zinc-850 rounded-lg px-2.5 py-1.5 text-xs text-zinc-200 placeholder-zinc-650 focus:border-violet-500 focus:outline-none"
+                        />
+                        <button
+                          type="submit"
+                          disabled={isSavingLoadout}
+                          className="px-3 py-1.5 text-xs font-bold text-white bg-violet-600 hover:bg-violet-500 rounded-lg transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
+                        >
+                          {isSavingLoadout ? "Saving..." : "Save"}
+                        </button>
+                      </div>
+                    </form>
+                  )}
+
+                  <div
+                    onClick={() => setIsModalOpen(true)}
+                    className="p-3 border border-dashed border-zinc-800 hover:border-zinc-700 rounded-xl text-center cursor-pointer transition-colors group"
+                  >
+                    <span className="text-xs text-zinc-500 group-hover:text-zinc-400 font-bold block">
+                      + Import New WoW Build
+                    </span>
+                    <span className="text-[9px] text-zinc-600 block mt-1">Requires Addon Base64 String</span>
+                  </div>
+
+                  {activeBuild && (
+                    <button
+                      onClick={handleClearBuild}
+                      className="w-full py-2 text-xs font-bold bg-zinc-950 hover:bg-rose-950/20 text-zinc-500 hover:text-rose-450 border border-zinc-900 hover:border-rose-900/40 rounded-xl transition-all cursor-pointer"
+                    >
+                      Clear Active Setup
+                  </button>
+                  )}
                 </div>
               </div>
             </div>
 
-            {/* Character Setups & Database Loadouts */}
-            <div className="bg-zinc-900/40 border border-zinc-850 p-6 rounded-2xl backdrop-blur-sm space-y-4">
-              <div className="flex justify-between items-center">
-                <h3 className="font-black text-sm text-white uppercase tracking-wider">Saved Loadouts</h3>
-                <span className="text-[10px] font-extrabold text-violet-400">
-                  {session?.loggedIn ? `${savedLoadouts.length} SAVED` : "LOCAL ONLY"}
-                </span>
+            {/* Performance History (Right Col) */}
+            <div className="lg:col-span-7 space-y-6">
+              {/* Accuracy Over Time Graphic Chart */}
+              <div className="bg-zinc-900/40 border border-zinc-850 p-6 rounded-2xl backdrop-blur-sm space-y-4">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="font-black text-sm text-white uppercase tracking-wider">Accuracy Improvement History</h3>
+                    <span className="text-xs text-zinc-400">Your performance curve over the last 10 sessions</span>
+                  </div>
+                  <div className="flex items-center space-x-3 text-xs text-zinc-400">
+                    <span className="flex items-center space-x-1">
+                      <span className="w-2 h-2 rounded-full bg-violet-500" />
+                      <span>Active Drills</span>
+                    </span>
+                  </div>
+                </div>
+
+                {renderChart()}
               </div>
 
-              <div className="space-y-3">
-                {/* Active local setup status */}
-                <div className="bg-zinc-950/60 p-3 rounded-xl border border-zinc-850/80 flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-2 h-2 rounded-full bg-violet-500 animate-pulse" />
-                    <div>
-                      <span className="font-bold text-xs block text-white">
-                        {activeBuild ? `${activeBuild.spec} ${activeBuild.class}` : "Default DH Spec"}
-                      </span>
-                      <span className="text-[10px] text-zinc-500">
-                        {activeBuild ? "Active Temporary Setup" : "MVP Standard Template"}
-                      </span>
-                    </div>
-                  </div>
-                  <span className="text-[10px] font-extrabold text-emerald-400 bg-emerald-950/40 border border-emerald-900/60 px-1.5 py-0.5 rounded">
-                    ACTIVE
-                  </span>
+              {/* Recent Training Sessions */}
+              <div className="bg-zinc-900/40 border border-zinc-850 p-6 rounded-2xl backdrop-blur-sm space-y-4">
+                <h3 className="font-black text-sm text-white uppercase tracking-wider">Recent Sessions</h3>
+                
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead>
+                      <tr className="border-b border-zinc-850 text-zinc-500 uppercase font-black tracking-wider">
+                        <th className="pb-3 font-bold">Scenario Drill</th>
+                        <th className="pb-3 font-bold">Date & Time</th>
+                        <th className="pb-3 font-bold text-center">Accuracy</th>
+                        <th className="pb-3 font-bold text-center">Reaction Speed</th>
+                        <th className="pb-3 font-bold text-right">Grade</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-zinc-900">
+                      {progressHistory.length === 0 ? (
+                        <tr>
+                          <td colSpan={5} className="py-6 text-center text-zinc-550 italic">
+                            No recent sessions. Set up your character and run a training sim!
+                          </td>
+                        </tr>
+                      ) : (
+                        progressHistory.slice().reverse().map((session) => {
+                          const dateFormatted = new Date(session.createdAt).toLocaleDateString() + " " + new Date(session.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                          return (
+                            <tr key={session.id} className="hover:bg-zinc-900/20 transition-colors">
+                              <td className="py-3 font-extrabold text-white">
+                                {session.spec} {session.class} ({session.drillType})
+                              </td>
+                              <td className="py-3 text-zinc-400">{dateFormatted}</td>
+                              <td className="py-3 text-center">
+                                <span className={`font-extrabold ${session.accuracy >= 90 ? 'text-emerald-400' : session.accuracy >= 80 ? 'text-amber-400' : 'text-rose-400'}`}>
+                                  {session.accuracy}%
+                                </span>
+                              </td>
+                              <td className="py-3 text-center text-zinc-300 font-mono">{session.avgReactionMs}ms</td>
+                              <td className="py-3 text-right">
+                                <span className={`inline-block font-black px-2 py-0.5 rounded text-[10px] ${
+                                  session.scoreGrade === 'S' ? 'bg-violet-950 text-violet-400 border border-violet-900' :
+                                  session.scoreGrade === 'A' ? 'bg-emerald-950 text-emerald-400 border border-emerald-900' :
+                                  session.scoreGrade === 'B' ? 'bg-amber-950 text-amber-400 border border-amber-900' :
+                                  'bg-zinc-800 text-zinc-400'
+                                }`}>
+                                  {session.scoreGrade}
+                                </span>
+                              </td>
+                            </tr>
+                          );
+                        })
+                      )}
+                    </tbody>
+                  </table>
                 </div>
-
-                {/* Show saved loadouts if logged in */}
-                {session?.loggedIn ? (
-                  savedLoadouts.map((loadout) => {
-                    const isSelected = isActiveBuildMatch(loadout);
-                    return (
-                      <div
-                        key={loadout.id}
-                        onClick={() => handleSelectLoadout(loadout)}
-                        className={`p-3.5 rounded-xl border flex items-center justify-between cursor-pointer transition-all hover:bg-zinc-900/40 ${
-                          isSelected
-                            ? "bg-zinc-900/80 border-violet-500/40"
-                            : "bg-zinc-950/30 border-zinc-850"
-                        }`}
-                      >
-                        <div className="flex items-center space-x-3">
-                          <div className={`w-1.5 h-1.5 rounded-full ${isSelected ? "bg-violet-400" : "bg-zinc-600"}`} />
-                          <div>
-                            <span className="font-bold text-xs block text-white">{loadout.name}</span>
-                            <span className="text-[9px] text-zinc-500 uppercase tracking-wide">
-                              {loadout.spec} {loadout.class}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                          {isSelected && (
-                            <span className="text-[9px] font-black text-violet-400 bg-violet-950/40 border border-violet-900/60 px-1 py-0.5 rounded uppercase tracking-wider">
-                              LOADED
-                            </span>
-                          )}
-                          <button
-                            onClick={(e) => handleDeleteLoadout(loadout.id, e)}
-                            className="p-1 text-zinc-600 hover:text-rose-500 rounded hover:bg-rose-950/20 transition-all"
-                            title="Delete Loadout"
-                          >
-                            <svg fill="none" viewBox="0 0 24 24" strokeWidth="2" stroke="currentColor" className="size-3.5">
-                              <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
-                            </svg>
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })
-                ) : (
-                  <div className="p-4 bg-zinc-950/40 border border-zinc-850 rounded-xl text-center space-y-2">
-                    <span className="text-[10px] text-zinc-500 font-extrabold uppercase block tracking-wider">Multi-character Sync</span>
-                    <p className="text-[10px] text-zinc-400 leading-snug">
-                      Sign in with your Battle.net account to persist your characters in the cloud and switch profiles seamlessly.
-                    </p>
-                    <a
-                      href="/api/auth/login"
-                      className="inline-block px-3 py-1.5 text-[10px] font-black text-sky-400 bg-sky-950/40 border border-sky-900/50 hover:bg-sky-900/30 hover:text-sky-300 rounded-lg transition-all"
-                    >
-                      Login to Battle.net
-                    </a>
-                  </div>
-                )}
-
-                {/* Save Current Layout Form */}
-                {session?.loggedIn && activeBuild && (
-                  <form
-                    onSubmit={handleSaveActiveAsLoadout}
-                    className="pt-3 border-t border-zinc-850 space-y-2"
-                  >
-                    <span className="text-[10px] text-zinc-500 font-extrabold uppercase tracking-wide block">
-                      Save Active Setup as Loadout
-                    </span>
-                    <div className="flex space-x-2">
-                      <input
-                        type="text"
-                        required
-                        value={newLoadoutName}
-                        onChange={(e) => setNewLoadoutName(e.target.value)}
-                        placeholder="e.g. My Mythic+ Spec"
-                        className="flex-grow bg-zinc-950 border border-zinc-850 rounded-lg px-2.5 py-1.5 text-xs text-zinc-200 placeholder-zinc-650 focus:border-violet-500 focus:outline-none"
-                      />
-                      <button
-                        type="submit"
-                        disabled={isSavingLoadout}
-                        className="px-3 py-1.5 text-xs font-bold text-white bg-violet-600 hover:bg-violet-500 rounded-lg transition-all active:scale-95 disabled:opacity-50 cursor-pointer"
-                      >
-                        {isSavingLoadout ? "Saving..." : "Save"}
-                      </button>
-                    </div>
-                  </form>
-                )}
-
-                <div
-                  onClick={() => setIsModalOpen(true)}
-                  className="p-3 border border-dashed border-zinc-800 hover:border-zinc-700 rounded-xl text-center cursor-pointer transition-colors group"
-                >
-                  <span className="text-xs text-zinc-500 group-hover:text-zinc-400 font-bold block">
-                    + Import New WoW Build
-                  </span>
-                  <span className="text-[9px] text-zinc-600 block mt-1">Requires Addon Base64 String</span>
-                </div>
-
-                {activeBuild && (
-                  <button
-                    onClick={handleClearBuild}
-                    className="w-full py-2 text-xs font-bold bg-zinc-950 hover:bg-rose-950/20 text-zinc-500 hover:text-rose-450 border border-zinc-900 hover:border-rose-900/40 rounded-xl transition-all cursor-pointer"
-                  >
-                    Clear Active Setup
-                  </button>
-                )}
               </div>
             </div>
           </div>
+        )}
 
-          {/* Practice History & Chart (Right Col) */}
-          <div className="lg:col-span-8 space-y-8">
-            
-            {/* Accuracy Over Time Graphic Chart */}
-            <div className="bg-zinc-900/40 border border-zinc-850 p-6 rounded-2xl backdrop-blur-sm space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h3 className="font-black text-sm text-white uppercase tracking-wider">Accuracy Improvement History</h3>
-                  <span className="text-xs text-zinc-400">Your performance curve over the last 10 sessions</span>
-                </div>
-                <div className="flex items-center space-x-3 text-xs">
-                  <span className="flex items-center space-x-1">
-                    <span className="w-2 h-2 rounded-full bg-violet-500" />
-                    <span className="text-zinc-400">Active Drills</span>
-                  </span>
-                </div>
-              </div>
-
-              {renderChart()}
-            </div>
-
+        {dashTab === "diagnostics" && (
+          <div className="max-w-4xl mx-auto space-y-6 animate-fade-in-up">
             {/* Rotational Pain Points / Keybind Coaching */}
             <div className="bg-zinc-900/40 border border-zinc-850 p-6 rounded-2xl backdrop-blur-sm space-y-4">
               <div>
@@ -722,9 +817,12 @@ export default function Dashboard() {
               </div>
 
               {slowestKeys.length === 0 ? (
-                <div className="p-4 bg-zinc-950/30 border border-zinc-850 rounded-xl text-center space-y-1">
-                  <span className="text-[10px] text-zinc-500 font-extrabold uppercase block tracking-wider">No Diagnostic Data</span>
-                  <p className="text-[10px] text-zinc-400 leading-snug">
+                <div className="p-8 bg-zinc-950/30 border border-zinc-850 rounded-xl text-center space-y-1">
+                  <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-8 text-zinc-600 mx-auto mb-2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 18v-5.25m0 0a3 3 0 0 0-3-3H9.75M12 12.75a3 3 0 0 0 3-3H14.25M9 21h6a2.25 2.25 0 0 0 2.25-2.25V5.25A2.25 2.25 0 0 0 15 3H9a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 9 21Z" />
+                  </svg>
+                  <span className="text-xs font-bold text-zinc-400 uppercase block tracking-wider">No Diagnostic Data</span>
+                  <p className="text-xs text-zinc-500 max-w-xs mx-auto leading-snug">
                     Complete training drills with multiple spell inputs to evaluate reaction time patterns.
                   </p>
                 </div>
@@ -766,63 +864,11 @@ export default function Dashboard() {
                 </div>
               )}
             </div>
+          </div>
+        )}
 
-            {/* Recent Training Sessions */}
-            <div className="bg-zinc-900/40 border border-zinc-850 p-6 rounded-2xl backdrop-blur-sm space-y-4">
-              <h3 className="font-black text-sm text-white uppercase tracking-wider">Recent Sessions</h3>
-              
-              <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs">
-                  <thead>
-                    <tr className="border-b border-zinc-850 text-zinc-500 uppercase font-black tracking-wider">
-                      <th className="pb-3 font-bold">Scenario Drill</th>
-                      <th className="pb-3 font-bold">Date & Time</th>
-                      <th className="pb-3 font-bold text-center">Accuracy</th>
-                      <th className="pb-3 font-bold text-center">Reaction Speed</th>
-                      <th className="pb-3 font-bold text-right">Grade</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-zinc-900">
-                    {progressHistory.length === 0 ? (
-                      <tr>
-                        <td colSpan={5} className="py-6 text-center text-zinc-550 italic">
-                          No recent sessions. Set up your character and run a training sim!
-                        </td>
-                      </tr>
-                    ) : (
-                      progressHistory.slice().reverse().map((session) => {
-                        const dateFormatted = new Date(session.createdAt).toLocaleDateString() + " " + new Date(session.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                        return (
-                          <tr key={session.id} className="hover:bg-zinc-900/20 transition-colors">
-                            <td className="py-3 font-extrabold text-white">
-                              {session.spec} {session.class} ({session.drillType})
-                            </td>
-                            <td className="py-3 text-zinc-400">{dateFormatted}</td>
-                            <td className="py-3 text-center">
-                              <span className={`font-extrabold ${session.accuracy >= 90 ? 'text-emerald-400' : session.accuracy >= 80 ? 'text-amber-400' : 'text-rose-400'}`}>
-                                {session.accuracy}%
-                              </span>
-                            </td>
-                            <td className="py-3 text-center text-zinc-300 font-mono">{session.avgReactionMs}ms</td>
-                            <td className="py-3 text-right">
-                              <span className={`inline-block font-black px-2 py-0.5 rounded text-[10px] ${
-                                session.scoreGrade === 'S' ? 'bg-violet-950 text-violet-400 border border-violet-900' :
-                                session.scoreGrade === 'A' ? 'bg-emerald-950 text-emerald-400 border border-emerald-900' :
-                                session.scoreGrade === 'B' ? 'bg-amber-950 text-amber-400 border border-amber-900' :
-                                'bg-zinc-800 text-zinc-400'
-                              }`}>
-                                {session.scoreGrade}
-                              </span>
-                            </td>
-                          </tr>
-                        );
-                      })
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-
+        {dashTab === "leaderboards" && (
+          <div className="max-w-5xl mx-auto space-y-6 animate-fade-in-up">
             {/* Weekly High Scores Leaderboard */}
             <div className="bg-zinc-900/40 border border-zinc-850 p-6 rounded-2xl backdrop-blur-sm space-y-4">
               <div>
@@ -894,9 +940,8 @@ export default function Dashboard() {
                 </table>
               </div>
             </div>
-
           </div>
-        </div>
+        )}
       </main>
 
       {/* Import Modal */}

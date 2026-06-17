@@ -46,8 +46,10 @@ export default function Home() {
   const [errorMessage, setErrorMessage] = useState("");
   const [isSuccess, setIsSuccess] = useState(false);
 
+  // Active Tab State ("preset" or "import")
+  const [activeTab, setActiveTab] = useState<"preset" | "import">("preset");
+
   // Preset Selector States
-  const [showPresets, setShowPresets] = useState(false);
   const [selectedClass, setSelectedClass] = useState("Demon Hunter");
   const [selectedSpec, setSelectedSpec] = useState("Havoc");
 
@@ -243,132 +245,60 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Quick Import Console Card */}
+          {/* Quick Import/Preset Select Console Card */}
           <div className="lg:col-span-5 relative flex justify-center items-center">
-            <div className="w-full max-w-[440px] rounded-3xl bg-zinc-900/60 border border-zinc-800/80 p-6 shadow-2xl relative backdrop-blur-md overflow-hidden flex flex-col space-y-4 shadow-[0_0_50px_-12px_rgba(139,92,246,0.15)]">
+            <div className="w-full max-w-[440px] rounded-3xl bg-zinc-900/60 border border-zinc-800/80 p-6 shadow-2xl relative backdrop-blur-md overflow-hidden flex flex-col space-y-4 shadow-[0_0_50px_-12px_rgba(139,92,246,0.15)] animate-fade-in-up">
               {/* Grid Decorative overlay */}
               <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f1f2e_1px,transparent_1px),linear-gradient(to_bottom,#1f1f2e_1px,transparent_1px)] bg-[size:24px_24px] opacity-10 pointer-events-none" />
 
-              {/* Title Section */}
-              <div className="flex items-center justify-between border-b border-zinc-850 pb-3 relative z-10">
-                <span className="text-xs font-black text-violet-400 tracking-wider uppercase flex items-center space-x-1.5">
-                  <span className="w-2 h-2 rounded-full bg-violet-500 animate-pulse" />
-                  <span>Import & Train</span>
-                </span>
-                <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest bg-zinc-950 px-2 py-0.5 rounded border border-zinc-900">
-                  WoW Addon
-                </span>
-              </div>
-
-              {/* Addon Promotion Box */}
-              <div className="bg-gradient-to-br from-violet-950/20 via-zinc-950 to-indigo-950/10 border border-violet-900/35 rounded-2xl p-4 space-y-2.5 relative z-10">
-                <div className="flex items-start space-x-3">
-                  <div className="w-8 h-8 rounded-lg bg-violet-600 flex items-center justify-center shrink-0 shadow shadow-violet-500/20">
-                    <svg fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" className="size-4.5 text-white">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
-                    </svg>
-                  </div>
-                  <div className="space-y-1">
-                    <h4 className="text-xs font-black text-white uppercase tracking-wide">
-                      1. Install PullPrep Addon
-                    </h4>
-                    <p className="text-[11px] text-zinc-400 leading-snug">
-                      Download the official addon to export your real action bars, keybinds, and spell configs.
-                    </p>
-                  </div>
-                </div>
-                <div className="flex pt-1">
-                  <a
-                    href="https://github.com/PullPrep/PullPrep-Addon"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-full text-center py-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 text-[11px] font-black text-violet-400 rounded-xl transition-all cursor-pointer flex items-center justify-center space-x-1.5"
-                  >
-                    <svg fill="currentColor" viewBox="0 0 24 24" className="size-3.5">
-                      <path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.11.82-.26.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
-                    </svg>
-                    <span>Download on GitHub</span>
-                  </a>
-                </div>
-              </div>
-
-              {/* Paste Console Form */}
-              <form onSubmit={handleImport} className="space-y-3 relative z-10 flex flex-col">
-                <div className="space-y-1">
-                  <label className="text-[10px] text-zinc-500 font-extrabold uppercase tracking-widest block">
-                    2. Paste /pullprep Export Code
-                  </label>
-                  <textarea
-                    value={importString}
-                    onChange={(e) => setImportString(e.target.value)}
-                    placeholder="Paste Base64 addon string here..."
-                    className="w-full h-24 bg-zinc-950/80 border border-zinc-800 rounded-xl p-3 text-[10px] text-zinc-300 font-mono focus:border-violet-500/80 focus:ring-1 focus:ring-violet-500/20 focus:outline-none placeholder-zinc-700 resize-none transition-all"
-                  />
-                </div>
-
-                {errorMessage && (
-                  <p className="text-[10px] text-rose-400 bg-rose-950/20 border border-rose-900/40 p-2 rounded-lg leading-snug">
-                    ⚠️ {errorMessage}
-                  </p>
-                )}
-
+              {/* Tab Selector Buttons */}
+              <div className="flex bg-zinc-950 p-1 rounded-xl border border-zinc-900 relative z-10">
                 <button
-                  type="submit"
-                  disabled={isSuccess}
-                  className={`w-full py-3 text-xs font-black rounded-xl transition-all cursor-pointer flex items-center justify-center space-x-2 shadow-md ${
-                    isSuccess
-                      ? "bg-emerald-600 text-white shadow-emerald-500/20"
-                      : "bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white shadow-violet-500/15 hover:shadow-violet-500/25 active:scale-98"
+                  type="button"
+                  onClick={() => setActiveTab("preset")}
+                  className={`flex-1 text-center py-2 text-xs font-black rounded-lg uppercase tracking-wider transition-all cursor-pointer ${
+                    activeTab === "preset"
+                      ? "bg-violet-600 text-white shadow shadow-violet-500/10"
+                      : "text-zinc-500 hover:text-zinc-350"
                   }`}
                 >
-                  {isSuccess ? (
-                    <>
-                      <svg fill="none" viewBox="0 0 24 24" strokeWidth="3" stroke="currentColor" className="size-4 animate-bounce">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
-                      </svg>
-                      <span>Success! Loading Simulator...</span>
-                    </>
-                  ) : (
-                    <>
-                      <svg fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" className="size-4">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="m3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z" />
-                      </svg>
-                      <span>Import & Start Training</span>
-                    </>
-                  )}
+                  Quick Start
                 </button>
-              </form>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("import")}
+                  className={`flex-1 text-center py-2 text-xs font-black rounded-lg uppercase tracking-wider transition-all cursor-pointer ${
+                    activeTab === "import"
+                      ? "bg-violet-600 text-white shadow shadow-violet-500/10"
+                      : "text-zinc-500 hover:text-zinc-355"
+                  }`}
+                >
+                  WoW Addon
+                </button>
+              </div>
 
-              {/* Try Preset Toggle */}
-              <div className="pt-2 border-t border-zinc-850 relative z-10">
-                {!showPresets ? (
-                  <button
-                    type="button"
-                    onClick={() => setShowPresets(true)}
-                    className="w-full text-center text-[11px] font-bold text-zinc-500 hover:text-zinc-355 transition-colors uppercase tracking-wider py-1"
-                  >
-                    No addon? Try a default spec preset ▾
-                  </button>
-                ) : (
-                  <div className="space-y-3 bg-zinc-950/30 border border-zinc-850/60 rounded-xl p-3">
-                    <div className="flex justify-between items-center">
-                      <span className="text-[10px] text-zinc-500 font-extrabold uppercase tracking-wide">
-                        Select Default Spec Preset
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => setShowPresets(false)}
-                        className="text-[10px] text-zinc-400 hover:text-zinc-200 uppercase font-black"
-                      >
-                        Hide ▴
-                      </button>
-                    </div>
-                    <form onSubmit={handleTrainPreset} className="space-y-2.5">
-                      <div className="grid grid-cols-2 gap-2">
+              {activeTab === "preset" ? (
+                /* Preset Panel */
+                <div className="space-y-4 relative z-10 animate-fade-in-up">
+                  <div className="space-y-1">
+                    <span className="text-[10px] text-zinc-500 font-extrabold uppercase tracking-widest block">
+                      1. Select WoW Class & Specialization
+                    </span>
+                    <p className="text-[11px] text-zinc-400 leading-snug">
+                      No addon needed. Train instantly using standard keybind layouts and defaults for all 39 specs.
+                    </p>
+                  </div>
+
+                  <form onSubmit={handleTrainPreset} className="space-y-4">
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="text-[10px] text-zinc-500 font-extrabold uppercase tracking-wide block mb-1">
+                          Class
+                        </label>
                         <select
                           value={selectedClass}
                           onChange={(e) => handleClassChange(e.target.value)}
-                          className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2 py-1.5 text-[11px] text-zinc-300 focus:border-violet-500 focus:outline-none cursor-pointer"
+                          className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-2.5 py-1.5 text-xs text-zinc-200 focus:border-violet-500 focus:outline-none cursor-pointer"
                         >
                           {WOW_CLASSES_SPECS.map((c) => (
                             <option key={c.key} value={c.name}>
@@ -376,10 +306,15 @@ export default function Home() {
                             </option>
                           ))}
                         </select>
+                      </div>
+                      <div>
+                        <label className="text-[10px] text-zinc-500 font-extrabold uppercase tracking-wide block mb-1">
+                          Specialization
+                        </label>
                         <select
                           value={selectedSpec}
                           onChange={(e) => setSelectedSpec(e.target.value)}
-                          className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2 py-1.5 text-[11px] text-zinc-300 focus:border-violet-500 focus:outline-none cursor-pointer"
+                          className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-2.5 py-1.5 text-xs text-zinc-200 focus:border-violet-500 focus:outline-none cursor-pointer"
                         >
                           {(WOW_CLASSES_SPECS.find((c) => c.name === selectedClass)?.specs || []).map((spec) => (
                             <option key={spec} value={spec}>
@@ -388,18 +323,100 @@ export default function Home() {
                           ))}
                         </select>
                       </div>
-                      <button
-                        type="submit"
-                        className="w-full py-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 text-[11px] font-black text-zinc-200 rounded-lg transition-all cursor-pointer"
-                      >
-                        Launch with {selectedSpec} {selectedClass}
-                      </button>
-                    </form>
+                    </div>
+
+                    <button
+                      type="submit"
+                      className="w-full py-3 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white font-extrabold text-xs rounded-xl active:scale-98 transition-all flex items-center justify-center space-x-2 shadow-lg shadow-violet-500/20 cursor-pointer"
+                    >
+                      <svg fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" className="size-4">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 0 1 0 1.972l-11.54 6.347a1.125 1.125 0 0 1-1.667-.986V5.653Z" />
+                      </svg>
+                      <span>Launch Preset Demo</span>
+                    </button>
+                  </form>
+                </div>
+              ) : (
+                /* Import Panel */
+                <div className="space-y-4 relative z-10 animate-fade-in-up">
+                  {/* Addon Promotion Box */}
+                  <div className="bg-gradient-to-br from-violet-950/20 via-zinc-950 to-indigo-950/10 border border-violet-900/35 rounded-2xl p-4 space-y-2.5">
+                    <div className="flex items-start space-x-3">
+                      <div className="w-8 h-8 rounded-lg bg-violet-600 flex items-center justify-center shrink-0 shadow shadow-violet-500/20">
+                        <svg fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" className="size-4.5 text-white">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
+                        </svg>
+                      </div>
+                      <div className="space-y-1">
+                        <h4 className="text-xs font-black text-white uppercase tracking-wide">
+                          1. Install PullPrep Addon
+                        </h4>
+                        <p className="text-[11px] text-zinc-400 leading-snug">
+                          Download the official addon to export your real action bars, keybinds, and spell configs.
+                        </p>
+                      </div>
+                    </div>
+                    <a
+                      href="https://github.com/PullPrep/PullPrep-Addon"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="w-full text-center py-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 text-[11px] font-black text-violet-400 rounded-xl transition-all cursor-pointer flex items-center justify-center space-x-1.5"
+                    >
+                      <svg fill="currentColor" viewBox="0 0 24 24" className="size-3.5">
+                        <path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.11.82-.26.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
+                      </svg>
+                      <span>Download on GitHub</span>
+                    </a>
                   </div>
-                )}
-              </div>
-            </div>
-          </div>
+
+                  {/* Paste Console Form */}
+                  <form onSubmit={handleImport} className="space-y-3 flex flex-col">
+                    <div className="space-y-1">
+                      <label className="text-[10px] text-zinc-500 font-extrabold uppercase tracking-widest block">
+                        2. Paste /pullprep Export Code
+                      </label>
+                      <textarea
+                        value={importString}
+                        onChange={(e) => setImportString(e.target.value)}
+                        placeholder="Paste Base64 addon string here..."
+                        className="w-full h-24 bg-zinc-950/80 border border-zinc-800 rounded-xl p-3 text-[10px] text-zinc-300 font-mono focus:border-violet-500/80 focus:ring-1 focus:ring-violet-500/20 focus:outline-none placeholder-zinc-700 resize-none transition-all"
+                      />
+                    </div>
+
+                    {errorMessage && (
+                      <p className="text-[10px] text-rose-400 bg-rose-950/20 border border-rose-900/40 p-2 rounded-lg leading-snug">
+                        ⚠️ {errorMessage}
+                      </p>
+                    )}
+
+                    <button
+                      type="submit"
+                      disabled={isSuccess}
+                      className={`w-full py-3 text-xs font-black rounded-xl transition-all cursor-pointer flex items-center justify-center space-x-2 shadow-md ${
+                        isSuccess
+                          ? "bg-emerald-600 text-white shadow-emerald-500/20"
+                          : "bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white shadow-violet-500/15 hover:shadow-violet-500/25 active:scale-98"
+                      }`}
+                    >
+                      {isSuccess ? (
+                        <>
+                          <svg fill="none" viewBox="0 0 24 24" strokeWidth="3" stroke="currentColor" className="size-4 animate-bounce">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                          </svg>
+                          <span>Success! Loading Simulator...</span>
+                        </>
+                      ) : (
+                        <>
+                          <svg fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" className="size-4">
+                            <path strokeLinecap="round" strokeLinejoin="round" d="m3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z" />
+                          </svg>
+                          <span>Import & Start Training</span>
+                        </>
+                      )}
+                    </button>
+                  </form>
+                </div>
+              )}
         </div>
       </main>
 
