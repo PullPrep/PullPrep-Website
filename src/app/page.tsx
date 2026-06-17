@@ -2,6 +2,11 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import {
+  WOW_CLASSES_SPECS,
+  generateDefaultBuild
+} from "@/lib/trainingEngine";
 
 interface Session {
   loggedIn: boolean;
@@ -11,9 +16,40 @@ interface Session {
   } | null;
 }
 
+interface ImportedButton {
+  slot: number;
+  type: string;
+  id: number;
+  name: string;
+  key: string;
+  icon: number;
+}
+
+interface ImportedBar {
+  barName: string;
+  buttons: ImportedButton[];
+}
+
+interface ImportedBuild {
+  class: string;
+  spec: string;
+  actionBars: ImportedBar[];
+}
+
 export default function Home() {
+  const router = useRouter();
   const [session, setSession] = useState<Session | null>(null);
   const [isLoadingSession, setIsLoadingSession] = useState(true);
+
+  // Addon Import States
+  const [importString, setImportString] = useState("");
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isSuccess, setIsSuccess] = useState(false);
+
+  // Preset Selector States
+  const [showPresets, setShowPresets] = useState(false);
+  const [selectedClass, setSelectedClass] = useState("Demon Hunter");
+  const [selectedSpec, setSelectedSpec] = useState("Havoc");
 
   useEffect(() => {
     async function checkSession() {
@@ -29,6 +65,50 @@ export default function Home() {
     }
     checkSession();
   }, []);
+
+  const handleClassChange = (className: string) => {
+    setSelectedClass(className);
+    const cls = WOW_CLASSES_SPECS.find(c => c.name === className);
+    const firstSpec = cls && cls.specs.length > 0 ? cls.specs[0] : "";
+    setSelectedSpec(firstSpec);
+  };
+
+  const handleImport = (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMessage("");
+    setIsSuccess(false);
+
+    if (!importString.trim()) {
+      setErrorMessage("Please paste an export string first.");
+      return;
+    }
+
+    try {
+      const decoded = atob(importString.trim());
+      const parsed = JSON.parse(decoded) as ImportedBuild;
+
+      if (!parsed.class || !parsed.spec || !Array.isArray(parsed.actionBars)) {
+        throw new Error("Invalid structure");
+      }
+
+      localStorage.setItem("pullprep_active_build", JSON.stringify(parsed));
+      setIsSuccess(true);
+      setTimeout(() => {
+        router.push("/train");
+      }, 800);
+    } catch (e) {
+      setErrorMessage("Failed to parse. Copy the exact code from /pp in-game.");
+    }
+  };
+
+  const handleTrainPreset = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (selectedClass && selectedSpec) {
+      const defaultBuild = generateDefaultBuild(selectedClass, selectedSpec);
+      localStorage.setItem("pullprep_active_build", JSON.stringify(defaultBuild));
+      router.push("/train");
+    }
+  };
 
   return (
     <div className="flex flex-col min-h-screen bg-zinc-950 text-zinc-100 overflow-hidden relative">
@@ -163,76 +243,223 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Interactive Graphic Representation */}
+          {/* Quick Import Console Card */}
           <div className="lg:col-span-5 relative flex justify-center items-center">
-            <div className="w-full max-w-[420px] aspect-square rounded-3xl bg-zinc-900/50 border border-zinc-800/80 p-6 shadow-2xl relative backdrop-blur-sm overflow-hidden flex flex-col justify-between">
+            <div className="w-full max-w-[440px] rounded-3xl bg-zinc-900/60 border border-zinc-800/80 p-6 shadow-2xl relative backdrop-blur-md overflow-hidden flex flex-col space-y-4 shadow-[0_0_50px_-12px_rgba(139,92,246,0.15)]">
               {/* Grid Decorative overlay */}
               <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f1f2e_1px,transparent_1px),linear-gradient(to_bottom,#1f1f2e_1px,transparent_1px)] bg-[size:24px_24px] opacity-10 pointer-events-none" />
 
-              {/* Graphic Title */}
-              <div className="flex items-center justify-between border-b border-zinc-800 pb-3">
-                <span className="text-xs font-bold text-zinc-500 tracking-widest uppercase">
-                  Active Simulator Feed
+              {/* Title Section */}
+              <div className="flex items-center justify-between border-b border-zinc-850 pb-3 relative z-10">
+                <span className="text-xs font-black text-violet-400 tracking-wider uppercase flex items-center space-x-1.5">
+                  <span className="w-2 h-2 rounded-full bg-violet-500 animate-pulse" />
+                  <span>Import & Train</span>
                 </span>
-                <span className="flex items-center space-x-1.5 px-2 py-0.5 rounded bg-red-950/60 border border-red-800/50 text-[10px] text-red-400 font-extrabold tracking-wider animate-pulse">
-                  <span className="w-1.5 h-1.5 rounded-full bg-red-500" />
-                  <span>LIVE FEED</span>
+                <span className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest bg-zinc-950 px-2 py-0.5 rounded border border-zinc-900">
+                  WoW Addon
                 </span>
               </div>
 
-              {/* Central Visualizer */}
-              <div className="my-8 flex flex-col items-center justify-center space-y-4 relative py-4">
-                <div className="w-24 h-24 rounded-2xl bg-violet-950/40 border-2 border-violet-500 flex flex-col items-center justify-center shadow-lg shadow-violet-500/20 relative z-10 spell-highlight">
-                  <div className="w-10 h-10 text-violet-400 flex items-center justify-center">
-                    {/* Glowing eye SVG */}
-                    <svg fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor" className="size-8">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+              {/* Addon Promotion Box */}
+              <div className="bg-gradient-to-br from-violet-950/20 via-zinc-950 to-indigo-950/10 border border-violet-900/35 rounded-2xl p-4 space-y-2.5 relative z-10">
+                <div className="flex items-start space-x-3">
+                  <div className="w-8 h-8 rounded-lg bg-violet-600 flex items-center justify-center shrink-0 shadow shadow-violet-500/20">
+                    <svg fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" className="size-4.5 text-white">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
                     </svg>
                   </div>
-                  <span className="text-[10px] font-black text-violet-300 mt-2 uppercase tracking-wide">
-                    Eye Beam
-                  </span>
-                  <div className="absolute top-1 right-2 px-1 rounded bg-zinc-900 border border-zinc-800 text-[10px] text-white font-extrabold">
-                    3
+                  <div className="space-y-1">
+                    <h4 className="text-xs font-black text-white uppercase tracking-wide">
+                      1. Install PullPrep Addon
+                    </h4>
+                    <p className="text-[11px] text-zinc-400 leading-snug">
+                      Download the official addon to export your real action bars, keybinds, and spell configs.
+                    </p>
                   </div>
                 </div>
-
-                <div className="text-center space-y-1">
-                  <span className="text-xs font-semibold text-zinc-500 uppercase tracking-widest block">
-                    Next Action Prompt
-                  </span>
-                  <span className="text-lg font-black text-white tracking-tight">
-                    PRESS KEYBIND: <span className="text-violet-400 bg-violet-950/60 border border-violet-900 px-2 py-0.5 rounded font-mono text-xl">3</span>
-                  </span>
+                <div className="flex pt-1">
+                  <a
+                    href="https://github.com/PullPrep/PullPrep-Addon"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full text-center py-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 text-[11px] font-black text-violet-400 rounded-xl transition-all cursor-pointer flex items-center justify-center space-x-1.5"
+                  >
+                    <svg fill="currentColor" viewBox="0 0 24 24" className="size-3.5">
+                      <path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.438 9.8 8.205 11.385.6.11.82-.26.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
+                    </svg>
+                    <span>Download on GitHub</span>
+                  </a>
                 </div>
               </div>
 
-              {/* Graphic Stats */}
-              <div className="grid grid-cols-3 gap-3 pt-3 border-t border-zinc-800">
-                <div className="bg-zinc-950/50 p-2.5 rounded-xl border border-zinc-850 text-center">
-                  <span className="text-[10px] text-zinc-500 font-bold block uppercase tracking-wider">
-                    Accuracy
-                  </span>
-                  <span className="text-sm font-black text-emerald-400">98.4%</span>
+              {/* Paste Console Form */}
+              <form onSubmit={handleImport} className="space-y-3 relative z-10 flex flex-col">
+                <div className="space-y-1">
+                  <label className="text-[10px] text-zinc-500 font-extrabold uppercase tracking-widest block">
+                    2. Paste /pullprep Export Code
+                  </label>
+                  <textarea
+                    value={importString}
+                    onChange={(e) => setImportString(e.target.value)}
+                    placeholder="Paste Base64 addon string here..."
+                    className="w-full h-24 bg-zinc-950/80 border border-zinc-800 rounded-xl p-3 text-[10px] text-zinc-300 font-mono focus:border-violet-500/80 focus:ring-1 focus:ring-violet-500/20 focus:outline-none placeholder-zinc-700 resize-none transition-all"
+                  />
                 </div>
-                <div className="bg-zinc-950/50 p-2.5 rounded-xl border border-zinc-850 text-center">
-                  <span className="text-[10px] text-zinc-500 font-bold block uppercase tracking-wider">
-                    Speed
-                  </span>
-                  <span className="text-sm font-black text-zinc-100">0.28s</span>
-                </div>
-                <div className="bg-zinc-950/50 p-2.5 rounded-xl border border-zinc-850 text-center">
-                  <span className="text-[10px] text-zinc-500 font-bold block uppercase tracking-wider">
-                    Combo
-                  </span>
-                  <span className="text-sm font-black text-violet-400">18x</span>
-                </div>
+
+                {errorMessage && (
+                  <p className="text-[10px] text-rose-400 bg-rose-950/20 border border-rose-900/40 p-2 rounded-lg leading-snug">
+                    ⚠️ {errorMessage}
+                  </p>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={isSuccess}
+                  className={`w-full py-3 text-xs font-black rounded-xl transition-all cursor-pointer flex items-center justify-center space-x-2 shadow-md ${
+                    isSuccess
+                      ? "bg-emerald-600 text-white shadow-emerald-500/20"
+                      : "bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white shadow-violet-500/15 hover:shadow-violet-500/25 active:scale-98"
+                  }`}
+                >
+                  {isSuccess ? (
+                    <>
+                      <svg fill="none" viewBox="0 0 24 24" strokeWidth="3" stroke="currentColor" className="size-4 animate-bounce">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="m4.5 12.75 6 6 9-13.5" />
+                      </svg>
+                      <span>Success! Loading Simulator...</span>
+                    </>
+                  ) : (
+                    <>
+                      <svg fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" className="size-4">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="m3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z" />
+                      </svg>
+                      <span>Import & Start Training</span>
+                    </>
+                  )}
+                </button>
+              </form>
+
+              {/* Try Preset Toggle */}
+              <div className="pt-2 border-t border-zinc-850 relative z-10">
+                {!showPresets ? (
+                  <button
+                    type="button"
+                    onClick={() => setShowPresets(true)}
+                    className="w-full text-center text-[11px] font-bold text-zinc-500 hover:text-zinc-355 transition-colors uppercase tracking-wider py-1"
+                  >
+                    No addon? Try a default spec preset ▾
+                  </button>
+                ) : (
+                  <div className="space-y-3 bg-zinc-950/30 border border-zinc-850/60 rounded-xl p-3">
+                    <div className="flex justify-between items-center">
+                      <span className="text-[10px] text-zinc-500 font-extrabold uppercase tracking-wide">
+                        Select Default Spec Preset
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setShowPresets(false)}
+                        className="text-[10px] text-zinc-400 hover:text-zinc-200 uppercase font-black"
+                      >
+                        Hide ▴
+                      </button>
+                    </div>
+                    <form onSubmit={handleTrainPreset} className="space-y-2.5">
+                      <div className="grid grid-cols-2 gap-2">
+                        <select
+                          value={selectedClass}
+                          onChange={(e) => handleClassChange(e.target.value)}
+                          className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2 py-1.5 text-[11px] text-zinc-300 focus:border-violet-500 focus:outline-none cursor-pointer"
+                        >
+                          {WOW_CLASSES_SPECS.map((c) => (
+                            <option key={c.key} value={c.name}>
+                              {c.name}
+                            </option>
+                          ))}
+                        </select>
+                        <select
+                          value={selectedSpec}
+                          onChange={(e) => setSelectedSpec(e.target.value)}
+                          className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2 py-1.5 text-[11px] text-zinc-300 focus:border-violet-500 focus:outline-none cursor-pointer"
+                        >
+                          {(WOW_CLASSES_SPECS.find((c) => c.name === selectedClass)?.specs || []).map((spec) => (
+                            <option key={spec} value={spec}>
+                              {spec}
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <button
+                        type="submit"
+                        className="w-full py-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 text-[11px] font-black text-zinc-200 rounded-lg transition-all cursor-pointer"
+                      >
+                        Launch with {selectedSpec} {selectedClass}
+                      </button>
+                    </form>
+                  </div>
+                )}
               </div>
             </div>
           </div>
         </div>
       </main>
+
+      {/* How it Works Section */}
+      <section className="border-t border-zinc-900 bg-zinc-950 py-20 relative z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto space-y-4 mb-16">
+            <h2 className="text-3xl font-extrabold tracking-tight text-white sm:text-4xl">
+              How It Works
+            </h2>
+            <p className="text-zinc-400 text-lg">
+              Set up your 1:1 muscle memory trainer in three simple steps.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Step 1 */}
+            <div className="bg-zinc-900/20 border border-zinc-850 p-8 rounded-2xl relative space-y-4">
+              <div className="w-10 h-10 rounded-full bg-violet-950/80 border border-violet-800/80 text-violet-400 flex items-center justify-center font-black text-sm shadow">
+                1
+              </div>
+              <h3 className="text-lg font-bold text-white">Download the Addon</h3>
+              <p className="text-zinc-400 text-sm leading-relaxed">
+                Download the official PullPrep Addon from{" "}
+                <a
+                  href="https://github.com/PullPrep/PullPrep-Addon"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-violet-400 hover:text-violet-300 underline font-bold"
+                >
+                  GitHub
+                </a>{" "}
+                and place it in your WoW directory at <code className="text-zinc-300 font-mono text-xs">Interface/AddOns/</code>.
+              </p>
+            </div>
+
+            {/* Step 2 */}
+            <div className="bg-zinc-900/20 border border-zinc-850 p-8 rounded-2xl relative space-y-4">
+              <div className="w-10 h-10 rounded-full bg-indigo-950/80 border border-indigo-800/80 text-indigo-400 flex items-center justify-center font-black text-sm shadow">
+                2
+              </div>
+              <h3 className="text-lg font-bold text-white">Export In-Game</h3>
+              <p className="text-zinc-400 text-sm leading-relaxed">
+                Log into World of Warcraft, type <code className="text-violet-400 font-mono bg-violet-950/45 px-1.5 py-0.5 rounded border border-violet-900/50">/pp</code> or <code className="text-violet-400 font-mono bg-violet-950/45 px-1.5 py-0.5 rounded border border-violet-900/50">/pullprep</code> in your chat console, and copy the generated Base64 layout string.
+              </p>
+            </div>
+
+            {/* Step 3 */}
+            <div className="bg-zinc-900/20 border border-zinc-850 p-8 rounded-2xl relative space-y-4">
+              <div className="w-10 h-10 rounded-full bg-emerald-950/80 border border-emerald-800/80 text-emerald-450 flex items-center justify-center font-black text-sm shadow">
+                3
+              </div>
+              <h3 className="text-lg font-bold text-white">Paste and Train</h3>
+              <p className="text-zinc-400 text-sm leading-relaxed">
+                Paste your configuration string in the import box above. The app will build your bars and keybinds dynamically so you can start practicing!
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
 
       {/* Features section */}
       <section className="border-t border-zinc-900 bg-zinc-950/30 py-20 relative z-10">
