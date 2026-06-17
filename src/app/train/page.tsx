@@ -605,6 +605,7 @@ export default function Train() {
     setActiveSpell(null);
     setActivePromptTime(null);
     setFinalStats(null);
+    setLastPressResult(null);
     setLastCastTime(null);
     setActiveAlert(null);
     setWipedReason(null);
