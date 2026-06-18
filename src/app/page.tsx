@@ -350,21 +350,21 @@ export default function Home() {
                             <div
                               key={idx}
                               className="flex items-center space-x-1.5 shrink-0 group"
-                              onMouseEnter={() => {
-                                console.log("HOVER_ENTER", spellName, idx);
-                                setHoveredSpell(spellName);
-                                setHoveredIdx(idx);
-                              }}
-                              onMouseLeave={() => {
-                                console.log("HOVER_LEAVE", spellName, idx);
-                                setHoveredSpell(null);
-                                setHoveredIdx(null);
-                              }}
                             >
                               <div
                                 className="w-8 h-8 rounded border border-zinc-800 bg-zinc-950/60 p-0.5 flex items-center justify-center transition-all hover:scale-105 hover:border-amber-500/50 cursor-help"
                                 style={{ borderColor: activeColor }}
                                 title={`${idx + 1}. ${spellName}`}
+                                onMouseEnter={() => {
+                                  console.log("HOVER_ENTER", spellName, idx);
+                                  setHoveredSpell(spellName);
+                                  setHoveredIdx(idx);
+                                }}
+                                onMouseLeave={() => {
+                                  console.log("HOVER_LEAVE", spellName, idx);
+                                  setHoveredSpell(null);
+                                  setHoveredIdx(null);
+                                }}
                               >
                                 {imageErrors[spellId] ? (
                                   <div className="w-full h-full rounded flex items-center justify-center text-[9px] font-black uppercase tracking-wider" style={{ color: activeColor, backgroundColor: `${activeColor}10` }}>
