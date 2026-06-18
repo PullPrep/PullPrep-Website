@@ -25,6 +25,204 @@ import {
   SPELL_COOLDOWNS
 } from "@/lib/trainingEngine";
 
+interface HealerPlayer {
+  id: string;
+  name: string;
+  role: "tank" | "healer" | "dps";
+  subRole: "melee" | "ranged";
+  class: string;
+  health: number;
+  maxHealth: number;
+  buffs: { name: string; expiresAt: number }[];
+}
+
+interface HealerSpell {
+  id: number;
+  name: string;
+  keybind: string;
+  icon: string;
+  color: string;
+  description: string;
+  manaCost: number;
+  healAmount: number;
+  isAoE?: boolean;
+  cooldown?: number;
+  hotDuration?: number;
+}
+
+interface FloatingHeal {
+  id: string;
+  playerId: string;
+  text: string;
+  time: number;
+}
+
+const HEALER_SPELLS_BY_SPEC: Record<string, HealerSpell[]> = {
+  "Priest_Holy": [
+    { id: 2061, name: "Flash Heal", keybind: "1", icon: "flash-heal", color: "#38bdf8", description: "A fast but expensive heal.", manaCost: 5, healAmount: 30 },
+    { id: 2060, name: "Heal", keybind: "2", icon: "heal", color: "#0284c7", description: "A slow but efficient heal.", manaCost: 3, healAmount: 45 },
+    { id: 139, name: "Renew", keybind: "3", icon: "renew", color: "#34d399", description: "Heals over time (15s).", manaCost: 2.5, healAmount: 8, hotDuration: 15 },
+    { id: 596, name: "Prayer of Healing", keybind: "4", icon: "prayer-of-healing", color: "#a855f7", description: "Heals the 5 lowest raid members.", manaCost: 10, healAmount: 18, isAoE: true },
+    { id: 2050, name: "HW: Serenity", keybind: "5", icon: "holy-word-serenity", color: "#fbbf24", description: "A massive instant heal. 8s cooldown.", manaCost: 5, healAmount: 80, cooldown: 8 },
+    { id: 47788, name: "Guardian Spirit", keybind: "E", icon: "guardian-spirit", color: "#f43f5e", description: "Saves target from death & heals 100%. 25s cooldown.", manaCost: 8, healAmount: 100, cooldown: 25 }
+  ],
+  "Priest_Discipline": [
+    { id: 2061, name: "Flash Heal", keybind: "1", icon: "flash-heal", color: "#38bdf8", description: "A fast but expensive heal.", manaCost: 5, healAmount: 30 },
+    { id: 17, name: "Shield", keybind: "2", icon: "shield", color: "#eab308", description: "Shields target for 35% health.", manaCost: 4, healAmount: 35 },
+    { id: 139, name: "Renew", keybind: "3", icon: "renew", color: "#34d399", description: "Heals over time (15s).", manaCost: 2.5, healAmount: 8, hotDuration: 15 },
+    { id: 596, name: "Radiance", keybind: "4", icon: "radiance", color: "#a855f7", description: "Heals the 5 lowest raid members.", manaCost: 10, healAmount: 18, isAoE: true },
+    { id: 2050, name: "Penance", keybind: "5", icon: "penance", color: "#fbbf24", description: "Channel to heal a target. 8s cooldown.", manaCost: 5, healAmount: 60, cooldown: 8 },
+    { id: 47788, name: "Pain Suppression", keybind: "E", icon: "pain-suppression", color: "#f43f5e", description: "Reduces damage taken & heals target 100%. 25s cooldown.", manaCost: 8, healAmount: 100, cooldown: 25 }
+  ],
+  "Druid_Restoration": [
+    { id: 8936, name: "Regrowth", keybind: "1", icon: "regrowth", color: "#10b981", description: "Heals instantly and leaves a short HoT.", manaCost: 4.5, healAmount: 25, hotDuration: 6 },
+    { id: 50464, name: "Nourish", keybind: "2", icon: "nourish", color: "#059669", description: "Efficient heal, stronger on targets with HoTs.", manaCost: 3, healAmount: 40 },
+    { id: 774, name: "Rejuvenation", keybind: "3", icon: "rejuvenation", color: "#34d399", description: "Classic heal over time (12s).", manaCost: 3.5, healAmount: 6, hotDuration: 12 },
+    { id: 48438, name: "Wild Growth", keybind: "4", icon: "wild-growth", color: "#6ee7b7", description: "Heals up to 5 injured targets over 7s.", manaCost: 9, healAmount: 15, isAoE: true, hotDuration: 7 },
+    { id: 18562, name: "Swiftmend", keybind: "5", icon: "swiftmend", color: "#10b981", description: "Consumes a HoT to heal instantly. 6s cooldown.", manaCost: 4, healAmount: 60, cooldown: 6 },
+    { id: 102342, name: "Ironbark", keybind: "E", icon: "ironbark", color: "#f59e0b", description: "Reduces damage taken & heals target 100%. 25s cooldown.", manaCost: 5, healAmount: 100, cooldown: 25 }
+  ],
+  "Paladin_Holy": [
+    { id: 19750, name: "Flash of Light", keybind: "1", icon: "flash-of-light", color: "#fef08a", description: "A quick, costly beam of healing light.", manaCost: 5, healAmount: 28 },
+    { id: 82326, name: "Holy Light", keybind: "2", icon: "holy-light", color: "#eab308", description: "A large, slow, efficient healing spell.", manaCost: 3, healAmount: 45 },
+    { id: 20473, name: "Holy Shock", keybind: "3", icon: "holy-shock", color: "#facc15", description: "Instant shock that heals or damages. 5s cooldown.", manaCost: 3, healAmount: 30, cooldown: 5 },
+    { id: 85673, name: "Word of Glory", keybind: "4", icon: "word-of-glory", color: "#fbbf24", description: "Consumes Holy Power to heal a target.", manaCost: 2, healAmount: 50 },
+    { id: 85222, name: "Light of Dawn", keybind: "5", icon: "light-of-dawn", color: "#fef08a", description: "Sends a wave of healing to 5 allies.", manaCost: 8, healAmount: 18, isAoE: true },
+    { id: 633, name: "Lay on Hands", keybind: "E", icon: "lay-on-hands", color: "#fbbf24", description: "Heals target for 100% of their health. 30s cooldown.", manaCost: 10, healAmount: 100, cooldown: 30 }
+  ],
+  "Shaman_Restoration": [
+    { id: 8004, name: "Healing Surge", keybind: "1", icon: "healing-surge", color: "#38bdf8", description: "Fast, high-cost wave of water healing.", manaCost: 5.2, healAmount: 32 },
+    { id: 77472, name: "Healing Wave", keybind: "2", icon: "healing-wave", color: "#0284c7", description: "Slow, low-cost water healing.", manaCost: 2.8, healAmount: 42 },
+    { id: 61295, name: "Riptide", keybind: "3", icon: "riptide", color: "#22d3ee", description: "Instant heal and HoT (15s). 6s cooldown.", manaCost: 3.5, healAmount: 12, cooldown: 6, hotDuration: 15 },
+    { id: 1064, name: "Chain Heal", keybind: "4", icon: "chain-heal", color: "#06b6d4", description: "Heals target, then jumps to 4 nearby allies.", manaCost: 9.5, healAmount: 20, isAoE: true },
+    { id: 73920, name: "Healing Rain", keybind: "5", icon: "healing-rain", color: "#38bdf8", description: "Heals all allies standing in target area.", manaCost: 7.5, healAmount: 15, isAoE: true },
+    { id: 98008, name: "Spirit Link", keybind: "E", icon: "spirit-link", color: "#10b981", description: "Redistributes health and heals target. 25s cooldown.", manaCost: 8, healAmount: 100, cooldown: 25 }
+  ],
+  "Monk_Mistweaver": [
+    { id: 116670, name: "Vivify", keybind: "1", icon: "vivify", color: "#34d399", description: "Heals target and all targets with Renewing Mist.", manaCost: 4.8, healAmount: 30 },
+    { id: 115175, name: "Soothing Mist", keybind: "2", icon: "soothing-mist", color: "#059669", description: "Channels healing over time.", manaCost: 2.5, healAmount: 35 },
+    { id: 119611, name: "Renewing Mist", keybind: "3", icon: "renewing-mist", color: "#6ee7b7", description: "HoT that jumps to others if target is healed. 8s cooldown.", manaCost: 3, healAmount: 8, cooldown: 8, hotDuration: 15 },
+    { id: 124682, name: "Enveloping Mist", keybind: "4", icon: "enveloping-mist", color: "#10b981", description: "Strong HoT (6s) that increases other healing.", manaCost: 6.5, healAmount: 48, hotDuration: 6 },
+    { id: 191837, name: "Essence Font", keybind: "5", icon: "essence-font", color: "#a7f3d0", description: "Channels healing to up to 6 targets.", manaCost: 10, healAmount: 16, isAoE: true },
+    { id: 116849, name: "Life Cocoon", keybind: "E", icon: "life-cocoon", color: "#34d399", description: "Envelops target in a shield & heals 100%. 25s cooldown.", manaCost: 8, healAmount: 100, cooldown: 25 }
+  ],
+  "Evoker_Preservation": [
+    { id: 361469, name: "Living Flame", keybind: "1", icon: "living-flame", color: "#f87171", description: "Fires a blast of flame that heals an ally.", manaCost: 4, healAmount: 28 },
+    { id: 366155, name: "Reversion", keybind: "2", icon: "reversion", color: "#f87171", description: "Heals an ally over 12s. Critical heals extend it.", manaCost: 3.5, healAmount: 8, hotDuration: 12 },
+    { id: 364343, name: "Echo", keybind: "3", icon: "echo", color: "#c084fc", description: "Echoes your next healing spell.", manaCost: 4.5, healAmount: 10 },
+    { id: 355936, name: "Emerald Blossom", keybind: "4", icon: "emerald-blossom", color: "#34d399", description: "Spawns a seed that heals up to 5 allies after 2s.", manaCost: 7, healAmount: 22, isAoE: true },
+    { id: 367226, name: "Spiritbloom", keybind: "5", icon: "spiritbloom", color: "#10b981", description: "Channeled heal that targets up to 4 allies. 12s cooldown.", manaCost: 7.8, healAmount: 50, cooldown: 12 },
+    { id: 357170, name: "Time Dilation", keybind: "E", icon: "time-dilation", color: "#fb7185", description: "Delays damage taken and heals target 100%. 25s cooldown.", manaCost: 8, healAmount: 100, cooldown: 25 }
+  ]
+};
+
+const SPELL_DAMAGE_VALUES: Record<number, number> = {
+  162794: 180000, 188499: 240000, 198013: 480000, 191427: 120000, 187827: 80000, 
+  212084: 350000, 228477: 190000, 247454: 280000, 207407: 310000, 204021: 150000, 
+  227084: 140000, 225919: 100000, 203720: 0, 190984: 110000, 5176: 95000, 78674: 250000, 
+  194153: 200000, 133: 120000, 11366: 420000, 108853: 150000, 257520: 380000, 116: 95000, 
+  44614: 210000, 31687: 80000, 84714: 350000, 85948: 140000, 47541: 180000, 55090: 110000, 
+  49184: 220000, 85256: 290000, 184575: 160000, 35395: 110000, 24275: 220000
+};
+
+const HEALER_SPECS = [
+  { className: "Priest", specName: "Holy" },
+  { className: "Priest", specName: "Discipline" },
+  { className: "Druid", specName: "Restoration" },
+  { className: "Paladin", specName: "Holy" },
+  { className: "Shaman", specName: "Restoration" },
+  { className: "Monk", specName: "Mistweaver" },
+  { className: "Evoker", specName: "Preservation" }
+];
+
+const getHealerSpells = (cls: string, spec: string): HealerSpell[] => {
+  const key = `${cls}_${spec}`.replace(" ", "");
+  if (HEALER_SPELLS_BY_SPEC[key]) {
+    return HEALER_SPELLS_BY_SPEC[key];
+  }
+  return HEALER_SPELLS_BY_SPEC["Priest_Holy"];
+};
+
+const generateHealerRoster = (size: number): HealerPlayer[] => {
+  const roster: HealerPlayer[] = [];
+  let numTanks = 1;
+  let numHealers = 1;
+  let numDps = 3;
+  if (size === 10) {
+    numTanks = 2;
+    numHealers = 2;
+    numDps = 6;
+  } else if (size === 15) {
+    numTanks = 2;
+    numHealers = 3;
+    numDps = 10;
+  } else if (size === 20) {
+    numTanks = 2;
+    numHealers = 4;
+    numDps = 14;
+  }
+
+  const FANTASY_NAMES = [
+    "Turalyon", "Alleria", "Grommash", "Uther", "Jaina", "Arthas", "Thrall", "Sylvanas", "Illidan", "Malfurion",
+    "Tyrande", "Khadgar", "Varian", "Anduin", "Baine", "Voljin", "Saurfang", "Genn", "Moira", "Velen",
+    "Maiev", "Liadrin", "Chen", "Yrel", "Garrosh", "Kaelthas", "Akama", "Valeera", "Shaw", "Rexxar",
+    "Rokhan", "Eitrigg", "Nazgrel", "Drekthar", "Darion", "Sally", "Bolvar", "Tirion", "Kargath", "Blackhand",
+    "Guldan", "Orgrim", "Durotan", "Draka", "Garona", "Medivh", "Llane", "Lothar", "Antonidas", "Vereesa",
+    "Falstad", "Muradin", "Brann", "Magni", "Garithos", "KelThuzad", "Anubarak"
+  ];
+
+  const shuffledNames = [...FANTASY_NAMES].sort(() => Math.random() - 0.5);
+  let nameIndex = 0;
+  const getName = () => {
+    const rawName = shuffledNames[nameIndex++] || `Player${nameIndex}`;
+    return rawName.substring(0, 12);
+  };
+
+  for (let i = 0; i < numTanks; i++) {
+    roster.push({
+      id: `tank-${i}`,
+      name: getName(),
+      role: "tank",
+      subRole: "melee",
+      class: Math.random() > 0.5 ? "warrior" : "deathknight",
+      health: 100,
+      maxHealth: 100,
+      buffs: []
+    });
+  }
+
+  for (let i = 0; i < numHealers; i++) {
+    roster.push({
+      id: `healer-${i}`,
+      name: i === 0 ? "You" : getName(),
+      role: "healer",
+      subRole: "ranged",
+      class: "priest",
+      health: 100,
+      maxHealth: 100,
+      buffs: []
+    });
+  }
+
+  for (let i = 0; i < numDps; i++) {
+    const isMelee = i < Math.ceil(numDps * 0.25);
+    const dpsClass = isMelee 
+      ? ["rogue", "warrior", "demonhunter", "monk", "deathknight"][Math.floor(Math.random() * 5)]
+      : ["mage", "warlock", "hunter", "priest", "druid", "shaman"][Math.floor(Math.random() * 6)];
+    roster.push({
+      id: `dps-${i}`,
+      name: getName(),
+      role: "dps",
+      subRole: isMelee ? "melee" : "ranged",
+      class: dpsClass,
+      health: 100,
+      maxHealth: 100,
+      buffs: []
+    });
+  }
+
+  return roster;
+};
 
 // Web Audio API Synthesizer for premium instant feedback
 class SoundSynthesizer {
@@ -258,7 +456,17 @@ const getSpellIconSVG = (name: string) => {
       <path strokeLinecap="round" strokeLinejoin="round" d="M3 21l3-3m-3 0l3 3" />
     </svg>
   );
-};function TunnelVisionOrb({
+};
+
+const formatKeybind = (key: string): string => {
+  if (!key) return "";
+  return key
+    .replace(/CTRL-/gi, "C-")
+    .replace(/SHIFT-/gi, "S-")
+    .replace(/ALT-/gi, "A-");
+};
+
+function TunnelVisionOrb({
   active,
   onOrbRedTrigger,
   onOrbClicked,
@@ -428,6 +636,20 @@ export default function Train() {
   // UI Panels states
   const [showAdvancedModifiers, setShowAdvancedModifiers] = useState<boolean>(false);
 
+  // Extended Features States
+  const [trainingMode, setTrainingMode] = useState<"dps" | "healer">("dps");
+  const [selectedArena, setSelectedArena] = useState<string>("none");
+  const [healerRaidSize, setHealerRaidSize] = useState<number>(10);
+  const [healerRoster, setHealerRoster] = useState<HealerPlayer[]>([]);
+  const [healerMana, setHealerMana] = useState<number>(100);
+  const [mouseoverPlayerId, setMouseoverPlayerId] = useState<string | null>(null);
+  const [floatingHeals, setFloatingHeals] = useState<FloatingHeal[]>([]);
+  const [isKeybindModeActive, setIsKeybindModeActive] = useState<boolean>(false);
+  const [hoveredSpellId, setHoveredSpellId] = useState<number | null>(null);
+  const [bossHealth, setBossHealth] = useState<number>(100);
+  const [bossFlash, setBossFlash] = useState<boolean>(false);
+  const [healerSpellCooldowns, setHealerSpellCooldowns] = useState<Record<number, number>>({});
+
   const stateRef = useRef({ 
     gameState, 
     elapsedTime, 
@@ -441,7 +663,14 @@ export default function Train() {
     isHardcore,
     isGuidedMode,
     orbTotalPossible,
-    orbScoreEarned
+    orbScoreEarned,
+    trainingMode,
+    healerRoster,
+    healerMana,
+    mouseoverPlayerId,
+    healerSpellCooldowns,
+    isKeybindModeActive,
+    hoveredSpellId
   });
 
   // Update ref to read latest states inside timers/listeners
@@ -459,9 +688,19 @@ export default function Train() {
       isHardcore,
       isGuidedMode,
       orbTotalPossible,
-      orbScoreEarned
+      orbScoreEarned,
+      trainingMode,
+      healerRoster,
+      healerMana,
+      mouseoverPlayerId,
+      healerSpellCooldowns,
+      isKeybindModeActive,
+      hoveredSpellId
     };
-  }, [gameState, elapsedTime, activeStepIndex, activeSpell, activePromptTime, casts, combo, lastCastTime, activeAlert, isHardcore, isGuidedMode, orbTotalPossible, orbScoreEarned]);
+  }, [
+    gameState, elapsedTime, activeStepIndex, activeSpell, activePromptTime, casts, combo, lastCastTime, activeAlert, isHardcore, isGuidedMode, orbTotalPossible, orbScoreEarned,
+    trainingMode, healerRoster, healerMana, mouseoverPlayerId, healerSpellCooldowns, isKeybindModeActive, hoveredSpellId
+  ]);
 
   // Lazy initialize Synthesizer
   useEffect(() => {
@@ -515,22 +754,34 @@ export default function Train() {
   };
 
   useEffect(() => {
-    const specScenarios = getScenariosForSpec(activeBuild?.spec, drillDuration);
-    setScenarios(specScenarios);
-    if (specScenarios.length > 0) {
-      // Find matching type based on id suffix
-      const isOpener = selectedScenario?.id?.endsWith("-opener");
-      const isSustained = selectedScenario?.id?.endsWith("-sustained");
-      const isReaction = selectedScenario?.id?.includes("reaction");
-      
-      let matched = null;
-      if (isOpener) matched = specScenarios.find((s: any) => s.id.endsWith("-opener"));
-      else if (isSustained) matched = specScenarios.find((s: any) => s.id.endsWith("-sustained"));
-      else if (isReaction) matched = specScenarios.find((s: any) => s.id === "proc-reaction");
+    if (trainingMode === "healer") {
+      const healerScen: Scenario = {
+        id: "healer-triage",
+        name: "Raid Grid Triage Challenge",
+        description: "Keep tanks alive and heal incoming sporadic bursts across the group.",
+        duration: drillDuration,
+        steps: []
+      };
+      setScenarios([healerScen]);
+      setSelectedScenario(healerScen);
+    } else {
+      const specScenarios = getScenariosForSpec(activeBuild?.spec, drillDuration);
+      setScenarios(specScenarios);
+      if (specScenarios.length > 0) {
+        // Find matching type based on id suffix
+        const isOpener = selectedScenario?.id?.endsWith("-opener");
+        const isSustained = selectedScenario?.id?.endsWith("-sustained");
+        const isReaction = selectedScenario?.id?.includes("reaction");
+        
+        let matched = null;
+        if (isOpener) matched = specScenarios.find((s: any) => s.id.endsWith("-opener"));
+        else if (isSustained) matched = specScenarios.find((s: any) => s.id.endsWith("-sustained"));
+        else if (isReaction) matched = specScenarios.find((s: any) => s.id === "proc-reaction");
 
-      setSelectedScenario(matched || specScenarios[0]);
+        setSelectedScenario(matched || specScenarios[0]);
+      }
     }
-  }, [activeBuild, drillDuration]);
+  }, [activeBuild, drillDuration, trainingMode]);
 
   const getLastCastTimeForSpell = (spellId: number): number | null => {
     const targetIds = new Set<number>([spellId]);
@@ -611,6 +862,21 @@ export default function Train() {
       color: classColorHex,
       description: `Spell ${spellId}`
     };
+
+    if (trainingMode === "healer") {
+      const hSpells = getHealerSpells(selectedClass, selectedSpec);
+      const hSpell = hSpells.find(s => s.id === spellId);
+      if (hSpell) {
+        return {
+          id: hSpell.id,
+          name: hSpell.name,
+          keybind: hSpell.keybind,
+          icon: hSpell.icon,
+          color: hSpell.color,
+          description: hSpell.description
+        };
+      }
+    }
 
     if (!activeBuild) return defaultSpell;
 
@@ -848,8 +1114,19 @@ export default function Train() {
       });
     }
 
+    if (trainingMode === "healer") {
+      const initialRoster = generateHealerRoster(healerRaidSize);
+      setHealerRoster(initialRoster);
+      setHealerMana(100);
+      setFloatingHeals([]);
+      setHealerSpellCooldowns({});
+    }
+
+    setBossHealth(100);
+    setBossFlash(false);
+
     // Set first step active immediately when game starts (only for opener/sustained)!
-    if (!selectedScenario.isProcReaction && steps.length > 0) {
+    if (trainingMode !== "healer" && !selectedScenario.isProcReaction && steps.length > 0) {
       setActiveStepIndex(0);
       setActiveSpell(getMappedSpell(steps[0].spellId));
       setActivePromptTime(steps[0].time); // e.g. 0.5s or 1.0s
@@ -860,6 +1137,8 @@ export default function Train() {
     }
 
     const startTime = Date.now();
+    let lastSecTick = 0;
+    let nextDamageTime = 1.0;
     
     gameIntervalRef.current = setInterval(() => {
       const currentElapsed = (Date.now() - startTime) / 1000;
@@ -870,105 +1149,217 @@ export default function Train() {
         return;
       }
 
-      // 1. Tick mechanic alerts
-      const { activeAlert: curAlert } = stateRef.current;
-      if (curAlert) {
-        if (currentElapsed >= curAlert.expiresAt) {
-          registerAlertMissed(curAlert);
-          return;
-        }
-      } else {
-        const nextAlertTime = nextAlertTimeRef.current;
-        if (currentElapsed >= nextAlertTime) {
-          triggerRandomAlert(currentElapsed);
-        }
-      }
+      if (trainingMode === "healer") {
+        // --- Healer Grid Mode loop ---
+        const currentSec = Math.floor(currentElapsed);
+        
+        // HoTs and CD tick once per second
+        if (currentSec > lastSecTick) {
+          lastSecTick = currentSec;
+          
+          setHealerMana((prev) => Math.min(100, prev + 1.2));
 
-      // 2. Check regular rotation steps
-      const { activeStepIndex: curIdx, casts: currentCasts, activePromptTime: curPromptTime } = stateRef.current;
-
-      if (selectedScenario.isProcReaction) {
-        // --- Proc Reaction: Original absolute time-based check ---
-        const nextStepIndex = curIdx === null ? 0 : curIdx + 1;
-        if (nextStepIndex < steps.length) {
-          const nextStep = steps[nextStepIndex];
-          if (currentElapsed >= nextStep.time) {
-            if (curIdx !== null) {
-              const wasHit = currentCasts.some((c) => c.stepIndex === curIdx);
-              if (!wasHit) {
-                const prevStep = steps[curIdx];
-                setCasts((prev) => [
-                  ...prev,
-                  {
-                    stepIndex: curIdx,
-                    expectedSpellId: prevStep.spellId,
-                    actualSpellId: null,
-                    expectedTime: prevStep.time,
-                    actualTime: null,
-                    reactionTime: null,
-                    status: "missed",
-                  },
-                ]);
-                setCombo(0);
-                playSound("incorrect");
-                
-                if (stateRef.current.isHardcore) {
-                  setWipedReason("mechanic");
-                  endGame();
-                  return;
-                }
-                setLastPressResult({ key: getMappedSpell(prevStep.spellId).keybind, status: "missed" });
+          setHealerSpellCooldowns((prev) => {
+            const nextCd: Record<number, number> = {};
+            Object.entries(prev).forEach(([idStr, val]) => {
+              if (val > 1) {
+                nextCd[Number(idStr)] = val - 1;
               }
+            });
+            return nextCd;
+          });
+
+          setHealerRoster((prevRoster) => {
+            return prevRoster.map((player) => {
+              if (player.health <= 0) return player;
+              
+              const activeHots = player.buffs.filter(b => b.expiresAt > currentElapsed);
+              let healFromHots = 0;
+              if (activeHots.length > 0) {
+                healFromHots = activeHots.length * 4;
+                const textId = Math.random().toString();
+                setFloatingHeals(f => [...f, { id: textId, playerId: player.id, text: `+${healFromHots}%`, time: Date.now() }]);
+              }
+              
+              return {
+                ...player,
+                health: Math.min(100, player.health + healFromHots),
+                buffs: activeHots
+              };
+            });
+          });
+        }
+
+        // Random raid damage spikes
+        if (currentElapsed >= nextDamageTime) {
+          nextDamageTime = currentElapsed + 1.2 + Math.random() * 1.2;
+
+          setHealerRoster((prevRoster) => {
+            if (prevRoster.length === 0) return prevRoster;
+
+            const numTargets = Math.floor(Math.random() * 3) + 1;
+            const updated = [...prevRoster];
+
+            for (let t = 0; t < numTargets; t++) {
+              const alive = updated.filter(p => p.health > 0);
+              if (alive.length === 0) break;
+              
+              const target = alive[Math.floor(Math.random() * alive.length)];
+              const idx = updated.findIndex(p => p.id === target.id);
+              
+              let dmg = 0;
+              if (target.role === "tank") {
+                dmg = Math.floor(Math.random() * 13) + 10;
+              } else {
+                dmg = Math.floor(Math.random() * 31) + 15;
+              }
+
+              updated[idx] = {
+                ...target,
+                health: Math.max(0, target.health - dmg)
+              };
             }
 
-            setActiveStepIndex(nextStepIndex);
-            setActiveSpell(getMappedSpell(nextStep.spellId));
-            setActivePromptTime(currentElapsed);
+            // Steady tank auto attack damage
+            const tanks = updated.filter(p => p.role === "tank" && p.health > 0);
+            tanks.forEach((tank) => {
+              const idx = updated.findIndex(p => p.id === tank.id);
+              const autoDmg = Math.floor(Math.random() * 6) + 4;
+              updated[idx] = {
+                ...updated[idx],
+                health: Math.max(0, updated[idx].health - autoDmg)
+              };
+            });
+
+            // Wipe check
+            const totalAlive = updated.filter(p => p.health > 0).length;
+            const totalDead = updated.length - totalAlive;
+            const tanksAlive = updated.filter(p => p.role === "tank" && p.health > 0).length;
+            const totalTanks = updated.filter(p => p.role === "tank").length;
+
+            const threshold = updated.length <= 5 ? 1 : updated.length <= 10 ? 2 : updated.length <= 15 ? 3 : 4;
+            
+            if (tanksAlive === 0 && totalTanks > 0) {
+              setTimeout(() => {
+                setWipedReason("A tank died!");
+                endGame();
+              }, 0);
+            } else if (totalDead > threshold) {
+              setTimeout(() => {
+                setWipedReason("Too many raid members died!");
+                endGame();
+              }, 0);
+            }
+
+            return updated;
+          });
+        }
+
+        // Clean up old float heal texts
+        setFloatingHeals((prev) => prev.filter(f => Date.now() - f.time < 1000));
+
+      } else {
+        // --- Normal DPS / Tank Rotation loop ---
+        // 1. Tick mechanic alerts
+        const { activeAlert: curAlert } = stateRef.current;
+        if (curAlert) {
+          if (currentElapsed >= curAlert.expiresAt) {
+            registerAlertMissed(curAlert);
+            return;
+          }
+        } else {
+          const nextAlertTime = nextAlertTimeRef.current;
+          if (currentElapsed >= nextAlertTime) {
+            triggerRandomAlert(currentElapsed);
           }
         }
-      } else {
-        // --- Opener / Sustained: New dynamic user-driven check ---
-        if (curIdx !== null && curIdx < steps.length && curPromptTime !== null) {
-          const missThreshold = curIdx === 0 ? 5.0 : 1.2;
-          if (currentElapsed >= curPromptTime + missThreshold) {
-            const prevStep = steps[curIdx];
-            
-            // Log missed cast
-            setCasts((prev) => [
-              ...prev,
-              {
-                stepIndex: curIdx,
-                expectedSpellId: prevStep.spellId,
-                actualSpellId: null,
-                expectedTime: prevStep.time,
-                actualTime: null,
-                reactionTime: null,
-                status: "missed",
-              },
-            ]);
-            setCombo(0);
-            playSound("incorrect");
-            
-            if (stateRef.current.isHardcore) {
-              setWipedReason("mechanic");
-              endGame();
-              return;
-            }
 
-            const nextIdx = curIdx + 1;
-            if (nextIdx < steps.length) {
-              const nextStep = steps[nextIdx];
-              const gap = nextStep.time - prevStep.time;
-              const nextExpectedTime = curPromptTime + gap;
+        // 2. Check regular rotation steps
+        const { activeStepIndex: curIdx, casts: currentCasts, activePromptTime: curPromptTime } = stateRef.current;
 
-              setActiveStepIndex(nextIdx);
+        if (selectedScenario.isProcReaction) {
+          // --- Proc Reaction: Original absolute time-based check ---
+          const nextStepIndex = curIdx === null ? 0 : curIdx + 1;
+          if (nextStepIndex < steps.length) {
+            const nextStep = steps[nextStepIndex];
+            if (currentElapsed >= nextStep.time) {
+              if (curIdx !== null) {
+                const wasHit = currentCasts.some((c) => c.stepIndex === curIdx);
+                if (!wasHit) {
+                  const prevStep = steps[curIdx];
+                  setCasts((prev) => [
+                    ...prev,
+                    {
+                      stepIndex: curIdx,
+                      expectedSpellId: prevStep.spellId,
+                      actualSpellId: null,
+                      expectedTime: prevStep.time,
+                      actualTime: null,
+                      reactionTime: null,
+                      status: "missed",
+                    },
+                  ]);
+                  setCombo(0);
+                  playSound("incorrect");
+                  
+                  if (stateRef.current.isHardcore) {
+                    setWipedReason("mechanic");
+                    endGame();
+                    return;
+                  }
+                  setLastPressResult({ key: getMappedSpell(prevStep.spellId).keybind, status: "missed" });
+                }
+              }
+
+              setActiveStepIndex(nextStepIndex);
               setActiveSpell(getMappedSpell(nextStep.spellId));
-              setActivePromptTime(nextExpectedTime);
-              setLastCastTime(curPromptTime);
-            } else {
-              setActiveStepIndex(nextIdx);
-              setActiveSpell(null);
-              setActivePromptTime(null);
+              setActivePromptTime(currentElapsed);
+            }
+          }
+        } else {
+          // --- Opener / Sustained: New dynamic user-driven check ---
+          if (curIdx !== null && curIdx < steps.length && curPromptTime !== null) {
+            const missThreshold = curIdx === 0 ? 5.0 : 1.2;
+            if (currentElapsed >= curPromptTime + missThreshold) {
+              const prevStep = steps[curIdx];
+              
+              // Log missed cast
+              setCasts((prev) => [
+                ...prev,
+                {
+                  stepIndex: curIdx,
+                  expectedSpellId: prevStep.spellId,
+                  actualSpellId: null,
+                  expectedTime: prevStep.time,
+                  actualTime: null,
+                  reactionTime: null,
+                  status: "missed",
+                },
+              ]);
+              setCombo(0);
+              playSound("incorrect");
+              
+              if (stateRef.current.isHardcore) {
+                setWipedReason("mechanic");
+                endGame();
+                return;
+              }
+
+              const nextIdx = curIdx + 1;
+              if (nextIdx < steps.length) {
+                const nextStep = steps[nextIdx];
+                const gap = nextStep.time - prevStep.time;
+                const nextExpectedTime = curPromptTime + gap;
+
+                setActiveStepIndex(nextIdx);
+                setActiveSpell(getMappedSpell(nextStep.spellId));
+                setActivePromptTime(nextExpectedTime);
+                setLastCastTime(curPromptTime);
+              } else {
+                setActiveStepIndex(nextIdx);
+                setActiveSpell(null);
+                setActivePromptTime(null);
+              }
             }
           }
         }
@@ -1090,7 +1481,41 @@ export default function Train() {
       if (["Shift", "Control", "Alt"].includes(e.key)) return;
 
       const pressedWoWKey = getWoWKeyString(e);
-      const validBinds = getActiveKeybinds();
+
+      // Check if Keybind Mode is active
+      if (stateRef.current.isKeybindModeActive && stateRef.current.gameState === "idle") {
+        const hSpellId = stateRef.current.hoveredSpellId;
+        if (hSpellId !== null) {
+          e.preventDefault();
+          const targetKey = e.key === "Escape" ? "" : pressedWoWKey;
+          
+          if (activeBuild) {
+            const updatedBuild = { ...activeBuild };
+            let found = false;
+            updatedBuild.actionBars.forEach((bar) => {
+              bar.buttons.forEach((btn) => {
+                if (btn.id === hSpellId) {
+                  btn.key = targetKey;
+                  found = true;
+                }
+              });
+            });
+            if (found) {
+              setActiveBuild(updatedBuild);
+              localStorage.setItem("pullprep_active_build", JSON.stringify(updatedBuild));
+              playSound("perfect");
+            }
+          }
+          return;
+        }
+      }
+
+      let validBinds = getActiveKeybinds();
+      if (stateRef.current.trainingMode === "healer") {
+        const hSpells = getHealerSpells(selectedClass, selectedSpec);
+        validBinds = new Set(hSpells.map(s => s.keybind.toUpperCase()));
+      }
+
       if (!validBinds.has(pressedWoWKey)) return;
 
       e.preventDefault();
@@ -1104,20 +1529,122 @@ export default function Train() {
         casts: currentCasts,
         lastCastTime: currentLastCastTime,
         activeAlert: curAlert,
-        isHardcore: hcActive
+        isHardcore: hcActive,
+        trainingMode: currentMode,
+        healerMana: currentMana,
+        healerSpellCooldowns: currentCds,
+        mouseoverPlayerId: currentTargetId
       } = stateRef.current;
 
       if (currentGameState !== "running") return;
 
       const elapsed = stateRef.current.elapsedTime;
       const steps = selectedScenario.steps;
-      
+
+      // --- 1. Healer Grid Mode Casts ---
+      if (currentMode === "healer") {
+        const hSpells = getHealerSpells(selectedClass, selectedSpec);
+        const spell = hSpells.find(s => s.keybind.toUpperCase() === pressedWoWKey);
+        
+        if (spell) {
+          if (currentMana < spell.manaCost) {
+            playSound("incorrect");
+            return;
+          }
+          if (currentCds[spell.id] > 0) {
+            playSound("incorrect");
+            return;
+          }
+
+          // Deduct mana & set cooldown
+          setHealerMana(m => Math.max(0, m - spell.manaCost));
+          if (spell.cooldown !== undefined) {
+            const cdVal = spell.cooldown;
+            setHealerSpellCooldowns(prev => ({ ...prev, [spell.id]: cdVal }));
+          }
+
+          if (spell.isAoE) {
+            setHealerRoster((prev) => {
+              const sorted = [...prev]
+                .filter(p => p.health > 0)
+                .sort((a, b) => a.health - b.health);
+              const lowestIds = new Set(sorted.slice(0, 5).map(p => p.id));
+              
+              return prev.map((player) => {
+                if (lowestIds.has(player.id)) {
+                  const textId = Math.random().toString();
+                  setFloatingHeals(f => [...f, { id: textId, playerId: player.id, text: `+${spell.healAmount}%`, time: Date.now() }]);
+                  return {
+                    ...player,
+                    health: Math.min(100, player.health + spell.healAmount)
+                  };
+                }
+                return player;
+              });
+            });
+            playSound("perfect");
+            setCombo(c => c + 1);
+
+            const newRecord: CastRecord = {
+              stepIndex: -1,
+              expectedSpellId: spell.id,
+              actualSpellId: spell.id,
+              expectedTime: elapsed,
+              actualTime: elapsed,
+              reactionTime: 200,
+              status: "perfect"
+            };
+            setCasts((prev) => [...prev, newRecord]);
+          } else {
+            if (currentTargetId) {
+              setHealerRoster((prev) => {
+                return prev.map((player) => {
+                  if (player.id === currentTargetId && player.health > 0) {
+                    const textId = Math.random().toString();
+                    setFloatingHeals(f => [...f, { id: textId, playerId: player.id, text: `+${spell.healAmount}%`, time: Date.now() }]);
+                    
+                    let newBuffs = [...player.buffs];
+                    if (spell.hotDuration) {
+                      newBuffs = newBuffs.filter(b => b.name !== spell.name);
+                      newBuffs.push({ name: spell.name, expiresAt: elapsed + spell.hotDuration });
+                    }
+
+                    return {
+                      ...player,
+                      health: Math.min(100, player.health + spell.healAmount),
+                      buffs: newBuffs
+                    };
+                  }
+                  return player;
+                });
+              });
+              playSound("perfect");
+              setCombo(c => c + 1);
+
+              const newRecord: CastRecord = {
+                stepIndex: -1,
+                expectedSpellId: spell.id,
+                actualSpellId: spell.id,
+                expectedTime: elapsed,
+                actualTime: elapsed,
+                reactionTime: 200,
+                status: "perfect"
+              };
+              setCasts((prev) => [...prev, newRecord]);
+            } else {
+              playSound("incorrect");
+            }
+          }
+        }
+        return;
+      }
+
       // Stress Tempo Accelerator: GCD speeds up with combo streak (up to 20% speedup at 50 combo)
       const baseGcd = 1.5;
       const gcdDuration = baseGcd * (1 - Math.min(0.2, (combo / 50) * 0.2));
       const queueWindow = 0.3;
 
-      // 1. Handle Mechanic Alerts press
+      // 2. Handle Mechanic Alerts press
       if (curAlert) {
         if (pressedWoWKey === curAlert.key) {
           // Success resolve
@@ -1151,7 +1678,7 @@ export default function Train() {
         return;
       }
 
-      // 2. Normal Rotational check
+      // 3. Normal Rotational check
       let isGcdActive = false;
       let isQueued = false;
       let actualCastTime = elapsed;
@@ -1244,10 +1771,18 @@ export default function Train() {
         setCasts((prev) => [...prev, newRecord]);
         setLastPressResult({ key: pressedWoWKey, status });
 
+        // Update boss unit frame health
+        const isHitCorrect = ["perfect", "early", "late"].includes(status);
+        const totalCorrect = currentCasts.filter(c => ["perfect", "early", "late"].includes(c.status)).length + (isHitCorrect ? 1 : 0);
+        setBossHealth(Math.max(0, 100 - (totalCorrect / Math.max(1, steps.length)) * 100));
+
         if (status === "perfect") {
           setCombo((prev) => prev + 1);
           playSound("perfect");
           setLastCastTime(actualCastTime);
+          
+          setBossFlash(true);
+          setTimeout(() => setBossFlash(false), 150);
         } else if (status === "early" || status === "late") {
           setCombo((prev) => prev + 1);
           playSound("correct");
@@ -1339,16 +1874,28 @@ export default function Train() {
 
   // Spell Auditing Setup
   const specKey = activeBuild ? `${activeBuild.class.toLowerCase().replace(' ', '')}_${activeBuild.spec.toLowerCase().replace(' ', '')}` : "demonhunter_havoc";
-  const activeCoreSpells = (ROTATIONS_DB[specKey]?.coreSpells || [
-    { id: 191427, name: "Metamorphosis" },
-    { id: 198013, name: "Eye Beam" },
-    { id: 188499, name: "Blade Dance" },
-    { id: 162794, name: "Chaos Strike" }
-  ]).filter((s: any) => isRealSpell(s.id, s.name));
+  const healerSpells = getHealerSpells(selectedClass, selectedSpec);
+  const activeCoreSpells = trainingMode === "healer"
+    ? healerSpells.map(s => ({ id: s.id, name: s.name }))
+    : (ROTATIONS_DB[specKey]?.coreSpells || [
+        { id: 191427, name: "Metamorphosis" },
+        { id: 198013, name: "Eye Beam" },
+        { id: 188499, name: "Blade Dance" },
+        { id: 162794, name: "Chaos Strike" }
+      ]).filter((s: any) => isRealSpell(s.id, s.name));
   const missingSpells = checkMissingCoreSpells(activeBuild, specKey);
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-100 flex flex-col relative">
+    <div 
+      className="min-h-screen text-zinc-100 flex flex-col relative transition-all duration-500"
+      style={{
+        backgroundColor: "#09090b",
+        backgroundImage: selectedArena !== "none" ? `url('/arenas/${selectedArena}.png')` : "none",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat"
+      }}
+    >
       <style>{`
         @keyframes shake {
           0%, 100% { transform: translate(0, 0); }
@@ -1365,7 +1912,24 @@ export default function Train() {
         .proc-glow {
           animation: goldenGlow 1.2s infinite;
         }
+        @keyframes floatUp {
+          0% { transform: translateY(0); opacity: 1; }
+          100% { transform: translateY(-40px); opacity: 0; }
+        }
+        .animate-float-up {
+          animation: floatUp 0.8s forwards ease-out;
+        }
       `}</style>
+
+      {/* Background radial vignette overlay to maintain action bar readability */}
+      {selectedArena !== "none" && (
+        <div 
+          className="absolute inset-0 pointer-events-none z-10" 
+          style={{
+            background: "radial-gradient(circle, rgba(9,9,11,0.3) 0%, rgba(9,9,11,0.85) 100%)"
+          }}
+        />
+      )}
 
       {/* Low-health screen vignette alert filter */}
       {gameState === "running" && activeAlert?.type === "health" && (
@@ -1461,6 +2025,54 @@ export default function Train() {
                 <p className="text-zinc-400 text-sm">Choose a practice drill. Place your fingers on your bindings and hit Start.</p>
               </div>
 
+              {/* Mode Selector */}
+              <div className="p-1.5 bg-zinc-950 rounded-xl border border-zinc-900 flex space-x-1 w-full select-none">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTrainingMode("dps");
+                    const saved = localStorage.getItem("pullprep_active_build");
+                    if (saved) {
+                      try {
+                        const parsed = JSON.parse(saved);
+                        setActiveBuild(parsed);
+                        setSelectedClass(parsed.class);
+                        setSelectedSpec(parsed.spec);
+                      } catch (e) {}
+                    }
+                  }}
+                  className={`flex-grow py-2 text-xs font-black rounded-lg uppercase transition-all cursor-pointer ${
+                    trainingMode === "dps"
+                      ? "bg-violet-600 text-white shadow"
+                      : "text-zinc-400 hover:text-zinc-200"
+                  }`}
+                >
+                  ⚔️ Rotation (DPS/Tank)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTrainingMode("healer");
+                    const isHealer = HEALER_SPECS.some(
+                      (h) => h.className === selectedClass && h.specName === selectedSpec
+                    );
+                    if (!isHealer) {
+                      setSelectedClass("Priest");
+                      setSelectedSpec("Holy");
+                      const newBuild = generateDefaultBuild("Priest", "Holy");
+                      setActiveBuild(newBuild);
+                    }
+                  }}
+                  className={`flex-grow py-2 text-xs font-black rounded-lg uppercase transition-all cursor-pointer ${
+                    trainingMode === "healer"
+                      ? "bg-violet-600 text-white shadow"
+                      : "text-zinc-400 hover:text-zinc-200"
+                  }`}
+                >
+                  💚 Triage (Healer Grid)
+                </button>
+              </div>
+
               {/* Class & Spec Selector */}
               <div className="p-4 rounded-xl border border-zinc-900 bg-zinc-900/40 text-left space-y-3">
                 <div className="flex items-center space-x-2 text-violet-400 font-extrabold text-xs uppercase tracking-wider">
@@ -1478,9 +2090,11 @@ export default function Train() {
                       onChange={(e) => handleClassChange(e.target.value)}
                       className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2 py-1.5 text-xs text-zinc-200 focus:border-violet-500 focus:outline-none cursor-pointer"
                     >
-                      {WOW_CLASSES_SPECS.map(c => (
-                        <option key={c.key} value={c.name}>{c.name}</option>
-                      ))}
+                      {WOW_CLASSES_SPECS
+                        .filter(c => trainingMode === "dps" || c.specs.some(s => HEALER_SPECS.some(h => h.className === c.name && h.specName === s)))
+                        .map(c => (
+                          <option key={c.key} value={c.name}>{c.name}</option>
+                        ))}
                     </select>
                   </div>
                   <div>
@@ -1490,10 +2104,75 @@ export default function Train() {
                       onChange={(e) => handleSpecChange(e.target.value)}
                       className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2 py-1.5 text-xs text-zinc-200 focus:border-violet-500 focus:outline-none cursor-pointer"
                     >
-                      {(WOW_CLASSES_SPECS.find(c => c.name === selectedClass)?.specs || []).map(spec => (
-                        <option key={spec} value={spec}>{spec}</option>
-                      ))}
+                      {(WOW_CLASSES_SPECS.find(c => c.name === selectedClass)?.specs || [])
+                        .filter(s => trainingMode === "dps" || HEALER_SPECS.some(h => h.className === selectedClass && h.specName === s))
+                        .map(spec => (
+                          <option key={spec} value={spec}>{spec}</option>
+                        ))}
                     </select>
+                  </div>
+                </div>
+              </div>
+
+              {/* Healer Grid Options & Boss Background Arena Selector */}
+              <div className="p-4 rounded-xl border border-zinc-900 bg-zinc-900/40 text-left space-y-3">
+                <div className="flex items-center space-x-2 text-violet-400 font-extrabold text-xs uppercase tracking-wider">
+                  <svg fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" className="size-4 text-violet-400">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.43l-1.003.828c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.43l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z" />
+                  </svg>
+                  <span>Simulation Options</span>
+                </div>
+                <div className={`grid ${trainingMode === "healer" ? "grid-cols-2" : "grid-cols-1"} gap-3`}>
+                  {trainingMode === "healer" && (
+                    <div>
+                      <label className="text-[10px] text-zinc-500 font-extrabold uppercase tracking-wide block mb-1">Raid Size</label>
+                      <select
+                        value={healerRaidSize}
+                        onChange={(e) => setHealerRaidSize(Number(e.target.value))}
+                        className="w-full bg-zinc-950 border border-zinc-800 rounded-lg px-2 py-1.5 text-xs text-zinc-200 focus:border-violet-500 focus:outline-none cursor-pointer"
+                      >
+                        <option value={5}>5-Man (Mythic+)</option>
+                        <option value={10}>10-Man (Normal)</option>
+                        <option value={15}>15-Man (Heroic)</option>
+                        <option value={20}>20-Man (Mythic)</option>
+                      </select>
+                    </div>
+                  )}
+                  <div>
+                    <label className="text-[10px] text-zinc-500 font-extrabold uppercase tracking-wide block mb-2">Select Arena Background</label>
+                    <div className="grid grid-cols-2 gap-2">
+                      {[
+                        { id: "none", name: "None", desc: "Dark Theme", gradient: "from-zinc-950 to-zinc-900 border-zinc-850" },
+                        { id: "lura", name: "L'ura", desc: "Void Realm", gradient: "from-purple-950/60 to-fuchsia-950/60 border-purple-900/50" },
+                        { id: "fyrakk", name: "Fyrakk", desc: "Firelands", gradient: "from-red-950/60 to-amber-950/60 border-red-900/50" },
+                        { id: "lichking", name: "Lich King", desc: "Icecrown", gradient: "from-cyan-950/60 to-blue-950/60 border-cyan-900/50" }
+                      ].map((arena) => {
+                        const isSelected = selectedArena === arena.id;
+                        return (
+                          <button
+                            type="button"
+                            key={arena.id}
+                            onClick={() => setSelectedArena(arena.id)}
+                            className={`group relative h-14 rounded-xl border text-left p-2.5 overflow-hidden transition-all duration-300 cursor-pointer ${
+                              isSelected
+                                ? "border-violet-500 ring-2 ring-violet-500/20 scale-102 bg-zinc-900/80 shadow-[0_0_15px_rgba(139,92,246,0.15)]"
+                                : "hover:border-zinc-750 bg-zinc-950/30 hover:bg-zinc-900/20 border-zinc-850"
+                            }`}
+                          >
+                            <div className={`absolute inset-0 bg-gradient-to-br ${arena.gradient} opacity-20 group-hover:opacity-40 transition-opacity`} />
+                            
+                            <div className="relative z-10 flex flex-col justify-between h-full">
+                              <span className="font-extrabold text-[11px] text-zinc-200 group-hover:text-white transition-colors">{arena.name}</span>
+                              <span className="text-[9px] text-zinc-500 font-bold group-hover:text-zinc-400 transition-colors leading-none">{arena.desc}</span>
+                            </div>
+                            
+                            {isSelected && (
+                              <div className="absolute top-1.5 right-1.5 w-1.5 h-1.5 rounded-full bg-violet-400 animate-pulse z-10" />
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -1768,101 +2447,243 @@ export default function Train() {
           )}
 
           {gameState === "running" && !activeAlert && (
-            <div className="flex flex-col items-center justify-center space-y-8">
-              {activeSpell ? (
-                <div className="flex flex-col items-center space-y-4 w-full max-w-xl">
-                  {/* Sequence Lane Container */}
-                  <div className="w-full bg-zinc-950/60 border border-zinc-900 rounded-3xl p-4 flex flex-col items-center relative overflow-hidden backdrop-blur-sm shadow-[0_0_30px_rgba(0,0,0,0.5)] animate-fade-in-up">
-                    
-                    {/* Horizontal Connector Dotted Line */}
-                    <div className="absolute top-[48px] left-[12%] right-[12%] border-t-2 border-dashed border-zinc-800/40 z-0" />
-                    
-                    {/* Spell Timeline Row */}
-                    <div className="flex items-center justify-center space-x-6 relative z-10 w-full select-none">
-                      {/* We show the next 4 spells */}
-                      {[0, 1, 2, 3].map((offset) => {
-                        const targetIdx = activeStepIndex !== null ? activeStepIndex + offset : offset;
-                        const step = selectedScenario.steps[targetIdx];
-                        if (!step) return null;
-                        
-                        const spell = getMappedSpell(step.spellId);
-                        const isCurrent = offset === 0;
-                        
-                        return (
-                          <div
-                            key={targetIdx}
-                            className={`flex flex-col items-center transition-all duration-300 ${
-                              isCurrent
-                                ? "scale-105"
-                                : "opacity-45 scale-90"
-                            }`}
-                          >
-                            <div className={`w-16 h-16 rounded-xl bg-zinc-900 border flex flex-col items-center justify-center relative shadow-lg ${
-                              isCurrent
-                                ? isGuidedMode || selectedScenario.isProcReaction
-                                  ? "proc-highlight border-emerald-500/80"
-                                  : "spell-highlight border-violet-500/80"
-                                : "border-zinc-800"
-                            }`}>
-                              <div className="w-7 h-7 flex items-center justify-center relative">
-                                {!failedIcons[spell.id] ? (
-                                  <img
-                                    src={getSpellIconUrl(spell.id)}
-                                    alt={spell.name}
-                                    onError={() => setFailedIcons(prev => ({ ...prev, [spell.id]: true }))}
-                                    className="w-full h-full rounded-lg object-cover"
-                                  />
-                                ) : (
-                                  <div className="w-full h-full flex items-center justify-center" style={{ color: spell.color }}>
-                                    {getSpellIconSVG(spell.name)}
-                                  </div>
-                                )}
-                              </div>
-                              
-                              {/* Display keybind helper */}
-                              {!isHardcore && (
-                                <span className={`absolute -top-1.5 -right-1.5 px-1.5 py-0.5 rounded-md font-mono text-[9px] font-black border transition-all ${
-                                  isCurrent
-                                    ? "bg-violet-600 border-violet-500 text-white shadow-sm"
-                                    : "bg-zinc-950 border-zinc-850 text-zinc-350"
-                                }`}>
-                                  {spell.keybind || "Unbound"}
-                                </span>
-                              )}
-                            </div>
-                            
-                            <span className={`text-[9px] font-black uppercase mt-1.5 tracking-wider ${
-                              isCurrent ? "text-zinc-200" : "text-zinc-500"
-                            } truncate max-w-[75px] px-1 text-center`}>
-                              {spell.name}
-                            </span>
-                          </div>
-                        );
-                      })}
+            <div className="flex flex-col items-center justify-center space-y-8 w-full">
+              {trainingMode === "healer" ? (
+                /* Healer Raid Grid Mode UI */
+                <div className="w-full max-w-2xl space-y-4 animate-fade-in-up">
+                  {/* Mana Bar & Target info */}
+                  <div className="flex justify-between items-center bg-zinc-950/60 border border-zinc-900 rounded-xl p-3">
+                    <div className="flex items-center space-x-3">
+                      <span className="text-xs text-zinc-500 font-extrabold uppercase tracking-widest block">Mana</span>
+                      <div className="w-44 h-4 bg-zinc-900 border border-zinc-800 rounded overflow-hidden relative">
+                        <div 
+                          className="h-full bg-gradient-to-r from-sky-500 to-cyan-400 transition-all duration-200"
+                          style={{ width: `${healerMana}%` }}
+                        />
+                        <span className="absolute inset-0 flex items-center justify-center text-[10px] font-mono font-black text-white">
+                          {healerMana.toFixed(0)}%
+                        </span>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[10px] text-zinc-500 font-extrabold uppercase tracking-wide block">Mouseover Target</span>
+                      <span className="text-xs font-black text-white font-mono">
+                        {mouseoverPlayerId 
+                          ? healerRoster.find(p => p.id === mouseoverPlayerId)?.name || "Unknown"
+                          : "None"}
+                      </span>
                     </div>
                   </div>
 
-                  {/* Active prompt status text */}
-                  <div className="text-center space-y-1">
-                    <span className="text-[10px] text-zinc-500 font-extrabold uppercase tracking-widest block">
-                      {selectedScenario.isProcReaction ? "Proc Alert" : "Current Rotation Step"}
-                    </span>
-                    <h3 className="text-xl font-black text-white">
-                      {isHardcore ? (
-                        <span className="text-rose-500 font-extrabold uppercase tracking-widest text-sm animate-pulse">HARDCORE MEMORY TEST</span>
-                      ) : (
-                        <>Press Key: <span className={`${isGuidedMode ? 'text-emerald-400 bg-emerald-950/40 border-emerald-900' : 'text-violet-400 bg-violet-950/40 border-violet-900'} font-mono text-2xl px-2 py-0.5 rounded border`}>{activeSpell.keybind || "Unbound"}</span></>
-                      )}
-                    </h3>
+                  {/* Raid Grid */}
+                  <div className="grid grid-cols-5 gap-2">
+                    {healerRoster.map((player) => {
+                      const barColor = CLASS_COLORS_HEX[player.class.toLowerCase()] || "#10b981";
+                      const isDead = player.health <= 0;
+                      const isHovered = mouseoverPlayerId === player.id;
+                      const isLowHealth = player.health < 35 && !isDead;
+                      
+                      return (
+                        <div
+                          key={player.id}
+                          onMouseEnter={() => setMouseoverPlayerId(player.id)}
+                          onMouseLeave={() => setMouseoverPlayerId(null)}
+                          className={`relative h-16 rounded-xl overflow-hidden border transition-all duration-150 cursor-pointer pointer-events-auto flex flex-col justify-between p-2 select-none ${
+                            isDead ? "bg-zinc-950 border-zinc-900 opacity-40" :
+                            isLowHealth ? "border-rose-600 shadow-[0_0_12px_rgba(244,63,94,0.4)] animate-pulse bg-black" :
+                            isHovered ? "border-amber-400 shadow-[0_0_10px_rgba(245,158,11,0.2)] bg-black" : "bg-black border-zinc-800"
+                          }`}
+                        >
+                          {/* Floating heals text */}
+                          {floatingHeals
+                            .filter(f => f.playerId === player.id)
+                            .map(f => (
+                              <span 
+                                key={f.id} 
+                                className="absolute inset-0 flex items-center justify-center font-black font-mono text-emerald-400 text-sm drop-shadow-[0_1.5px_2px_rgba(0,0,0,1)] animate-float-up z-20 pointer-events-none"
+                              >
+                                {f.text}
+                              </span>
+                            ))}
+
+                          {/* Health Bar backdrop & filler */}
+                          {!isDead && (
+                            <div 
+                              className="absolute left-0 top-0 bottom-0 opacity-80 transition-all duration-100"
+                              style={{ 
+                                width: `${player.health}%`, 
+                                backgroundColor: barColor 
+                              }}
+                            />
+                          )}
+
+                          {/* Top Row: Role icon & HoT indicators */}
+                          <div className="flex justify-between items-center z-10 w-full relative">
+                            {/* Role Icon */}
+                            <span className="text-[10px] drop-shadow-[0_1px_1.5px_rgba(0,0,0,0.9)]">
+                              {player.role === "tank" && "🛡️"}
+                              {player.role === "healer" && "➕"}
+                              {player.role === "dps" && (player.subRole === "melee" ? "⚔️" : "🏹")}
+                            </span>
+                            {/* HoT Dots */}
+                            <div className="flex space-x-0.5">
+                              {player.buffs.map((b, idx) => (
+                                <span 
+                                  key={idx} 
+                                  className="w-1.5 h-1.5 rounded-full bg-emerald-400 border border-emerald-500 shadow-sm animate-pulse" 
+                                  title={b.name}
+                                />
+                              ))}
+                            </div>
+                          </div>
+
+                          {/* Bottom Row: Name and Health Percent */}
+                          <div className="flex justify-between items-end z-10 w-full relative">
+                            <span 
+                              className="text-[11px] font-black tracking-wide truncate max-w-[65px] text-white drop-shadow-[0_1.5px_1.5px_rgba(0,0,0,0.95)]"
+                            >
+                              {player.name}
+                            </span>
+                            <span className="text-[10px] font-mono font-black text-white drop-shadow-[0_1.5px_1.5px_rgba(0,0,0,0.95)]">
+                              {isDead ? "DEAD" : `${player.health.toFixed(0)}%`}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               ) : (
-                <div className="text-center space-y-2">
-                  <span className="text-xl font-black text-zinc-500 tracking-wider">
-                    {selectedScenario.isProcReaction ? "WAITING FOR PROC..." : "COMMENCING ROTATION..."}
-                  </span>
-                  <span className="w-1.5 h-1.5 rounded-full bg-zinc-500 animate-ping inline-block mx-auto" />
-                </div>
+                /* DPS / Tank Rotation Mode UI */
+                <>
+                  {/* Boss Unit Frame */}
+                  <div 
+                    className={`flex items-center space-x-3 bg-zinc-950/80 border border-zinc-800/80 p-3 rounded-2xl shadow-xl w-80 relative transition-all duration-150 z-20 ${
+                      bossFlash ? "border-rose-500 bg-rose-950/30 shadow-rose-500/20 scale-102" : ""
+                    }`}
+                  >
+                    {/* Portrait / Skull */}
+                    <div className="w-12 h-12 rounded-full bg-zinc-900 border border-zinc-700 flex items-center justify-center text-lg font-black shrink-0 relative overflow-hidden">
+                      <span className="text-xl">💀</span>
+                      <span className="absolute -bottom-1 -right-1 bg-zinc-950 border border-zinc-800 rounded-full px-1 py-0.5 text-[8px] font-mono font-bold text-red-500">
+                        ??
+                      </span>
+                    </div>
+                    {/* Name and Health */}
+                    <div className="flex-grow space-y-1">
+                      <div className="flex justify-between items-center">
+                        <span className="text-xs font-black text-white uppercase tracking-wider">
+                          {selectedArena === "lura" ? "L'ura" : selectedArena === "fyrakk" ? "Fyrakk" : selectedArena === "lichking" ? "The Lich King" : "Training Dummy"}
+                        </span>
+                        <span className="text-[10px] text-zinc-400 font-mono">
+                          {bossHealth.toFixed(0)}%
+                        </span>
+                      </div>
+                      {/* Health Bar */}
+                      <div className="w-full h-3 bg-zinc-900 border border-zinc-850 rounded-md overflow-hidden relative">
+                        <div 
+                          className="h-full bg-gradient-to-r from-red-600 to-rose-500 transition-all duration-200"
+                          style={{ width: `${bossHealth}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {activeSpell ? (
+                    <div className="flex flex-col items-center space-y-4 w-full max-w-xl">
+                      {/* Sequence Lane Container */}
+                      <div className="w-full bg-zinc-950/60 border border-zinc-900 rounded-3xl p-4 flex flex-col items-center relative overflow-hidden backdrop-blur-sm shadow-[0_0_30px_rgba(0,0,0,0.5)] animate-fade-in-up">
+                        
+                        {/* Horizontal Connector Dotted Line */}
+                        <div className="absolute top-[48px] left-[12%] right-[12%] border-t-2 border-dashed border-zinc-800/40 z-0" />
+                        
+                        {/* Spell Timeline Row */}
+                        <div className="flex items-center justify-center space-x-6 relative z-10 w-full select-none">
+                          {[0, 1, 2, 3].map((offset) => {
+                            const targetIdx = activeStepIndex !== null ? activeStepIndex + offset : offset;
+                            const step = selectedScenario.steps[targetIdx];
+                            if (!step) return null;
+                            
+                            const spell = getMappedSpell(step.spellId);
+                            const isCurrent = offset === 0;
+                            
+                            return (
+                              <div
+                                key={targetIdx}
+                                className={`flex flex-col items-center transition-all duration-300 ${
+                                  isCurrent
+                                    ? "scale-105"
+                                    : "opacity-45 scale-90"
+                                }`}
+                              >
+                                <div className={`w-16 h-16 rounded-xl bg-zinc-900 border flex flex-col items-center justify-center relative shadow-lg ${
+                                  isCurrent
+                                    ? isGuidedMode || selectedScenario.isProcReaction
+                                      ? "proc-highlight border-emerald-500/80"
+                                      : "spell-highlight border-violet-500/80"
+                                    : "border-zinc-800"
+                                }`}>
+                                  <div className="w-7 h-7 flex items-center justify-center relative">
+                                    {!failedIcons[spell.id] ? (
+                                      <img
+                                        src={getSpellIconUrl(spell.id)}
+                                        alt={spell.name}
+                                        onError={() => setFailedIcons(prev => ({ ...prev, [spell.id]: true }))}
+                                        className="w-full h-full rounded-lg object-cover"
+                                      />
+                                    ) : (
+                                      <div className="w-full h-full flex items-center justify-center" style={{ color: spell.color }}>
+                                        {getSpellIconSVG(spell.name)}
+                                      </div>
+                                    )}
+                                  </div>
+                                  
+                                  {/* Display keybind helper */}
+                                  {!isHardcore && (
+                                    <span className={`absolute -top-1.5 -right-1.5 px-1.5 py-0.5 rounded-md font-mono text-[9px] font-black border transition-all ${
+                                      isCurrent
+                                        ? "bg-violet-600 border-violet-500 text-white shadow-sm"
+                                        : "bg-zinc-950 border-zinc-850 text-zinc-350"
+                                    }`}>
+                                      {formatKeybind(spell.keybind) || "Unbound"}
+                                    </span>
+                                  )}
+                                </div>
+                                
+                                <span className={`text-[9px] font-black uppercase mt-1.5 tracking-wider ${
+                                  isCurrent ? "text-zinc-200" : "text-zinc-500"
+                                } truncate max-w-[75px] px-1 text-center`}>
+                                  {spell.name}
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      {/* Active prompt status text */}
+                      <div className="text-center space-y-1">
+                        <span className="text-[10px] text-zinc-500 font-extrabold uppercase tracking-widest block">
+                          {selectedScenario.isProcReaction ? "Proc Alert" : "Current Rotation Step"}
+                        </span>
+                        <h3 className="text-xl font-black text-white">
+                          {isHardcore ? (
+                            <span className="text-rose-500 font-extrabold uppercase tracking-widest text-sm animate-pulse">HARDCORE MEMORY TEST</span>
+                          ) : (
+                            <>Press Key: <span className={`${isGuidedMode ? 'text-emerald-400 bg-emerald-950/40 border-emerald-900' : 'text-violet-400 bg-violet-950/40 border-violet-900'} font-mono text-2xl px-2 py-0.5 rounded border`}>{formatKeybind(activeSpell.keybind) || "Unbound"}</span></>
+                          )}
+                        </h3>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="text-center space-y-2">
+                      <span className="text-xl font-black text-zinc-500 tracking-wider">
+                        {selectedScenario.isProcReaction ? "WAITING FOR PROC..." : "COMMENCING ROTATION..."}
+                      </span>
+                      <span className="w-1.5 h-1.5 rounded-full bg-zinc-500 animate-ping inline-block mx-auto" />
+                    </div>
+                  )}
+                </>
               )}
 
               {/* Mini HUD feedback ticker */}
@@ -1942,6 +2763,264 @@ export default function Train() {
                   <span className="text-2xl font-black text-violet-400 block mt-1 font-mono">{finalStats.perfectPressed}</span>
                 </div>
               </div>
+
+              {/* Details! Damage/Healing Meter Panel */}
+              {(() => {
+                const formatWoWNumber = (num: number): string => {
+                  if (num >= 1000000) return `${(num / 1000000).toFixed(2)}M`;
+                  if (num >= 1000) return `${(num / 1000).toFixed(1)}k`;
+                  return num.toString();
+                };
+
+                const spellStats: Record<number, { id: number; name: string; count: number; value: number; color: string }> = {};
+                let totalValue = 0;
+                
+                casts.forEach((c) => {
+                  if (!["perfect", "early", "late"].includes(c.status)) return;
+                  const spellId = c.actualSpellId || c.expectedSpellId;
+                  if (!spellId) return;
+                  
+                  let name = "Unknown Spell";
+                  let val = 0;
+                  let color = "#a855f7";
+                  
+                  if (trainingMode === "healer") {
+                    const hSpells = getHealerSpells(selectedClass, selectedSpec);
+                    const hSpell = hSpells.find((s) => s.id === spellId);
+                    if (hSpell) {
+                      name = hSpell.name;
+                      val = hSpell.healAmount * 15000;
+                      color = hSpell.color;
+                    }
+                  } else {
+                    const spell = getMappedSpell(spellId);
+                    name = spell.name;
+                    val = SPELL_DAMAGE_VALUES[spellId] || 150000;
+                    color = spell.color;
+                  }
+                  
+                  if (!spellStats[spellId]) {
+                    spellStats[spellId] = { id: spellId, name, count: 0, value: 0, color };
+                  }
+                  spellStats[spellId].count += 1;
+                  spellStats[spellId].value += val;
+                  totalValue += val;
+                });
+                
+                const sortedSpells = Object.values(spellStats).sort((a, b) => b.value - a.value);
+                const psRate = totalValue / Math.max(1, selectedScenario.duration);
+
+                return (
+                  <div className="bg-zinc-950/80 border border-zinc-850 rounded-2xl overflow-hidden space-y-0.5 shadow-lg">
+                    <div className="bg-zinc-900/60 px-4 py-2.5 flex justify-between items-center border-b border-zinc-850/50">
+                      <span className="font-extrabold text-xs text-zinc-400 uppercase tracking-widest flex items-center space-x-1.5">
+                        <span className="text-red-500 font-black">📊</span>
+                        <span>Details!: {trainingMode === "healer" ? "Healing Done" : "Damage Done"}</span>
+                      </span>
+                      <span className="font-mono text-[10px] text-zinc-400 font-bold">
+                        {trainingMode === "healer" ? `HPS: ${formatWoWNumber(psRate)}` : `DPS: ${formatWoWNumber(psRate)}`} • Total: {formatWoWNumber(totalValue)}
+                      </span>
+                    </div>
+                    
+                    <div className="p-4 space-y-1.5 max-h-60 overflow-y-auto">
+                      {sortedSpells.length === 0 ? (
+                        <div className="text-center py-6 text-xs text-zinc-500 font-bold">
+                          No spells cast successfully during this simulation.
+                        </div>
+                      ) : (
+                        sortedSpells.map((spell, idx) => {
+                          const percent = totalValue > 0 ? (spell.value / totalValue) * 100 : 0;
+                          return (
+                            <div 
+                              key={spell.id}
+                              className="relative h-8 rounded-lg overflow-hidden flex items-center justify-between px-3 text-xs bg-zinc-900/40 border border-zinc-900/60 border-l-2"
+                              style={{ borderLeftColor: spell.color }}
+                            >
+                              <div 
+                                className="absolute left-0 top-0 bottom-0 opacity-15 transition-all duration-300"
+                                style={{ 
+                                  width: `${percent}%`, 
+                                  backgroundColor: spell.color 
+                                }}
+                              />
+                              
+                              <div className="flex items-center space-x-2.5 z-10">
+                                <span className="font-mono font-bold text-zinc-500 w-4">{idx + 1}.</span>
+                                <div className="w-5 h-5 rounded bg-zinc-950 border border-zinc-800 flex items-center justify-center overflow-hidden shrink-0">
+                                  {!failedIcons[spell.id] ? (
+                                    <img 
+                                      src={getSpellIconUrl(spell.id)} 
+                                      alt={spell.name}
+                                      onError={() => setFailedIcons(prev => ({ ...prev, [spell.id]: true }))}
+                                      className="w-full h-full object-cover"
+                                    />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center scale-75" style={{ color: spell.color }}>
+                                      {getSpellIconSVG(spell.name)}
+                                    </div>
+                                  )}
+                                </div>
+                                <span className="font-bold text-zinc-200">{spell.name}</span>
+                                <span className="text-[10px] text-zinc-500 font-mono">({spell.count})</span>
+                              </div>
+                              
+                              <div className="z-10 font-mono font-bold text-zinc-300 space-x-2 text-[10.5px]">
+                                <span>{formatWoWNumber(spell.value)}</span>
+                                <span className="text-zinc-500">({percent.toFixed(1)}%)</span>
+                              </div>
+                            </div>
+                          );
+                        })
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Timeline Pace Chart */}
+              {(() => {
+                const duration = selectedScenario.duration;
+                const pixelsPerSec = 80;
+                const totalWidth = duration * pixelsPerSec;
+                
+                const optimalSteps = selectedScenario.steps || [];
+                const playerCasts = casts || [];
+                
+                return (
+                  <div className="bg-zinc-950/80 border border-zinc-850 rounded-2xl p-5 space-y-4">
+                    <div className="flex justify-between items-center">
+                      <span className="font-extrabold text-xs text-zinc-400 uppercase tracking-widest">
+                        Timeline Pacing Chart
+                      </span>
+                      <span className="text-[9px] text-zinc-500 font-mono">
+                        Scroll horizontally to view details • 1s = 80px
+                      </span>
+                    </div>
+                    
+                    <div className="overflow-x-auto pb-4 scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-zinc-950">
+                      <div 
+                        className="relative h-40" 
+                        style={{ width: `${totalWidth}px` }}
+                      >
+                        {/* Time axis grid lines */}
+                        {Array.from({ length: Math.ceil(duration) }).map((_, i) => (
+                          <div 
+                            key={i} 
+                            className="absolute top-0 bottom-0 border-l border-zinc-900/60 flex flex-col justify-end pb-1"
+                            style={{ left: `${i * pixelsPerSec}px` }}
+                          >
+                            <span className="font-mono text-[9px] text-zinc-650 pl-1">{i}s</span>
+                          </div>
+                        ))}
+                        
+                        {/* Timeline Center Divider Line */}
+                        <div className="absolute top-1/2 left-0 right-0 h-[2px] bg-zinc-900 -translate-y-1/2" />
+                        
+                        {/* Optimal Simcraft Row (Upper Half) */}
+                        <div className="absolute top-2 left-0 right-0 h-14 flex items-center">
+                          <span className="absolute left-2 top-0 text-[9px] text-zinc-550 font-bold uppercase tracking-wider">
+                            Optimal Simcraft
+                          </span>
+                          {optimalSteps.map((step, idx) => {
+                            const spell = getMappedSpell(step.spellId);
+                            const leftPos = step.time * pixelsPerSec;
+                            return (
+                              <div 
+                                key={idx}
+                                className="absolute flex flex-col items-center group"
+                                style={{ left: `${leftPos}px`, transform: "translateX(-50%)" }}
+                              >
+                                <div className="w-7 h-7 rounded bg-zinc-900 border border-zinc-750 flex items-center justify-center relative shadow">
+                                  {!failedIcons[spell.id] ? (
+                                    <img 
+                                      src={getSpellIconUrl(spell.id)} 
+                                      alt={spell.name} 
+                                      onError={() => setFailedIcons(prev => ({ ...prev, [spell.id]: true }))}
+                                      className="w-full h-full rounded object-cover"
+                                    />
+                                  ) : (
+                                    <div className="w-full h-full flex items-center justify-center scale-75" style={{ color: spell.color }}>
+                                      {getSpellIconSVG(spell.name)}
+                                    </div>
+                                  )}
+                                </div>
+                                <span className="absolute -bottom-4 text-[7.5px] font-mono font-bold text-zinc-500">
+                                  {step.time.toFixed(1)}s
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                        
+                        {/* Player Casts Row (Lower Half) */}
+                        <div className="absolute bottom-2 left-0 right-0 h-14 flex items-center">
+                          <span className="absolute left-2 bottom-0 text-[9px] text-zinc-550 font-bold uppercase tracking-wider">
+                            Player Casts
+                          </span>
+                          {playerCasts.map((cast, idx) => {
+                            const spellId = cast.actualSpellId || cast.expectedSpellId;
+                            if (!spellId && cast.status !== "missed") return null;
+                            
+                            const spell = spellId ? getMappedSpell(spellId) : null;
+                            const leftPos = (cast.actualTime || cast.expectedTime) * pixelsPerSec;
+                            
+                            let statusBorder = "border-zinc-800";
+                            if (cast.status === "perfect") {
+                              statusBorder = "border-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.35)]";
+                            } else if (cast.status === "early" || cast.status === "late") {
+                              statusBorder = "border-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.35)]";
+                            } else if (cast.status === "incorrect") {
+                              statusBorder = "border-rose-600 shadow-[0_0_8px_rgba(220,38,38,0.35)]";
+                            } else if (cast.status === "missed") {
+                              statusBorder = "border-red-900 border-dashed bg-red-950/20";
+                            }
+                            
+                            return (
+                              <div 
+                                key={idx}
+                                className="absolute flex flex-col items-center"
+                                style={{ left: `${leftPos}px`, transform: "translateX(-50%)" }}
+                              >
+                                <span className="absolute -top-4 text-[7.5px] font-mono font-bold text-zinc-500">
+                                  {(cast.actualTime || cast.expectedTime).toFixed(1)}s
+                                </span>
+                                
+                                <div className={`w-7 h-7 rounded border flex items-center justify-center relative shadow ${statusBorder}`}>
+                                  {cast.status === "missed" ? (
+                                    <span className="text-[9px] font-black text-rose-500">M</span>
+                                  ) : spell ? (
+                                    !failedIcons[spell.id] ? (
+                                      <img 
+                                        src={getSpellIconUrl(spell.id)} 
+                                        alt={spell.name} 
+                                        onError={() => setFailedIcons(prev => ({ ...prev, [spell.id]: true }))}
+                                        className="w-full h-full rounded object-cover"
+                                      />
+                                    ) : (
+                                      <div className="w-full h-full flex items-center justify-center scale-75" style={{ color: spell.color }}>
+                                        {getSpellIconSVG(spell.name)}
+                                      </div>
+                                    )
+                                  ) : (
+                                    <span className="text-xs">❓</span>
+                                  )}
+                                  
+                                  {/* Reaction time badge */}
+                                  {cast.reactionTime !== null && (
+                                    <span className="absolute -bottom-4 bg-zinc-950 border border-zinc-800 text-[7px] font-mono px-0.5 rounded font-black text-zinc-300">
+                                      {cast.reactionTime}ms
+                                    </span>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })()}
 
               {/* Coaching Feedback Notes */}
               <div className="bg-zinc-950/50 p-6 rounded-2xl border border-zinc-850 space-y-3">
@@ -2049,7 +3128,22 @@ export default function Train() {
         </div>
 
         {/* Bottom Panel: Visual WoW Action Bar */}
-        <div className="w-full flex flex-col items-center space-y-6 pt-4 border-t border-zinc-900">
+        <div className="w-full flex flex-col items-center space-y-4 pt-4 border-t border-zinc-900">
+          {gameState === "idle" && (
+            <div className="flex justify-center">
+              <button
+                type="button"
+                onClick={() => setIsKeybindModeActive(!isKeybindModeActive)}
+                className={`px-4 py-2 text-xs font-black rounded-xl border transition-all cursor-pointer ${
+                  isKeybindModeActive
+                    ? "bg-amber-600 border-amber-500 text-white shadow-lg shadow-amber-500/20 animate-pulse"
+                    : "bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-zinc-200"
+                }`}
+              >
+                {isKeybindModeActive ? "⚡ Binding Mode Active (Press Key on Hovered Slot)" : "⌨️ Quick Keybind Mode"}
+              </button>
+            </div>
+          )}
           <div className="flex flex-wrap items-center justify-center gap-3 w-full">
             {isHardcore && gameState === "running" ? (
               <div className="h-16 flex items-center justify-center text-xs font-bold text-zinc-600 uppercase tracking-widest border border-dashed border-zinc-850 rounded-2xl w-full max-w-2xl px-6 bg-zinc-950/20 backdrop-blur-sm select-none">
@@ -2064,20 +3158,27 @@ export default function Train() {
                 const isSpellActive = activeSpell?.id === spell.id;
                 const keybind = spell.keybind;
                 const remainingCd = getRemainingCooldown(coreSpell.id);
+                const isHoveredInBindMode = isKeybindModeActive && hoveredSpellId === spell.id;
                 return (
                   <div
                     key={spell.id}
-                    className={`w-16 h-16 rounded-xl bg-zinc-900 border flex flex-col items-center justify-center relative cursor-default transition-all select-none ${
+                    onMouseEnter={() => setHoveredSpellId(spell.id)}
+                    onMouseLeave={() => setHoveredSpellId(null)}
+                    className={`w-16 h-16 rounded-xl bg-zinc-900 border flex flex-col items-center justify-center relative select-none transition-all ${
                       pressedKeys[keybind] ? "key-pressed-visual scale-95" : ""
                     } ${
-                      isSpellActive
+                      isHoveredInBindMode
+                        ? "border-amber-400 shadow-[0_0_15px_#fbbf24] scale-102 cursor-pointer bg-zinc-800"
+                        : isSpellActive
                         ? isGuidedMode || selectedScenario.isProcReaction
                           ? "proc-highlight border-emerald-500/80 scale-105"
                           : "spell-highlight border-violet-500/80 scale-105"
                         : "border-zinc-850 hover:border-zinc-750 opacity-90"
                     }`}
                     style={{
-                      boxShadow: isSpellActive
+                      boxShadow: isHoveredInBindMode
+                        ? "0 0 15px #fbbf24"
+                        : isSpellActive
                         ? `0 0 15px 1px ${isGuidedMode || selectedScenario.isProcReaction ? '#10b981' : '#8b5cf6'}20`
                         : "none",
                     }}
@@ -2107,7 +3208,7 @@ export default function Train() {
                           ? "bg-violet-600 border-violet-500 text-white scale-95 shadow-md shadow-violet-500/20"
                           : "bg-zinc-950/90 border-zinc-850 text-zinc-200 shadow-sm"
                       }`}>
-                        {keybind}
+                        {formatKeybind(keybind)}
                       </span>
                     ) : (
                       <span className="absolute -top-1.5 -right-1.5 z-10 px-1.5 py-0.5 rounded-md font-mono text-[8px] font-black border bg-red-950/90 border-red-800 text-red-400 shadow-sm">
@@ -2164,7 +3265,7 @@ export default function Train() {
                         : "bg-zinc-900 border-zinc-800 text-zinc-400"
                     }`}
                   >
-                    {k}
+                    {formatKeybind(k)}
                   </div>
                 ))}
             </div>
