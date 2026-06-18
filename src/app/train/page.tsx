@@ -1924,7 +1924,7 @@ export default function Train() {
       {/* Background radial vignette overlay to maintain action bar readability */}
       {selectedArena !== "none" && (
         <div 
-          className="absolute inset-0 pointer-events-none z-10" 
+          className="absolute inset-0 pointer-events-none z-0" 
           style={{
             background: "radial-gradient(circle, rgba(9,9,11,0.3) 0%, rgba(9,9,11,0.85) 100%)"
           }}
@@ -1955,7 +1955,7 @@ export default function Train() {
       )}
 
       {/* Header */}
-      <header className="border-b border-zinc-900 bg-zinc-950/70 backdrop-blur-md sticky top-0 z-50">
+      <header className="border-b border-zinc-900 bg-zinc-950/95 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <Link href="/" className="flex items-center space-x-3 group">
@@ -1979,10 +1979,10 @@ export default function Train() {
       </header>
 
       {/* Content wrapper */}
-      <div className="flex-grow flex flex-col justify-between max-w-5xl mx-auto w-full px-4 sm:px-6 py-6 space-y-6">
+      <div className="flex-grow flex flex-col justify-between max-w-5xl mx-auto w-full px-4 sm:px-6 py-6 space-y-6 relative z-10">
         
         {/* Real-time feedback bar */}
-        <div className="grid grid-cols-4 gap-2 sm:gap-4 bg-zinc-900/25 border border-zinc-900 p-3 rounded-2xl backdrop-blur-sm">
+        <div className="grid grid-cols-4 gap-2 sm:gap-4 bg-zinc-950/90 border border-zinc-800/80 p-3 rounded-2xl backdrop-blur-md">
           <div className="text-center sm:border-r border-zinc-850 py-1">
             <span className="text-[10px] text-zinc-500 font-extrabold uppercase tracking-widest block">Timer</span>
             <span className="text-xl font-mono font-black text-white">
@@ -2026,7 +2026,7 @@ export default function Train() {
               </div>
 
               {/* Mode Selector */}
-              <div className="p-1.5 bg-zinc-950 rounded-xl border border-zinc-900 flex space-x-1 w-full select-none">
+              <div className="p-1.5 bg-zinc-950 rounded-xl border border-zinc-880/80 flex space-x-1 w-full select-none">
                 <button
                   type="button"
                   onClick={() => {
@@ -2074,7 +2074,7 @@ export default function Train() {
               </div>
 
               {/* Class & Spec Selector */}
-              <div className="p-4 rounded-xl border border-zinc-900 bg-zinc-900/40 text-left space-y-3">
+              <div className="p-4 rounded-xl border border-zinc-800 bg-zinc-950/90 backdrop-blur-md text-left space-y-3">
                 <div className="flex items-center space-x-2 text-violet-400 font-extrabold text-xs uppercase tracking-wider">
                   <svg fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" className="size-4">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.43l-1.003.828c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.43l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z" />
@@ -2115,7 +2115,7 @@ export default function Train() {
               </div>
 
               {/* Healer Grid Options & Boss Background Arena Selector */}
-              <div className="p-4 rounded-xl border border-zinc-900 bg-zinc-900/40 text-left space-y-3">
+              <div className="p-4 rounded-xl border border-zinc-800 bg-zinc-950/90 backdrop-blur-md text-left space-y-3">
                 <div className="flex items-center space-x-2 text-violet-400 font-extrabold text-xs uppercase tracking-wider">
                   <svg fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" className="size-4 text-violet-400">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 0 1 1.37.49l1.296 2.247a1.125 1.125 0 0 1-.26 1.43l-1.003.828c-.293.241-.438.613-.43.992a7.723 7.723 0 0 1 0 .255c-.008.378.137.75.43.991l1.004.827c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 0 1-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.47 6.47 0 0 1-.22.128c-.331.183-.581.495-.644.869l-.213 1.281c-.09.543-.56.94-1.11.94h-2.594c-.55 0-1.019-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 0 1-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 0 1-1.369-.49l-1.297-2.247a1.125 1.125 0 0 1 .26-1.43l1.004-.827c.292-.24.437-.613.43-.991a6.932 6.932 0 0 1 0-.255c.007-.38-.138-.751-.43-.992l-1.004-.827a1.125 1.125 0 0 1-.26-1.43l1.297-2.247a1.125 1.125 0 0 1 1.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.086.22-.128.332-.183.582-.495.644-.869l.214-1.28Z" />
@@ -2155,11 +2155,11 @@ export default function Train() {
                             onClick={() => setSelectedArena(arena.id)}
                             className={`group relative h-14 rounded-xl border text-left p-2.5 overflow-hidden transition-all duration-300 cursor-pointer ${
                               isSelected
-                                ? "border-violet-500 ring-2 ring-violet-500/20 scale-102 bg-zinc-900/80 shadow-[0_0_15px_rgba(139,92,246,0.15)]"
-                                : "hover:border-zinc-750 bg-zinc-950/30 hover:bg-zinc-900/20 border-zinc-850"
+                                ? "border-violet-500 ring-2 ring-violet-500/20 scale-102 bg-zinc-900/90 shadow-[0_0_15px_rgba(139,92,246,0.15)]"
+                                : "hover:border-zinc-750 bg-zinc-950/85 hover:bg-zinc-900/60 border-zinc-850"
                             }`}
                           >
-                            <div className={`absolute inset-0 bg-gradient-to-br ${arena.gradient} opacity-20 group-hover:opacity-40 transition-opacity`} />
+                            <div className={`absolute inset-0 bg-gradient-to-br ${arena.gradient} opacity-15 group-hover:opacity-30 transition-opacity`} />
                             
                             <div className="relative z-10 flex flex-col justify-between h-full">
                               <span className="font-extrabold text-[11px] text-zinc-200 group-hover:text-white transition-colors">{arena.name}</span>
@@ -2201,8 +2201,8 @@ export default function Train() {
                     onClick={() => setSelectedScenario(scen)}
                     className={`p-4 rounded-xl border text-left flex justify-between items-center transition-all ${
                       selectedScenario.id === scen.id
-                        ? "bg-violet-950/20 border-violet-500/80 text-white"
-                        : "bg-zinc-900/30 border-zinc-850 text-zinc-400 hover:bg-zinc-900/50 hover:text-zinc-200"
+                        ? "bg-violet-950/85 border-violet-500/80 text-white"
+                        : "bg-zinc-950/85 border-zinc-850 text-zinc-400 hover:bg-zinc-900/80 hover:text-zinc-200"
                     }`}
                   >
                     <div>
@@ -2230,7 +2230,7 @@ export default function Train() {
               {showAdvancedModifiers && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-2xl w-full select-none mx-auto animate-fade-in-up">
                   {/* Hardcore switch */}
-                  <div className="flex items-center justify-between p-4 rounded-xl border border-zinc-850 bg-zinc-900/20 w-full">
+                  <div className="flex items-center justify-between p-4 rounded-xl border border-zinc-800 bg-zinc-950/90 backdrop-blur-md w-full">
                     <div className="text-left space-y-0.5">
                       <div className="flex items-center space-x-1.5">
                         <span className="font-extrabold text-xs text-white uppercase tracking-wider">Hardcore Mode</span>
@@ -2256,7 +2256,7 @@ export default function Train() {
                   </div>
 
                   {/* Training Wheels switch */}
-                  <div className="flex items-center justify-between p-4 rounded-xl border border-zinc-850 bg-zinc-900/20 w-full">
+                  <div className="flex items-center justify-between p-4 rounded-xl border border-zinc-850 bg-zinc-950/90 backdrop-blur-md w-full">
                     <div className="text-left space-y-0.5">
                       <div className="flex items-center space-x-1.5">
                         <span className="font-extrabold text-xs text-white uppercase tracking-wider">Training Wheels</span>
@@ -2282,7 +2282,7 @@ export default function Train() {
                   </div>
 
                   {/* Heartbeat Sound switch */}
-                  <div className="flex items-center justify-between p-4 rounded-xl border border-zinc-850 bg-zinc-900/20 w-full">
+                  <div className="flex items-center justify-between p-4 rounded-xl border border-zinc-800 bg-zinc-950/90 backdrop-blur-md w-full">
                     <div className="text-left space-y-0.5">
                       <div className="flex items-center space-x-1.5">
                         <span className="font-extrabold text-xs text-white uppercase tracking-wider">Metronome Beat</span>
@@ -2312,7 +2312,7 @@ export default function Train() {
                   </div>
 
                   {/* Tunnel Vision switch */}
-                  <div className="flex items-center justify-between p-4 rounded-xl border border-zinc-850 bg-zinc-900/20 w-full">
+                  <div className="flex items-center justify-between p-4 rounded-xl border border-zinc-800 bg-zinc-950/90 backdrop-blur-md w-full">
                     <div className="text-left space-y-0.5">
                       <div className="flex items-center space-x-1.5">
                         <span className="font-extrabold text-xs text-white uppercase tracking-wider">Tunnel Vision</span>
@@ -2335,7 +2335,7 @@ export default function Train() {
                   </div>
 
                   {/* Sustained Duration Selector */}
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-xl border border-zinc-850 bg-zinc-900/20 w-full sm:col-span-2 gap-3">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-xl border border-zinc-800 bg-zinc-950/90 backdrop-blur-md w-full sm:col-span-2 gap-3">
                     <div className="text-left space-y-0.5">
                       <span className="font-extrabold text-xs text-white uppercase tracking-wider">Rotation Drill Duration</span>
                       <span className="text-[10px] text-zinc-500 block leading-tight">Configure the length of your sustained rotation practice sessions.</span>
@@ -2452,7 +2452,7 @@ export default function Train() {
                 /* Healer Raid Grid Mode UI */
                 <div className="w-full max-w-2xl space-y-4 animate-fade-in-up">
                   {/* Mana Bar & Target info */}
-                  <div className="flex justify-between items-center bg-zinc-950/60 border border-zinc-900 rounded-xl p-3">
+                  <div className="flex justify-between items-center bg-zinc-950/95 border border-zinc-800 rounded-xl p-3 backdrop-blur-md">
                     <div className="flex items-center space-x-3">
                       <span className="text-xs text-zinc-500 font-extrabold uppercase tracking-widest block">Mana</span>
                       <div className="w-44 h-4 bg-zinc-900 border border-zinc-800 rounded overflow-hidden relative">
@@ -2558,7 +2558,7 @@ export default function Train() {
                 <>
                   {/* Boss Unit Frame */}
                   <div 
-                    className={`flex items-center space-x-3 bg-zinc-950/80 border border-zinc-800/80 p-3 rounded-2xl shadow-xl w-80 relative transition-all duration-150 z-20 ${
+                    className={`flex items-center space-x-3 bg-zinc-950/95 border border-zinc-800/80 p-3 rounded-2xl shadow-xl w-80 relative transition-all duration-150 z-20 ${
                       bossFlash ? "border-rose-500 bg-rose-950/30 shadow-rose-500/20 scale-102" : ""
                     }`}
                   >
@@ -2592,7 +2592,7 @@ export default function Train() {
                   {activeSpell ? (
                     <div className="flex flex-col items-center space-y-4 w-full max-w-xl">
                       {/* Sequence Lane Container */}
-                      <div className="w-full bg-zinc-950/60 border border-zinc-900 rounded-3xl p-4 flex flex-col items-center relative overflow-hidden backdrop-blur-sm shadow-[0_0_30px_rgba(0,0,0,0.5)] animate-fade-in-up">
+                      <div className="w-full bg-zinc-950/95 border border-zinc-800 rounded-3xl p-4 flex flex-col items-center relative overflow-hidden backdrop-blur-md shadow-[0_0_30px_rgba(0,0,0,0.5)] animate-fade-in-up">
                         
                         {/* Horizontal Connector Dotted Line */}
                         <div className="absolute top-[48px] left-[12%] right-[12%] border-t-2 border-dashed border-zinc-800/40 z-0" />
@@ -2732,7 +2732,7 @@ export default function Train() {
           )}
 
           {gameState === "finished" && finalStats && !wipedReason && (
-            <div className="w-full max-w-2xl bg-zinc-900/50 border border-zinc-850 p-8 rounded-3xl space-y-8 backdrop-blur-sm relative overflow-hidden">
+            <div className="w-full max-w-2xl bg-zinc-950/95 border border-zinc-800 p-8 rounded-3xl space-y-8 backdrop-blur-md relative overflow-hidden shadow-2xl">
               <div className="absolute top-0 right-0 w-44 h-44 bg-violet-500/5 rounded-full blur-3xl pointer-events-none" />
               
               <div className="text-center border-b border-zinc-800 pb-4">
@@ -2744,21 +2744,21 @@ export default function Train() {
 
               {/* Main Score Metrics Grid */}
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <div className="bg-zinc-950/80 p-4 rounded-xl border border-zinc-850 text-center">
+                <div className="bg-zinc-900/90 p-4 rounded-xl border border-zinc-800 text-center">
                   <span className="text-[10px] text-zinc-500 font-extrabold uppercase block tracking-wider">Accuracy</span>
                   <span className={`text-2xl font-black block mt-1 ${
                     finalStats.accuracy >= 90 ? 'text-emerald-400' : finalStats.accuracy >= 75 ? 'text-amber-400' : 'text-rose-500'
                   }`}>{finalStats.accuracy}%</span>
                 </div>
-                <div className="bg-zinc-950/80 p-4 rounded-xl border border-zinc-850 text-center">
+                <div className="bg-zinc-900/90 p-4 rounded-xl border border-zinc-800 text-center">
                   <span className="text-[10px] text-zinc-500 font-extrabold uppercase block tracking-wider">Avg Speed</span>
                   <span className="text-2xl font-black text-white block mt-1 font-mono">{finalStats.avgReactionTime}ms</span>
                 </div>
-                <div className="bg-zinc-950/80 p-4 rounded-xl border border-zinc-850 text-center">
+                <div className="bg-zinc-900/90 p-4 rounded-xl border border-zinc-800 text-center">
                   <span className="text-[10px] text-zinc-500 font-extrabold uppercase block tracking-wider">Downtime</span>
                   <span className="text-2xl font-black text-amber-500 block mt-1 font-mono">{finalStats.totalDowntime}s</span>
                 </div>
-                <div className="bg-zinc-950/80 p-4 rounded-xl border border-zinc-850 text-center">
+                <div className="bg-zinc-900/90 p-4 rounded-xl border border-zinc-800 text-center">
                   <span className="text-[10px] text-zinc-500 font-extrabold uppercase block tracking-wider">Perfect Hits</span>
                   <span className="text-2xl font-black text-violet-400 block mt-1 font-mono">{finalStats.perfectPressed}</span>
                 </div>
@@ -2811,8 +2811,8 @@ export default function Train() {
                 const psRate = totalValue / Math.max(1, selectedScenario.duration);
 
                 return (
-                  <div className="bg-zinc-950/80 border border-zinc-850 rounded-2xl overflow-hidden space-y-0.5 shadow-lg">
-                    <div className="bg-zinc-900/60 px-4 py-2.5 flex justify-between items-center border-b border-zinc-850/50">
+                  <div className="bg-zinc-950/95 border border-zinc-800 rounded-2xl overflow-hidden space-y-0.5 shadow-lg">
+                    <div className="bg-zinc-900 px-4 py-2.5 flex justify-between items-center border-b border-zinc-800">
                       <span className="font-extrabold text-xs text-zinc-400 uppercase tracking-widest flex items-center space-x-1.5">
                         <span className="text-red-500 font-black">📊</span>
                         <span>Details!: {trainingMode === "healer" ? "Healing Done" : "Damage Done"}</span>
@@ -2833,7 +2833,7 @@ export default function Train() {
                           return (
                             <div 
                               key={spell.id}
-                              className="relative h-8 rounded-lg overflow-hidden flex items-center justify-between px-3 text-xs bg-zinc-900/40 border border-zinc-900/60 border-l-2"
+                              className="relative h-8 rounded-lg overflow-hidden flex items-center justify-between px-3 text-xs bg-zinc-900/90 border border-zinc-800 border-l-2"
                               style={{ borderLeftColor: spell.color }}
                             >
                               <div 
@@ -2887,7 +2887,7 @@ export default function Train() {
                 const playerCasts = casts || [];
                 
                 return (
-                  <div className="bg-zinc-950/80 border border-zinc-850 rounded-2xl p-5 space-y-4">
+                  <div className="bg-zinc-950/95 border border-zinc-800 rounded-2xl p-5 space-y-4">
                     <div className="flex justify-between items-center">
                       <span className="font-extrabold text-xs text-zinc-400 uppercase tracking-widest">
                         Timeline Pacing Chart
@@ -3023,7 +3023,7 @@ export default function Train() {
               })()}
 
               {/* Coaching Feedback Notes */}
-              <div className="bg-zinc-950/50 p-6 rounded-2xl border border-zinc-850 space-y-3">
+              <div className="bg-zinc-950/95 p-6 rounded-2xl border border-zinc-800 space-y-3 backdrop-blur-md">
                 <h3 className="font-extrabold text-sm text-zinc-400 uppercase tracking-widest">Rotational Coaching</h3>
                 <ul className="space-y-2.5">
                   {finalStats.feedback.map((note, index) => (
@@ -3037,7 +3037,7 @@ export default function Train() {
 
               {/* Modifier Reaction Speed Averages */}
               {finalStats.modifierDelays && (
-                <div className="bg-zinc-950/30 p-4 rounded-xl border border-zinc-850 space-y-2 text-xs">
+                <div className="bg-zinc-900/90 p-4 rounded-xl border border-zinc-800 space-y-2 text-xs">
                   <span className="font-bold text-zinc-400 block uppercase tracking-wider">Modifier Key Delays</span>
                   <div className="space-y-1.5 font-semibold text-zinc-300">
                     <div className="flex justify-between">
@@ -3074,7 +3074,7 @@ export default function Train() {
 
               {/* Transition Fatigue Warnings */}
               {finalStats.transitionFatigues && finalStats.transitionFatigues.length > 0 && (
-                <div className="bg-zinc-950/30 p-4 rounded-xl border border-zinc-850 space-y-2 text-xs">
+                <div className="bg-zinc-900/90 p-4 rounded-xl border border-zinc-800 space-y-2 text-xs">
                   <span className="font-bold text-rose-400 block uppercase tracking-wider">Transition Fatigue Warning</span>
                   <p className="text-[10px] text-zinc-500">You consistently delayed the following spell transitions by more than 25% of your average speed:</p>
                   <div className="space-y-1.5 font-semibold text-zinc-300">
@@ -3090,7 +3090,7 @@ export default function Train() {
 
               {/* Keybind layout audits warnings */}
               {finalStats.keybindAudits && finalStats.keybindAudits.length > 0 && (
-                <div className="bg-zinc-950/50 p-6 rounded-2xl border border-amber-900/40 space-y-3">
+                <div className="bg-zinc-950/95 p-6 rounded-2xl border border-amber-900/40 space-y-3 backdrop-blur-md">
                   <h3 className="font-extrabold text-sm text-amber-500 uppercase tracking-widest flex items-center space-x-1.5">
                     <svg fill="none" viewBox="0 0 24 24" strokeWidth="2.5" stroke="currentColor" className="size-4">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
