@@ -356,17 +356,12 @@ export default function Home() {
                                 style={{ borderColor: activeColor }}
                                 title={`${idx + 1}. ${spellName}`}
                                 onMouseEnter={() => {
-                                  console.log("HOVER_ENTER", spellName, idx);
                                   setHoveredSpell(spellName);
                                   setHoveredIdx(idx);
                                 }}
                                 onMouseLeave={() => {
-                                  console.log("HOVER_LEAVE", spellName, idx);
                                   setHoveredSpell(null);
                                   setHoveredIdx(null);
-                                }}
-                                onClick={() => {
-                                  console.log("ICON_CLICKED", spellName, idx);
                                 }}
                               >
                                 {imageErrors[spellId] ? (
