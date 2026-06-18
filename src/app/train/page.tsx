@@ -848,6 +848,17 @@ export default function Train() {
       });
     }
 
+    // Set first step active immediately when game starts (only for opener/sustained)!
+    if (!selectedScenario.isProcReaction && steps.length > 0) {
+      setActiveStepIndex(0);
+      setActiveSpell(getMappedSpell(steps[0].spellId));
+      setActivePromptTime(steps[0].time); // e.g. 0.5s or 1.0s
+    } else {
+      setActiveStepIndex(null);
+      setActiveSpell(null);
+      setActivePromptTime(null);
+    }
+
     const startTime = Date.now();
     
     gameIntervalRef.current = setInterval(() => {
@@ -874,44 +885,92 @@ export default function Train() {
       }
 
       // 2. Check regular rotation steps
-      const { activeStepIndex: curIdx, casts: currentCasts } = stateRef.current;
-      const nextStepIndex = curIdx === null ? 0 : curIdx + 1;
+      const { activeStepIndex: curIdx, casts: currentCasts, activePromptTime: curPromptTime } = stateRef.current;
 
-      if (nextStepIndex < steps.length) {
-        const nextStep = steps[nextStepIndex];
-        if (currentElapsed >= nextStep.time) {
-          if (curIdx !== null) {
-            const wasHit = currentCasts.some((c) => c.stepIndex === curIdx);
-            if (!wasHit) {
-              const prevStep = steps[curIdx];
-              setCasts((prev) => [
-                ...prev,
-                {
-                  stepIndex: curIdx,
-                  expectedSpellId: prevStep.spellId,
-                  actualSpellId: null,
-                  expectedTime: prevStep.time,
-                  actualTime: null,
-                  reactionTime: null,
-                  status: "missed",
-                },
-              ]);
-              setCombo(0);
-              playSound("incorrect");
-              
-              if (stateRef.current.isHardcore) {
-                setWipedReason("mechanic");
-                endGame();
-                return;
+      if (selectedScenario.isProcReaction) {
+        // --- Proc Reaction: Original absolute time-based check ---
+        const nextStepIndex = curIdx === null ? 0 : curIdx + 1;
+        if (nextStepIndex < steps.length) {
+          const nextStep = steps[nextStepIndex];
+          if (currentElapsed >= nextStep.time) {
+            if (curIdx !== null) {
+              const wasHit = currentCasts.some((c) => c.stepIndex === curIdx);
+              if (!wasHit) {
+                const prevStep = steps[curIdx];
+                setCasts((prev) => [
+                  ...prev,
+                  {
+                    stepIndex: curIdx,
+                    expectedSpellId: prevStep.spellId,
+                    actualSpellId: null,
+                    expectedTime: prevStep.time,
+                    actualTime: null,
+                    reactionTime: null,
+                    status: "missed",
+                  },
+                ]);
+                setCombo(0);
+                playSound("incorrect");
+                
+                if (stateRef.current.isHardcore) {
+                  setWipedReason("mechanic");
+                  endGame();
+                  return;
+                }
+                setLastPressResult({ key: getMappedSpell(prevStep.spellId).keybind, status: "missed" });
               }
+            }
 
-              setLastPressResult({ key: getMappedSpell(prevStep.spellId).keybind, status: "missed" });
+            setActiveStepIndex(nextStepIndex);
+            setActiveSpell(getMappedSpell(nextStep.spellId));
+            setActivePromptTime(currentElapsed);
+          }
+        }
+      } else {
+        // --- Opener / Sustained: New dynamic user-driven check ---
+        if (curIdx !== null && curIdx < steps.length && curPromptTime !== null) {
+          const missThreshold = curIdx === 0 ? 5.0 : 1.2;
+          if (currentElapsed >= curPromptTime + missThreshold) {
+            const prevStep = steps[curIdx];
+            
+            // Log missed cast
+            setCasts((prev) => [
+              ...prev,
+              {
+                stepIndex: curIdx,
+                expectedSpellId: prevStep.spellId,
+                actualSpellId: null,
+                expectedTime: prevStep.time,
+                actualTime: null,
+                reactionTime: null,
+                status: "missed",
+              },
+            ]);
+            setCombo(0);
+            playSound("incorrect");
+            
+            if (stateRef.current.isHardcore) {
+              setWipedReason("mechanic");
+              endGame();
+              return;
+            }
+
+            const nextIdx = curIdx + 1;
+            if (nextIdx < steps.length) {
+              const nextStep = steps[nextIdx];
+              const gap = nextStep.time - prevStep.time;
+              const nextExpectedTime = curPromptTime + gap;
+
+              setActiveStepIndex(nextIdx);
+              setActiveSpell(getMappedSpell(nextStep.spellId));
+              setActivePromptTime(nextExpectedTime);
+              setLastCastTime(curPromptTime);
+            } else {
+              setActiveStepIndex(nextIdx);
+              setActiveSpell(null);
+              setActivePromptTime(null);
             }
           }
-
-          setActiveStepIndex(nextStepIndex);
-          setActiveSpell(getMappedSpell(nextStep.spellId));
-          setActivePromptTime(currentElapsed);
         }
       }
     }, 20);
@@ -1116,13 +1175,16 @@ export default function Train() {
 
       const nextStepIndex = currentIndex === null ? 0 : currentIndex + 1;
 
-      if (!selectedScenario.isProcReaction && nextStepIndex < steps.length) {
+      if (!selectedScenario.isProcReaction && nextStepIndex < steps.length && currentIndex !== null) {
         const nextStep = steps[nextStepIndex];
-        const timeUntilNext = nextStep.time - elapsed;
+        const currentStep = steps[currentIndex];
+        const gap = nextStep.time - currentStep.time;
+        const nextExpectedTime = (currentPromptTime || 0) + gap;
+        const timeUntilNext = nextExpectedTime - elapsed;
         if (timeUntilNext > 0 && timeUntilNext <= queueWindow) {
           targetStepIndex = nextStepIndex;
           targetSpell = getMappedSpell(nextStep.spellId);
-          targetPromptTime = nextStep.time;
+          targetPromptTime = nextExpectedTime;
         }
       }
 
@@ -1152,7 +1214,12 @@ export default function Train() {
           return;
         }
 
-        const timeDiff = actualCastTime - (targetPromptTime || 0);
+        let timeDiff = actualCastTime - (targetPromptTime || 0);
+        // Force perfect status for step 0 of rotation drills (no preceding GCD)
+        if (!selectedScenario.isProcReaction && targetStepIndex === 0) {
+          timeDiff = 0.2;
+        }
+
         const spellWithCustomBind = {
           ...targetSpell,
           keybind: expectedKeybind
@@ -1192,6 +1259,24 @@ export default function Train() {
           } else {
             setCombo(0);
             playSound("incorrect");
+          }
+        }
+
+        // --- Advance step index and set dynamic expected time for rotation drills ---
+        if (!selectedScenario.isProcReaction) {
+          const nextIdx = targetStepIndex + 1;
+          if (nextIdx < steps.length) {
+            const nextStep = steps[nextIdx];
+            const gap = nextStep.time - steps[targetStepIndex].time;
+            const nextExpectedTime = actualCastTime + gap;
+
+            setActiveStepIndex(nextIdx);
+            setActiveSpell(getMappedSpell(nextStep.spellId));
+            setActivePromptTime(nextExpectedTime);
+          } else {
+            setActiveStepIndex(nextIdx);
+            setActiveSpell(null);
+            setActivePromptTime(null);
           }
         }
       } else {
