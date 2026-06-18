@@ -48,6 +48,129 @@ export interface Spell {
   icon: string; // Thematic identifier
   color: string; // Hex color for effects
   description: string;
+  resourceCost?: { type: string; amount: number };
+  resourceGen?: { type: string; amount: number };
+}
+
+export interface ResourceModifier {
+  type: "holy_power" | "combo_points" | "soul_shards" | "astral_power" | "insanity" | "maelstrom";
+  amount: number;
+}
+
+export function getSpellResourceInfo(spellId: number, spellName: string): {
+  cost?: ResourceModifier;
+  gen?: ResourceModifier;
+} | null {
+  const name = spellName.toLowerCase();
+  
+  // --- PALADIN (Holy Power) ---
+  if (
+    name.includes("holy shock") || 
+    name.includes("crusader strike") || 
+    name.includes("judgment") || 
+    name.includes("hammer of wrath") || 
+    name.includes("blade of justice")
+  ) {
+    return { gen: { type: "holy_power", amount: 1 } };
+  }
+  if (
+    name.includes("word of glory") || 
+    name.includes("light of dawn") || 
+    name.includes("shield of the righteous") || 
+    name.includes("templar's verdict") || 
+    name.includes("final verdict") || 
+    name.includes("divine storm")
+  ) {
+    return { cost: { type: "holy_power", amount: 3 } };
+  }
+  
+  // --- ROGUE / FERAL DRUID (Combo Points) ---
+  if (
+    name.includes("mutilate") || 
+    name.includes("garrote") || 
+    name.includes("sinister strike") || 
+    name.includes("ambush") || 
+    name.includes("backstab") || 
+    name.includes("shred") || 
+    name.includes("rake")
+  ) {
+    const amount = (name.includes("mutilate") || name.includes("shred")) ? 2 : 1;
+    return { gen: { type: "combo_points", amount } };
+  }
+  if (
+    name.includes("envenom") || 
+    name.includes("rupture") || 
+    name.includes("eviscerate") || 
+    name.includes("kidney shot") || 
+    name.includes("slice and dice") || 
+    name.includes("ferocious bite") || 
+    name.includes("rip")
+  ) {
+    return { cost: { type: "combo_points", amount: 5 } };
+  }
+  
+  // --- WARLOCK (Soul Shards) ---
+  if (
+    name.includes("incinerate") || 
+    name.includes("conflagrate") || 
+    name.includes("shadow bolt") || 
+    name.includes("demonbolt")
+  ) {
+    return { gen: { type: "soul_shards", amount: 1 } };
+  }
+  if (
+    name.includes("chaos bolt") || 
+    name.includes("hand of gul'dan") || 
+    name.includes("unstable affliction") || 
+    name.includes("rain of fire")
+  ) {
+    const amount = name.includes("chaos bolt") ? 2 : (name.includes("hand of gul'dan") ? 3 : 1);
+    return { cost: { type: "soul_shards", amount } };
+  }
+  
+  // --- BALANCE DRUID (Astral Power) ---
+  if (name.includes("wrath")) {
+    return { gen: { type: "astral_power", amount: 8 } };
+  }
+  if (name.includes("starfire")) {
+    return { gen: { type: "astral_power", amount: 10 } };
+  }
+  if (name.includes("starsurge")) {
+    return { cost: { type: "astral_power", amount: 30 } };
+  }
+  if (name.includes("starfall")) {
+    return { cost: { type: "astral_power", amount: 50 } };
+  }
+  
+  // --- SHADOW PRIEST (Insanity) ---
+  if (name.includes("mind blast")) {
+    return { gen: { type: "insanity", amount: 8 } };
+  }
+  if (name.includes("mind flay") || name.includes("mind spike")) {
+    return { gen: { type: "insanity", amount: 12 } };
+  }
+  if (name.includes("vampiric touch") || name.includes("shadow word: pain")) {
+    return { gen: { type: "insanity", amount: 4 } };
+  }
+  if (name.includes("devouring plague") || name.includes("devuring plague")) {
+    return { cost: { type: "insanity", amount: 50 } };
+  }
+  
+  // --- ELEMENTAL SHAMAN (Maelstrom) ---
+  if (name.includes("lightning bolt")) {
+    return { gen: { type: "maelstrom", amount: 8 } };
+  }
+  if (name.includes("lava burst")) {
+    return { gen: { type: "maelstrom", amount: 10 } };
+  }
+  if (name.includes("earth shock") || name.includes("elemental blast")) {
+    return { cost: { type: "maelstrom", amount: 60 } };
+  }
+  if (name.includes("earthquake")) {
+    return { cost: { type: "maelstrom", amount: 60 } };
+  }
+  
+  return null;
 }
 
 export interface TrainingStep {

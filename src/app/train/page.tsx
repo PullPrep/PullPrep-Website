@@ -22,7 +22,8 @@ import {
   WOW_CLASSES_SPECS,
   CLASS_COLORS_HEX,
   isRealSpell,
-  SPELL_COOLDOWNS
+  SPELL_COOLDOWNS,
+  getSpellResourceInfo
 } from "@/lib/trainingEngine";
 
 interface HealerPlayer {
@@ -649,6 +650,9 @@ export default function Train() {
   const [bossHealth, setBossHealth] = useState<number>(100);
   const [bossFlash, setBossFlash] = useState<boolean>(false);
   const [healerSpellCooldowns, setHealerSpellCooldowns] = useState<Record<number, number>>({});
+  const [secondaryResourceVal, setSecondaryResourceVal] = useState<number>(0);
+  const [wastedResources, setWastedResources] = useState<number>(0);
+  const [resourceErrorText, setResourceErrorText] = useState<string | null>(null);
 
   const stateRef = useRef({ 
     gameState, 
@@ -670,7 +674,9 @@ export default function Train() {
     mouseoverPlayerId,
     healerSpellCooldowns,
     isKeybindModeActive,
-    hoveredSpellId
+    hoveredSpellId,
+    secondaryResourceVal,
+    wastedResources
   });
 
   // Update ref to read latest states inside timers/listeners
@@ -695,11 +701,13 @@ export default function Train() {
       mouseoverPlayerId,
       healerSpellCooldowns,
       isKeybindModeActive,
-      hoveredSpellId
+      hoveredSpellId,
+      secondaryResourceVal,
+      wastedResources
     };
   }, [
     gameState, elapsedTime, activeStepIndex, activeSpell, activePromptTime, casts, combo, lastCastTime, activeAlert, isHardcore, isGuidedMode, orbTotalPossible, orbScoreEarned,
-    trainingMode, healerRoster, healerMana, mouseoverPlayerId, healerSpellCooldowns, isKeybindModeActive, hoveredSpellId
+    trainingMode, healerRoster, healerMana, mouseoverPlayerId, healerSpellCooldowns, isKeybindModeActive, hoveredSpellId, secondaryResourceVal, wastedResources
   ]);
 
   // Lazy initialize Synthesizer
@@ -850,7 +858,159 @@ export default function Train() {
     return `/icons/${targetId}.jpg`;
   };
 
-  const getMappedSpell = (spellId: number): Spell => {
+  const getSpecResourceConfig = () => {
+    const c = (activeBuild?.class || selectedClass).toLowerCase();
+    const s = (activeBuild?.spec || selectedSpec).toLowerCase();
+    
+    if (c === "paladin") {
+      return { type: "holy_power" as const, max: 5, start: 0, label: "Holy Power" };
+    }
+    if (c === "rogue" || (c === "druid" && s === "feral")) {
+      return { type: "combo_points" as const, max: 5, start: 0, label: "Combo Points" };
+    }
+    if (c === "warlock") {
+      return { type: "soul_shards" as const, max: 5, start: 3, label: "Soul Shards" };
+    }
+    if (c === "druid" && s === "balance") {
+      return { type: "astral_power" as const, max: 100, start: 0, label: "Astral Power" };
+    }
+    if (c === "priest" && s === "shadow") {
+      return { type: "insanity" as const, max: 100, start: 0, label: "Insanity" };
+    }
+    if (c === "shaman" && s === "elemental") {
+      return { type: "maelstrom" as const, max: 100, start: 0, label: "Maelstrom" };
+    }
+    return { type: "none" as const, max: 0, start: 0, label: "" };
+  };
+
+  const renderResourceHUD = () => {
+    if (gameState !== "running" || trainingMode === "healer") return null;
+    
+    const config = getSpecResourceConfig();
+    if (config.type === "none") return null;
+    
+    const val = secondaryResourceVal;
+    
+    if (config.type === "holy_power") {
+      return (
+        <div className="flex flex-col items-center space-y-1.5 select-none animate-fade-in-up">
+          <div className="flex items-center space-x-1.5">
+            {[1, 2, 3, 4, 5].map((i) => {
+              const active = val >= i;
+              return (
+                <div 
+                  key={i} 
+                  className={`w-7 h-7 rotate-45 border transition-all duration-200 relative overflow-hidden ${
+                    active
+                      ? "bg-gradient-to-br from-amber-300 to-yellow-500 border-amber-300 shadow-[0_0_12px_#f59e0b] scale-105"
+                      : "bg-zinc-950/80 border-zinc-800"
+                  }`}
+                >
+                  {active && (
+                    <div className="absolute top-0 left-0 w-full h-1/2 bg-white/25 -rotate-45 translate-x-[-25%]" />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          <span className="text-[9px] font-black text-amber-500 uppercase tracking-widest font-mono">
+            Holy Power: {val} / 5
+          </span>
+        </div>
+      );
+    }
+    
+    if (config.type === "combo_points") {
+      return (
+        <div className="flex flex-col items-center space-y-1.5 select-none animate-fade-in-up">
+          <div className="flex items-center space-x-1.5 bg-zinc-950/90 border border-zinc-800/80 rounded-full px-2.5 py-1 backdrop-blur-sm">
+            {[1, 2, 3, 4, 5].map((i) => {
+              const active = val >= i;
+              return (
+                <div 
+                  key={i} 
+                  className={`w-4 h-4 rounded-full border transition-all duration-200 ${
+                    active
+                      ? "bg-gradient-to-br from-red-500 to-rose-600 border-red-400 shadow-[0_0_8px_#f43f5e] scale-110"
+                      : "bg-zinc-900 border-zinc-800"
+                  }`}
+                />
+              );
+            })}
+          </div>
+          <span className="text-[9px] font-black text-rose-500 uppercase tracking-widest font-mono">
+            Combo Points: {val} / 5
+          </span>
+        </div>
+      );
+    }
+    
+    if (config.type === "soul_shards") {
+      return (
+        <div className="flex flex-col items-center space-y-1.5 select-none animate-fade-in-up">
+          <div className="flex items-center space-x-2">
+            {[1, 2, 3, 4, 5].map((i) => {
+              const active = val >= i;
+              return (
+                <div 
+                  key={i} 
+                  className={`w-6 h-8 border transition-all duration-300 relative overflow-hidden ${
+                    active
+                      ? "bg-gradient-to-b from-purple-500 to-indigo-700 border-purple-400 shadow-[0_0_10px_#a855f7] scale-102"
+                      : "bg-zinc-950/80 border-zinc-850"
+                  }`}
+                  style={{
+                    clipPath: "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)"
+                  }}
+                >
+                  {active && (
+                    <div className="absolute inset-0 bg-gradient-to-t from-violet-600/30 to-purple-400/50 animate-pulse" />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          <span className="text-[9px] font-black text-purple-400 uppercase tracking-widest font-mono">
+            Soul Shards: {val} / 5
+          </span>
+        </div>
+      );
+    }
+    
+    if (config.type === "astral_power" || config.type === "insanity" || config.type === "maelstrom") {
+      let gradient = "from-cyan-500 to-blue-600";
+      let textColor = "text-cyan-400";
+      
+      if (config.type === "insanity") {
+        gradient = "from-purple-600 to-fuchsia-800";
+        textColor = "text-fuchsia-400";
+      } else if (config.type === "maelstrom") {
+        gradient = "from-blue-500 to-indigo-600";
+        textColor = "text-blue-400";
+      }
+      
+      return (
+        <div className="flex flex-col items-center space-y-1 select-none animate-fade-in-up w-64">
+          <div className="w-full h-4 bg-zinc-950/90 border border-zinc-800 rounded-md overflow-hidden relative backdrop-blur-sm">
+            <div 
+              className={`h-full bg-gradient-to-r ${gradient} transition-all duration-200`}
+              style={{ width: `${val}%` }}
+            />
+            <span className="absolute inset-0 flex items-center justify-center text-[9px] font-mono font-black text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.9)]">
+              {val} / 100
+            </span>
+          </div>
+          <span className={`text-[8.5px] font-black uppercase tracking-widest font-mono ${textColor}`}>
+            {config.label}
+          </span>
+        </div>
+      );
+    }
+    
+    return null;
+  };
+
+  const getRawMappedSpell = (spellId: number): Spell => {
     const currentClassKey = activeBuild?.class?.toLowerCase().replace(/ /g, "") || "";
     const classColorHex = CLASS_COLORS_HEX[currentClassKey] || "#a855f7";
 
@@ -906,6 +1066,16 @@ export default function Train() {
       ...defaultSpell,
       keybind: getSpellKeybind(spellId) || defaultSpell.keybind,
     };
+  };
+
+  const getMappedSpell = (spellId: number): Spell => {
+    const baseSpell = getRawMappedSpell(spellId);
+    const resInfo = getSpellResourceInfo(baseSpell.id, baseSpell.name);
+    if (resInfo) {
+      if (resInfo.cost) baseSpell.resourceCost = resInfo.cost;
+      if (resInfo.gen) baseSpell.resourceGen = resInfo.gen;
+    }
+    return baseSpell;
   };
 
   const getWoWKeyString = (e: KeyboardEvent): string => {
@@ -1093,6 +1263,10 @@ export default function Train() {
     setOrbTotalPossible(0);
     setOrbScoreEarned(0);
     synthRef.current?.startHeartbeat(isMuted);
+
+    const resConfig = getSpecResourceConfig();
+    setSecondaryResourceVal(resConfig.start);
+    setWastedResources(0);
 
     let steps = [...selectedScenario.steps];
     
@@ -1438,6 +1612,11 @@ export default function Train() {
       stats.feedback.push(`Peripheral Focus: You missed 100% of the awareness orbs. Stare less at your action bars!`);
     }
 
+    if (wastedResources > 0) {
+      const resConfig = getSpecResourceConfig();
+      stats.feedback.push(`Resource Waste: You generated ${wastedResources} excess ${resConfig.label} while already at maximum capacity. Try to cast your spenders before overflowing!`);
+    }
+
     setFinalStats(stats);
 
     fetch("/api/sessions", {
@@ -1533,7 +1712,8 @@ export default function Train() {
         trainingMode: currentMode,
         healerMana: currentMana,
         healerSpellCooldowns: currentCds,
-        mouseoverPlayerId: currentTargetId
+        mouseoverPlayerId: currentTargetId,
+        secondaryResourceVal: currentResourceVal
       } = stateRef.current;
 
       if (currentGameState !== "running") return;
@@ -1754,6 +1934,25 @@ export default function Train() {
 
         const { status, reactionTimeMs } = evaluatePress(spellWithCustomBind, pressedWoWKey, timeDiff);
 
+        let isResourceValid = true;
+        let finalStatus = status;
+
+        if (pressedWoWKey === expectedKeybind && targetSpell && targetSpell.resourceCost) {
+          const cost = targetSpell.resourceCost.amount;
+          if (currentResourceVal < cost) {
+            isResourceValid = false;
+            finalStatus = "incorrect";
+
+            const resLabel = getSpecResourceConfig().label;
+            setResourceErrorText(`Not enough ${resLabel}!`);
+            playSound("incorrect");
+
+            setTimeout(() => {
+              setResourceErrorText(null);
+            }, 1200);
+          }
+        }
+
         const actualSpellId = activeBuild 
           ? (activeBuild.actionBars.flatMap(bar => bar.buttons).find(btn => btn.key === pressedWoWKey)?.id || null)
           : (Object.values(DEMON_HUNTER_SPELLS).find((s) => s.keybind === pressedWoWKey)?.id || null);
@@ -1765,25 +1964,46 @@ export default function Train() {
           expectedTime: !selectedScenario.isProcReaction ? steps[targetStepIndex]?.time : (targetPromptTime || 0),
           actualTime: actualCastTime,
           reactionTime: reactionTimeMs,
-          status,
+          status: finalStatus,
         };
 
         setCasts((prev) => [...prev, newRecord]);
-        setLastPressResult({ key: pressedWoWKey, status });
+        setLastPressResult({ key: pressedWoWKey, status: finalStatus });
 
         // Update boss unit frame health
-        const isHitCorrect = ["perfect", "early", "late"].includes(status);
+        const isHitCorrect = ["perfect", "early", "late"].includes(finalStatus);
         const totalCorrect = currentCasts.filter(c => ["perfect", "early", "late"].includes(c.status)).length + (isHitCorrect ? 1 : 0);
         setBossHealth(Math.max(0, 100 - (totalCorrect / Math.max(1, steps.length)) * 100));
 
-        if (status === "perfect") {
+        if (isResourceValid && ["perfect", "early", "late"].includes(finalStatus) && targetSpell) {
+          if (targetSpell.resourceCost) {
+            setSecondaryResourceVal(prev => Math.max(0, prev - targetSpell.resourceCost!.amount));
+          } else if (targetSpell.resourceGen) {
+            const gen = targetSpell.resourceGen;
+            const maxVal = getSpecResourceConfig().max;
+            setSecondaryResourceVal(prev => {
+              const prevVal = prev;
+              const nextVal = prevVal + gen.amount;
+              if (prevVal >= maxVal) {
+                setWastedResources(w => w + gen.amount);
+                return maxVal;
+              } else if (nextVal > maxVal) {
+                setWastedResources(w => w + (nextVal - maxVal));
+                return maxVal;
+              }
+              return nextVal;
+            });
+          }
+        }
+
+        if (finalStatus === "perfect") {
           setCombo((prev) => prev + 1);
           playSound("perfect");
           setLastCastTime(actualCastTime);
           
           setBossFlash(true);
           setTimeout(() => setBossFlash(false), 150);
-        } else if (status === "early" || status === "late") {
+        } else if (finalStatus === "early" || finalStatus === "late") {
           setCombo((prev) => prev + 1);
           playSound("correct");
           setLastCastTime(actualCastTime);
@@ -1793,7 +2013,9 @@ export default function Train() {
             endGame();
           } else {
             setCombo(0);
-            playSound("incorrect");
+            if (isResourceValid) {
+              playSound("incorrect");
+            }
           }
         }
 
@@ -1896,6 +2118,14 @@ export default function Train() {
         backgroundRepeat: "no-repeat"
       }}
     >
+      {/* Red WoW Error Text overlay (e.g. Not enough Holy Power) */}
+      {resourceErrorText && (
+        <div className="absolute top-[35%] left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 pointer-events-none animate-bounce">
+          <span className="text-red-500 font-extrabold text-sm uppercase tracking-widest font-mono drop-shadow-[0_1.5px_2px_rgba(0,0,0,1)] text-center block">
+            ⚠️ {resourceErrorText}
+          </span>
+        </div>
+      )}
       <style>{`
         @keyframes shake {
           0%, 100% { transform: translate(0, 0); }
@@ -3129,6 +3359,7 @@ export default function Train() {
 
         {/* Bottom Panel: Visual WoW Action Bar */}
         <div className="w-full flex flex-col items-center space-y-4 pt-4 border-t border-zinc-900">
+          {renderResourceHUD()}
           {gameState === "idle" && (
             <div className="flex justify-center">
               <button
