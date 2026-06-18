@@ -1115,7 +1115,7 @@ export default function Train() {
       // Stress Tempo Accelerator: GCD speeds up with combo streak (up to 20% speedup at 50 combo)
       const baseGcd = 1.5;
       const gcdDuration = baseGcd * (1 - Math.min(0.2, (combo / 50) * 0.2));
-      const queueWindow = 0.25;
+      const queueWindow = 0.3;
 
       // 1. Handle Mechanic Alerts press
       if (curAlert) {
