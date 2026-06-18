@@ -351,10 +351,12 @@ export default function Home() {
                               key={idx}
                               className="flex items-center space-x-1.5 shrink-0 group"
                               onMouseEnter={() => {
+                                console.log("HOVER_ENTER", spellName, idx);
                                 setHoveredSpell(spellName);
                                 setHoveredIdx(idx);
                               }}
                               onMouseLeave={() => {
+                                console.log("HOVER_LEAVE", spellName, idx);
                                 setHoveredSpell(null);
                                 setHoveredIdx(null);
                               }}
