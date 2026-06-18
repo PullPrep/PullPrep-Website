@@ -2144,7 +2144,7 @@ export default function Train() {
                       {[
                         { id: "none", name: "None", desc: "Dark Theme", gradient: "from-zinc-950 to-zinc-900 border-zinc-850" },
                         { id: "lura", name: "L'ura", desc: "Void Realm", gradient: "from-purple-950/60 to-fuchsia-950/60 border-purple-900/50" },
-                        { id: "fyrakk", name: "Fyrakk", desc: "Firelands", gradient: "from-red-950/60 to-amber-950/60 border-red-900/50" },
+                        { id: "ragnaros", name: "Ragnaros", desc: "Firelands", gradient: "from-red-950/60 to-amber-950/60 border-red-900/50" },
                         { id: "lichking", name: "Lich King", desc: "Icecrown", gradient: "from-cyan-950/60 to-blue-950/60 border-cyan-900/50" }
                       ].map((arena) => {
                         const isSelected = selectedArena === arena.id;
@@ -2573,7 +2573,7 @@ export default function Train() {
                     <div className="flex-grow space-y-1">
                       <div className="flex justify-between items-center">
                         <span className="text-xs font-black text-white uppercase tracking-wider">
-                          {selectedArena === "lura" ? "L'ura" : selectedArena === "fyrakk" ? "Fyrakk" : selectedArena === "lichking" ? "The Lich King" : "Training Dummy"}
+                          {selectedArena === "lura" ? "L'ura" : selectedArena === "ragnaros" ? "Ragnaros" : selectedArena === "lichking" ? "The Lich King" : "Training Dummy"}
                         </span>
                         <span className="text-[10px] text-zinc-400 font-mono">
                           {bossHealth.toFixed(0)}%
