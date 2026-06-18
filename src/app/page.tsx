@@ -391,7 +391,7 @@ export default function Home() {
                       </div>
 
                       {/* Warcraft-style Spell Tooltip Frame */}
-                      <div className="mx-auto w-full max-w-sm rounded bg-zinc-950/90 border border-zinc-800 p-4 text-left shadow-2xl relative select-none" style={{ borderColor: hoveredSpell ? activeColor : 'rgba(245, 158, 11, 0.15)' }}>
+                      <div className="mx-auto w-full max-w-sm h-[150px] rounded bg-zinc-950/90 border border-zinc-800 p-4 text-left shadow-2xl relative select-none" style={{ borderColor: hoveredSpell ? activeColor : 'rgba(245, 158, 11, 0.15)' }}>
                         {/* Gold Corner Accents */}
                         <div className="absolute top-0 left-0 w-1.5 h-1.5 border-t border-l border-amber-500/30" />
                         <div className="absolute top-0 right-0 w-1.5 h-1.5 border-t border-r border-amber-500/30" />
