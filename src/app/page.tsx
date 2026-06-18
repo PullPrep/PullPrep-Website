@@ -365,16 +365,19 @@ export default function Home() {
                                   setHoveredSpell(null);
                                   setHoveredIdx(null);
                                 }}
+                                onClick={() => {
+                                  console.log("ICON_CLICKED", spellName, idx);
+                                }}
                               >
                                 {imageErrors[spellId] ? (
-                                  <div className="w-full h-full rounded flex items-center justify-center text-[9px] font-black uppercase tracking-wider" style={{ color: activeColor, backgroundColor: `${activeColor}10` }}>
+                                  <div className="w-full h-full rounded flex items-center justify-center text-[9px] font-black uppercase tracking-wider pointer-events-none" style={{ color: activeColor, backgroundColor: `${activeColor}10` }}>
                                     {spellName.substring(0, 2)}
                                   </div>
                                 ) : (
                                   <img
                                     src={`/icons/${targetId}.jpg`}
                                     alt={spellName}
-                                    className="w-full h-full rounded object-cover"
+                                    className="w-full h-full rounded object-cover pointer-events-none"
                                     onError={() => setImageErrors((prev) => ({ ...prev, [spellId]: true }))}
                                   />
                                 )}
