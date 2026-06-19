@@ -684,6 +684,79 @@ export const DEMON_HUNTER_SPELLS: Record<number, Spell> = {
     icon: "demon-spikes",
     color: "#06b6d4", // Cyan
     description: "Surge with fel power, increasing your armor and parry chance.",
+  },
+  // Rogue Assassination Spells
+  703: {
+    id: 703,
+    name: "Garrote",
+    keybind: "5",
+    icon: "703",
+    color: "#f43f5e",
+    description: "Garrote the enemy, dealing bleed damage over time."
+  },
+  1943: {
+    id: 1943,
+    name: "Rupture",
+    keybind: "6",
+    icon: "1943",
+    color: "#b91c1c",
+    description: "Finishing move that tears open the target, dealing bleed damage over time."
+  },
+  1329: {
+    id: 1329,
+    name: "Mutilate",
+    keybind: "1",
+    icon: "1329",
+    color: "#eab308",
+    description: "Attack with both weapons, dealing physical damage."
+  },
+  5171: {
+    id: 5171,
+    name: "Slice and Dice",
+    keybind: "3",
+    icon: "315496",
+    color: "#fb923c",
+    description: "Finishing move that consumes combo points to increase attack speed."
+  },
+  315496: {
+    id: 315496,
+    name: "Slice and Dice",
+    keybind: "3",
+    icon: "315496",
+    color: "#fb923c",
+    description: "Finishing move that consumes combo points to increase attack speed."
+  },
+  3264: {
+    id: 3264,
+    name: "Envenom",
+    keybind: "4",
+    icon: "32645",
+    color: "#22c55e",
+    description: "Finishing move that drives your poisoned blades deep into the target."
+  },
+  32645: {
+    id: 32645,
+    name: "Envenom",
+    keybind: "4",
+    icon: "32645",
+    color: "#22c55e",
+    description: "Finishing move that drives your poisoned blades deep into the target."
+  },
+  381753: {
+    id: 381753,
+    name: "Deathmark",
+    keybind: "Q",
+    icon: "381753",
+    color: "#a855f7",
+    description: "Mark an enemy for death, inflicting shadow damage and duplicating your poisons and bleeds."
+  },
+  385627: {
+    id: 385627,
+    name: "Kingsbane",
+    keybind: "E",
+    icon: "385627",
+    color: "#6366f1",
+    description: "Release a lethal toxin into your target's veins, dealing nature damage over time."
   }
 };
 
@@ -700,7 +773,13 @@ export const SPELL_GROUP_MAPPINGS: Record<number, number[]> = {
   212084: [198013, 212084],
   188499: [188499, 228477, 247454],
   228477: [188499, 228477, 247454],
-  162794: [162794, 227084, 225919]
+  162794: [162794, 227084, 225919],
+  // Slice and Dice mappings
+  5171: [5171, 315496],
+  315496: [5171, 315496],
+  // Envenom mappings
+  3264: [3264, 32645],
+  32645: [3264, 32645]
 };
 
 // Scan character layout for missing core spells

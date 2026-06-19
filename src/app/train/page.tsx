@@ -1097,7 +1097,7 @@ export default function Train() {
   const getResourceState = (type: string) => {
     if (type === "mana") {
       return {
-        val: healerMana,
+        val: stateRef.current.healerMana,
         set: (fn: (prev: number) => number) => {
           setHealerMana(prev => {
             const next = fn(prev);
@@ -1111,7 +1111,7 @@ export default function Train() {
     const config = getSpecResourceConfig();
     if (config.primary.type === type) {
       return {
-        val: primaryResourceVal,
+        val: stateRef.current.primaryResourceVal,
         set: (fn: (prev: number) => number) => {
           setPrimaryResourceVal(prev => {
             const next = fn(prev);
@@ -1124,7 +1124,7 @@ export default function Train() {
     
     if (config.secondary.type === type) {
       return {
-        val: secondaryResourceVal,
+        val: stateRef.current.secondaryResourceVal,
         set: (fn: (prev: number) => number) => {
           setSecondaryResourceVal(prev => {
             const next = fn(prev);
