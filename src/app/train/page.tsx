@@ -49,6 +49,8 @@ interface HealerSpell {
   isAoE?: boolean;
   cooldown?: number;
   hotDuration?: number;
+  resourceCost?: { type: string; amount: number };
+  resourceGen?: { type: string; amount: number };
 }
 
 interface FloatingHeal {
@@ -138,10 +140,15 @@ const HEALER_SPECS = [
 
 const getHealerSpells = (cls: string, spec: string): HealerSpell[] => {
   const key = `${cls}_${spec}`.replace(" ", "");
-  if (HEALER_SPELLS_BY_SPEC[key]) {
-    return HEALER_SPELLS_BY_SPEC[key];
-  }
-  return HEALER_SPELLS_BY_SPEC["Priest_Holy"];
+  const baseSpells = HEALER_SPELLS_BY_SPEC[key] || HEALER_SPELLS_BY_SPEC["Priest_Holy"];
+  return baseSpells.map((s) => {
+    const resInfo = getSpellResourceInfo(s.id, s.name);
+    return {
+      ...s,
+      resourceCost: resInfo?.cost,
+      resourceGen: resInfo?.gen
+    };
+  });
 };
 
 const generateHealerRoster = (size: number): HealerPlayer[] => {
@@ -884,7 +891,7 @@ export default function Train() {
   };
 
   const renderResourceHUD = () => {
-    if (gameState !== "running" || trainingMode === "healer") return null;
+    if (gameState !== "running") return null;
     
     const config = getSpecResourceConfig();
     if (config.type === "none") return null;
@@ -1736,11 +1743,45 @@ export default function Train() {
             return;
           }
 
+          // Resource gating check
+          if (spell.resourceCost) {
+            const cost = spell.resourceCost.amount;
+            if (currentResourceVal < cost) {
+              const resLabel = getSpecResourceConfig().label;
+              setResourceErrorText(`Not enough ${resLabel}!`);
+              playSound("incorrect");
+              setTimeout(() => {
+                setResourceErrorText(null);
+              }, 1200);
+              return;
+            }
+          }
+
           // Deduct mana & set cooldown
           setHealerMana(m => Math.max(0, m - spell.manaCost));
           if (spell.cooldown !== undefined) {
             const cdVal = spell.cooldown;
             setHealerSpellCooldowns(prev => ({ ...prev, [spell.id]: cdVal }));
+          }
+
+          // Adjust secondary resource
+          if (spell.resourceCost) {
+            setSecondaryResourceVal(prev => Math.max(0, prev - spell.resourceCost!.amount));
+          } else if (spell.resourceGen) {
+            const gen = spell.resourceGen;
+            const maxVal = getSpecResourceConfig().max;
+            setSecondaryResourceVal(prev => {
+              const prevVal = prev;
+              const nextVal = prevVal + gen.amount;
+              if (prevVal >= maxVal) {
+                setWastedResources(w => w + gen.amount);
+                return maxVal;
+              } else if (nextVal > maxVal) {
+                setWastedResources(w => w + (nextVal - maxVal));
+                return maxVal;
+              }
+              return nextVal;
+            });
           }
 
           if (spell.isAoE) {
