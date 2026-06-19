@@ -52,6 +52,8 @@ interface HealerSpell {
   hotDuration?: number;
   resourceCost?: { type: string; amount: number };
   resourceGen?: { type: string; amount: number };
+  extraCost?: { type: string; amount: number };
+  extraGen?: { type: string; amount: number };
   castTime?: number;
 }
 
