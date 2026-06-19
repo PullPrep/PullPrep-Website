@@ -50,6 +50,7 @@ export interface Spell {
   description: string;
   resourceCost?: { type: string; amount: number };
   resourceGen?: { type: string; amount: number };
+  castTime?: number;
 }
 
 export interface ResourceModifier {
@@ -171,6 +172,42 @@ export function getSpellResourceInfo(spellId: number, spellName: string): {
   }
   
   return null;
+}
+
+export function getSpellCastTime(spellId: number, spellName: string): number {
+  const name = spellName.toLowerCase();
+  
+  // --- PALADIN ---
+  if (name.includes("holy light")) return 2.0;
+  if (name.includes("flash of light")) return 1.5;
+  
+  // --- PRIEST ---
+  if (name === "heal") return 2.5;
+  if (name.includes("flash heal")) return 1.5;
+  if (name.includes("prayer of healing")) return 2.0;
+  
+  // --- DRUID ---
+  if (name.includes("regrowth")) return 1.5;
+  if (name.includes("nourish")) return 2.0;
+  if (name.includes("wrath")) return 1.5;
+  if (name.includes("starfire")) return 2.0;
+  
+  // --- SHAMAN ---
+  if (name.includes("healing surge")) return 1.5;
+  if (name.includes("healing wave")) return 2.5;
+  if (name.includes("chain heal")) return 2.5;
+  if (name.includes("lightning") && name.includes("bolt")) return 2.0;
+  if (name.includes("lava burst")) return 2.0;
+  
+  // --- MONK ---
+  if (name.includes("vivify")) return 1.5;
+  if (name.includes("enveloping mist")) return 2.0;
+  
+  // --- WARLOCK ---
+  if (name.includes("chaos bolt")) return 2.5;
+  if (name.includes("incinerate")) return 2.0;
+  
+  return 0; // Instant cast by default
 }
 
 export interface TrainingStep {

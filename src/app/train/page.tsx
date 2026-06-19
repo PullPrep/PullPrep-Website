@@ -23,7 +23,8 @@ import {
   CLASS_COLORS_HEX,
   isRealSpell,
   SPELL_COOLDOWNS,
-  getSpellResourceInfo
+  getSpellResourceInfo,
+  getSpellCastTime
 } from "@/lib/trainingEngine";
 
 interface HealerPlayer {
@@ -51,6 +52,7 @@ interface HealerSpell {
   hotDuration?: number;
   resourceCost?: { type: string; amount: number };
   resourceGen?: { type: string; amount: number };
+  castTime?: number;
 }
 
 interface FloatingHeal {
@@ -143,8 +145,10 @@ const getHealerSpells = (cls: string, spec: string): HealerSpell[] => {
   const baseSpells = HEALER_SPELLS_BY_SPEC[key] || HEALER_SPELLS_BY_SPEC["Priest_Holy"];
   return baseSpells.map((s) => {
     const resInfo = getSpellResourceInfo(s.id, s.name);
+    const castTime = getSpellCastTime(s.id, s.name);
     return {
       ...s,
+      castTime,
       resourceCost: resInfo?.cost,
       resourceGen: resInfo?.gen
     };
@@ -661,6 +665,18 @@ export default function Train() {
   const [wastedResources, setWastedResources] = useState<number>(0);
   const [resourceErrorText, setResourceErrorText] = useState<string | null>(null);
 
+  const [currentCast, setCurrentCast] = useState<{
+    spellId: number;
+    name: string;
+    icon: string;
+    startTime: number;
+    duration: number;
+    targetId: string | null;
+    stepIndex: number;
+    evaluation?: any;
+  } | null>(null);
+  const [isInterrupted, setIsInterrupted] = useState<boolean>(false);
+
   const stateRef = useRef({ 
     gameState, 
     elapsedTime, 
@@ -683,7 +699,9 @@ export default function Train() {
     isKeybindModeActive,
     hoveredSpellId,
     secondaryResourceVal,
-    wastedResources
+    wastedResources,
+    currentCast,
+    isInterrupted
   });
 
   // Update ref to read latest states inside timers/listeners
@@ -710,11 +728,14 @@ export default function Train() {
       isKeybindModeActive,
       hoveredSpellId,
       secondaryResourceVal,
-      wastedResources
+      wastedResources,
+      currentCast,
+      isInterrupted
     };
   }, [
     gameState, elapsedTime, activeStepIndex, activeSpell, activePromptTime, casts, combo, lastCastTime, activeAlert, isHardcore, isGuidedMode, orbTotalPossible, orbScoreEarned,
-    trainingMode, healerRoster, healerMana, mouseoverPlayerId, healerSpellCooldowns, isKeybindModeActive, hoveredSpellId, secondaryResourceVal, wastedResources
+    trainingMode, healerRoster, healerMana, mouseoverPlayerId, healerSpellCooldowns, isKeybindModeActive, hoveredSpellId, secondaryResourceVal, wastedResources,
+    currentCast, isInterrupted
   ]);
 
   // Lazy initialize Synthesizer
@@ -1055,12 +1076,16 @@ export default function Train() {
           keybind: hSpell.keybind,
           icon: hSpell.icon,
           color: hSpell.color,
-          description: hSpell.description
+          description: hSpell.description,
+          castTime: hSpell.castTime
         };
       }
     }
 
-    if (!activeBuild) return defaultSpell;
+    if (!activeBuild) return {
+      ...defaultSpell,
+      castTime: getSpellCastTime(spellId, defaultSpell.name)
+    };
 
     const targetIds = new Set<number>([spellId]);
     const alternates = SPELL_GROUP_MAPPINGS[spellId];
@@ -1079,6 +1104,7 @@ export default function Train() {
             icon: matchedDefault.icon,
             color: matchedDefault.color,
             description: btn.name || matchedDefault.description,
+            castTime: getSpellCastTime(btn.id, btn.name || matchedDefault.name)
           };
         }
       }
@@ -1087,6 +1113,7 @@ export default function Train() {
     return {
       ...defaultSpell,
       keybind: getSpellKeybind(spellId) || defaultSpell.keybind,
+      castTime: getSpellCastTime(spellId, defaultSpell.name)
     };
   };
 
@@ -1251,6 +1278,250 @@ export default function Train() {
     }
   };
 
+  const cancelActiveCast = () => {
+    const activeC = stateRef.current.currentCast;
+    if (!activeC) return;
+    
+    setIsInterrupted(true);
+    setCurrentCast(null);
+    playSound("incorrect");
+    
+    setTimeout(() => {
+      setIsInterrupted(false);
+    }, 1000);
+
+    if (stateRef.current.trainingMode !== "healer") {
+      setCombo(0);
+      
+      const elapsed = stateRef.current.elapsedTime;
+      const newRecord: CastRecord = {
+        stepIndex: activeC.stepIndex,
+        expectedSpellId: activeC.spellId,
+        actualSpellId: null,
+        expectedTime: elapsed,
+        actualTime: elapsed,
+        reactionTime: null,
+        status: "incorrect",
+      };
+      setCasts((prev) => [...prev, newRecord]);
+      setLastPressResult({ key: "WASD", status: "incorrect" });
+      
+      if (stateRef.current.isHardcore) {
+        setWipedReason("incorrect");
+        endGame();
+      } else {
+        const steps = selectedScenario.steps;
+        const nextIdx = activeC.stepIndex + 1;
+        if (nextIdx < steps.length) {
+          const nextStep = steps[nextIdx];
+          const gap = nextStep.time - steps[activeC.stepIndex].time;
+          const nextExpectedTime = elapsed + gap;
+
+          setActiveStepIndex(nextIdx);
+          setActiveSpell(getMappedSpell(nextStep.spellId));
+          setActivePromptTime(nextExpectedTime);
+        } else {
+          setActiveStepIndex(nextIdx);
+          setActiveSpell(null);
+          setActivePromptTime(null);
+        }
+      }
+    }
+  };
+
+  const completeHealerCast = (spell: HealerSpell, targetId: string | null) => {
+    const elapsed = stateRef.current.elapsedTime;
+    const currentMana = stateRef.current.healerMana;
+    const currentResourceVal = stateRef.current.secondaryResourceVal;
+
+    if (currentMana < spell.manaCost) {
+      playSound("incorrect");
+      return;
+    }
+
+    if (stateRef.current.healerSpellCooldowns[spell.id] > 0) {
+      playSound("incorrect");
+      return;
+    }
+
+    if (spell.resourceCost) {
+      const cost = spell.resourceCost.amount;
+      if (currentResourceVal < cost) {
+        const resLabel = getSpecResourceConfig().label;
+        setResourceErrorText(`Not enough ${resLabel}!`);
+        playSound("incorrect");
+        setTimeout(() => {
+          setResourceErrorText(null);
+        }, 1200);
+        return;
+      }
+    }
+
+    setHealerMana(m => Math.max(0, m - spell.manaCost));
+    if (spell.cooldown !== undefined) {
+      const cdVal = spell.cooldown;
+      setHealerSpellCooldowns(prev => ({ ...prev, [spell.id]: cdVal }));
+    }
+
+    if (spell.resourceCost) {
+      setSecondaryResourceVal(prev => Math.max(0, prev - spell.resourceCost!.amount));
+    } else if (spell.resourceGen) {
+      const gen = spell.resourceGen;
+      const maxVal = getSpecResourceConfig().max;
+      setSecondaryResourceVal(prev => {
+        const prevVal = prev;
+        const nextVal = prevVal + gen.amount;
+        if (prevVal >= maxVal) {
+          setWastedResources(w => w + gen.amount);
+          return maxVal;
+        } else if (nextVal > maxVal) {
+          setWastedResources(w => w + (nextVal - maxVal));
+          return maxVal;
+        }
+        return nextVal;
+      });
+    }
+
+    if (spell.isAoE) {
+      setHealerRoster((prev) => {
+        const sorted = [...prev]
+          .filter(p => p.health > 0)
+          .sort((a, b) => a.health - b.health);
+        const lowestIds = new Set(sorted.slice(0, 5).map(p => p.id));
+        
+        return prev.map((player) => {
+          if (lowestIds.has(player.id)) {
+            const textId = Math.random().toString();
+            setFloatingHeals(f => [...f, { id: textId, playerId: player.id, text: `+${spell.healAmount}%`, time: Date.now() }]);
+            return {
+              ...player,
+              health: Math.min(100, player.health + spell.healAmount)
+            };
+          }
+          return player;
+        });
+      });
+      playSound("perfect");
+      setCombo(c => c + 1);
+
+      const newRecord: CastRecord = {
+        stepIndex: -1,
+        expectedSpellId: spell.id,
+        actualSpellId: spell.id,
+        expectedTime: elapsed,
+        actualTime: elapsed,
+        reactionTime: 200,
+        status: "perfect"
+      };
+      setCasts((prev) => [...prev, newRecord]);
+    } else {
+      if (targetId) {
+        setHealerRoster((prev) => {
+          return prev.map((player) => {
+            if (player.id === targetId && player.health > 0) {
+              const textId = Math.random().toString();
+              setFloatingHeals(f => [...f, { id: textId, playerId: player.id, text: `+${spell.healAmount}%`, time: Date.now() }]);
+              
+              let newBuffs = [...player.buffs];
+              if (spell.hotDuration) {
+                newBuffs = newBuffs.filter(b => b.name !== spell.name);
+                newBuffs.push({ name: spell.name, expiresAt: elapsed + spell.hotDuration });
+              }
+
+              return {
+                ...player,
+                health: Math.min(100, player.health + spell.healAmount),
+                buffs: newBuffs
+              };
+            }
+            return player;
+          });
+        });
+        playSound("perfect");
+        setCombo(c => c + 1);
+
+        const newRecord: CastRecord = {
+          stepIndex: -1,
+          expectedSpellId: spell.id,
+          actualSpellId: spell.id,
+          expectedTime: elapsed,
+          actualTime: elapsed,
+          reactionTime: 200,
+          status: "perfect"
+        };
+        setCasts((prev) => [...prev, newRecord]);
+      } else {
+        playSound("incorrect");
+      }
+    }
+  };
+
+  const completeRotationCast = (spell: Spell, stepIndex: number, evaluation: any) => {
+    const elapsed = stateRef.current.elapsedTime;
+    const currentCasts = stateRef.current.casts;
+    const currentResourceVal = stateRef.current.secondaryResourceVal;
+    const steps = selectedScenario.steps;
+
+    const newRecord: CastRecord = {
+      stepIndex,
+      expectedSpellId: spell.id,
+      actualSpellId: evaluation.actualSpellId || spell.id,
+      expectedTime: evaluation.expectedTime,
+      actualTime: evaluation.actualTime,
+      reactionTime: evaluation.reactionTimeMs,
+      status: evaluation.status,
+    };
+
+    setCasts((prev) => [...prev, newRecord]);
+
+    const isHitCorrect = ["perfect", "early", "late"].includes(evaluation.status);
+    const totalCorrect = currentCasts.filter(c => ["perfect", "early", "late"].includes(c.status)).length + (isHitCorrect ? 1 : 0);
+    setBossHealth(Math.max(0, 100 - (totalCorrect / Math.max(1, steps.length)) * 100));
+
+    if (isHitCorrect) {
+      if (spell.resourceCost) {
+        setSecondaryResourceVal(prev => Math.max(0, prev - spell.resourceCost!.amount));
+      } else if (spell.resourceGen) {
+        const gen = spell.resourceGen;
+        const maxVal = getSpecResourceConfig().max;
+        setSecondaryResourceVal(prev => {
+          const prevVal = prev;
+          const nextVal = prevVal + gen.amount;
+          if (prevVal >= maxVal) {
+            setWastedResources(w => w + gen.amount);
+            return maxVal;
+          } else if (nextVal > maxVal) {
+            setWastedResources(w => w + (nextVal - maxVal));
+            return maxVal;
+          }
+          return nextVal;
+        });
+      }
+    }
+
+    if (evaluation.status === "perfect") {
+      setBossFlash(true);
+      setTimeout(() => setBossFlash(false), 150);
+    }
+
+    if (!selectedScenario.isProcReaction) {
+      const nextIdx = stepIndex + 1;
+      if (nextIdx < steps.length) {
+        const nextStep = steps[nextIdx];
+        const gap = nextStep.time - steps[stepIndex].time;
+        const nextExpectedTime = evaluation.actualTime + gap;
+
+        setActiveStepIndex(nextIdx);
+        setActiveSpell(getMappedSpell(nextStep.spellId));
+        setActivePromptTime(nextExpectedTime);
+      } else {
+        setActiveStepIndex(nextIdx);
+        setActiveSpell(null);
+        setActivePromptTime(null);
+      }
+    }
+  };
+
   const startCountdown = () => {
     setGameState("countdown");
     setCountdown(3);
@@ -1265,6 +1536,8 @@ export default function Train() {
     setLastCastTime(null);
     setActiveAlert(null);
     setWipedReason(null);
+    setCurrentCast(null);
+    setIsInterrupted(false);
     nextAlertTimeRef.current = 8 + Math.random() * 6; // first alert around 8-14s
 
     const countInterval = setInterval(() => {
@@ -1343,6 +1616,27 @@ export default function Train() {
       if (currentElapsed >= selectedScenario.duration) {
         endGame();
         return;
+      }
+
+      // Check active cast completion
+      const activeC = stateRef.current.currentCast;
+      if (activeC) {
+        if (currentElapsed >= activeC.startTime + activeC.duration) {
+          setCurrentCast(null);
+          
+          if (stateRef.current.trainingMode === "healer") {
+            const hSpells = getHealerSpells(selectedClass, selectedSpec);
+            const healerSpell = hSpells.find(s => s.id === activeC.spellId);
+            if (healerSpell) {
+              completeHealerCast(healerSpell, activeC.targetId);
+            }
+          } else {
+            const rotSpell = getMappedSpell(activeC.spellId);
+            if (rotSpell) {
+              completeRotationCast(rotSpell, activeC.stepIndex, (activeC as any).evaluation);
+            }
+          }
+        }
       }
 
       if (trainingMode === "healer") {
@@ -1673,6 +1967,8 @@ export default function Train() {
     setWipedReason(null);
     setOrbTotalPossible(0);
     setOrbScoreEarned(0);
+    setCurrentCast(null);
+    setIsInterrupted(false);
     synthRef.current?.stopHeartbeat();
   };
 
@@ -1682,6 +1978,17 @@ export default function Train() {
       if (["Shift", "Control", "Alt"].includes(e.key)) return;
 
       const pressedWoWKey = getWoWKeyString(e);
+
+      // WASD movement cancellation check
+      const movementKeys = ["W", "A", "S", "D"];
+      if (movementKeys.includes(e.key.toUpperCase())) {
+        const activeC = stateRef.current.currentCast;
+        if (activeC) {
+          e.preventDefault();
+          cancelActiveCast();
+          return;
+        }
+      }
 
       // Check if Keybind Mode is active
       if (stateRef.current.isKeybindModeActive && stateRef.current.gameState === "idle") {
@@ -1735,10 +2042,16 @@ export default function Train() {
         healerMana: currentMana,
         healerSpellCooldowns: currentCds,
         mouseoverPlayerId: currentTargetId,
-        secondaryResourceVal: currentResourceVal
+        secondaryResourceVal: currentResourceVal,
+        currentCast: activeC
       } = stateRef.current;
 
       if (currentGameState !== "running") return;
+
+      // Gate new spell casts while currently casting
+      if (activeC) {
+        return;
+      }
 
       const elapsed = stateRef.current.elapsedTime;
       const steps = selectedScenario.steps;
@@ -1772,104 +2085,20 @@ export default function Train() {
             }
           }
 
-          // Deduct mana & set cooldown
-          setHealerMana(m => Math.max(0, m - spell.manaCost));
-          if (spell.cooldown !== undefined) {
-            const cdVal = spell.cooldown;
-            setHealerSpellCooldowns(prev => ({ ...prev, [spell.id]: cdVal }));
-          }
-
-          // Adjust secondary resource
-          if (spell.resourceCost) {
-            setSecondaryResourceVal(prev => Math.max(0, prev - spell.resourceCost!.amount));
-          } else if (spell.resourceGen) {
-            const gen = spell.resourceGen;
-            const maxVal = getSpecResourceConfig().max;
-            setSecondaryResourceVal(prev => {
-              const prevVal = prev;
-              const nextVal = prevVal + gen.amount;
-              if (prevVal >= maxVal) {
-                setWastedResources(w => w + gen.amount);
-                return maxVal;
-              } else if (nextVal > maxVal) {
-                setWastedResources(w => w + (nextVal - maxVal));
-                return maxVal;
-              }
-              return nextVal;
+          const castTime = spell.castTime || 0;
+          if (castTime > 0) {
+            setCurrentCast({
+              spellId: spell.id,
+              name: spell.name,
+              icon: spell.icon,
+              startTime: elapsed,
+              duration: castTime,
+              targetId: currentTargetId,
+              stepIndex: -1
             });
-          }
-
-          if (spell.isAoE) {
-            setHealerRoster((prev) => {
-              const sorted = [...prev]
-                .filter(p => p.health > 0)
-                .sort((a, b) => a.health - b.health);
-              const lowestIds = new Set(sorted.slice(0, 5).map(p => p.id));
-              
-              return prev.map((player) => {
-                if (lowestIds.has(player.id)) {
-                  const textId = Math.random().toString();
-                  setFloatingHeals(f => [...f, { id: textId, playerId: player.id, text: `+${spell.healAmount}%`, time: Date.now() }]);
-                  return {
-                    ...player,
-                    health: Math.min(100, player.health + spell.healAmount)
-                  };
-                }
-                return player;
-              });
-            });
-            playSound("perfect");
-            setCombo(c => c + 1);
-
-            const newRecord: CastRecord = {
-              stepIndex: -1,
-              expectedSpellId: spell.id,
-              actualSpellId: spell.id,
-              expectedTime: elapsed,
-              actualTime: elapsed,
-              reactionTime: 200,
-              status: "perfect"
-            };
-            setCasts((prev) => [...prev, newRecord]);
+            setLastCastTime(elapsed);
           } else {
-            if (currentTargetId) {
-              setHealerRoster((prev) => {
-                return prev.map((player) => {
-                  if (player.id === currentTargetId && player.health > 0) {
-                    const textId = Math.random().toString();
-                    setFloatingHeals(f => [...f, { id: textId, playerId: player.id, text: `+${spell.healAmount}%`, time: Date.now() }]);
-                    
-                    let newBuffs = [...player.buffs];
-                    if (spell.hotDuration) {
-                      newBuffs = newBuffs.filter(b => b.name !== spell.name);
-                      newBuffs.push({ name: spell.name, expiresAt: elapsed + spell.hotDuration });
-                    }
-
-                    return {
-                      ...player,
-                      health: Math.min(100, player.health + spell.healAmount),
-                      buffs: newBuffs
-                    };
-                  }
-                  return player;
-                });
-              });
-              playSound("perfect");
-              setCombo(c => c + 1);
-
-              const newRecord: CastRecord = {
-                stepIndex: -1,
-                expectedSpellId: spell.id,
-                actualSpellId: spell.id,
-                expectedTime: elapsed,
-                actualTime: elapsed,
-                reactionTime: 200,
-                status: "perfect"
-              };
-              setCasts((prev) => [...prev, newRecord]);
-            } else {
-              playSound("incorrect");
-            }
+            completeHealerCast(spell, currentTargetId);
           }
         }
         return;
@@ -1977,120 +2206,150 @@ export default function Train() {
           return;
         }
 
-        let timeDiff = actualCastTime - (targetPromptTime || 0);
-        // Force perfect status for step 0 of rotation drills (no preceding GCD)
-        if (!selectedScenario.isProcReaction && targetStepIndex === 0) {
-          timeDiff = 0.2;
-        }
-
-        const spellWithCustomBind = {
-          ...targetSpell,
-          keybind: expectedKeybind
-        };
-
-        const { status, reactionTimeMs } = evaluatePress(spellWithCustomBind, pressedWoWKey, timeDiff);
-
-        let isResourceValid = true;
-        let finalStatus = status;
-
-        if (pressedWoWKey === expectedKeybind && targetSpell && targetSpell.resourceCost) {
-          const cost = targetSpell.resourceCost.amount;
-          if (currentResourceVal < cost) {
-            isResourceValid = false;
-            finalStatus = "incorrect";
-
-            const resLabel = getSpecResourceConfig().label;
-            setResourceErrorText(`Not enough ${resLabel}!`);
-            playSound("incorrect");
-
-            setTimeout(() => {
-              setResourceErrorText(null);
-            }, 1200);
+        const castTime = getSpellCastTime(targetSpell.id, targetSpell.name);
+        if (castTime > 0) {
+          let isResourceValid = true;
+          if (pressedWoWKey === expectedKeybind && targetSpell && targetSpell.resourceCost) {
+            const cost = targetSpell.resourceCost.amount;
+            if (currentResourceVal < cost) {
+              isResourceValid = false;
+              const resLabel = getSpecResourceConfig().label;
+              setResourceErrorText(`Not enough ${resLabel}!`);
+              playSound("incorrect");
+              setTimeout(() => {
+                setResourceErrorText(null);
+              }, 1200);
+              return;
+            }
           }
-        }
 
-        const actualSpellId = activeBuild 
-          ? (activeBuild.actionBars.flatMap(bar => bar.buttons).find(btn => btn.key === pressedWoWKey)?.id || null)
-          : (Object.values(DEMON_HUNTER_SPELLS).find((s) => s.keybind === pressedWoWKey)?.id || null);
-
-        const newRecord: CastRecord = {
-          stepIndex: targetStepIndex,
-          expectedSpellId: targetSpell.id,
-          actualSpellId,
-          expectedTime: !selectedScenario.isProcReaction ? steps[targetStepIndex]?.time : (targetPromptTime || 0),
-          actualTime: actualCastTime,
-          reactionTime: reactionTimeMs,
-          status: finalStatus,
-        };
-
-        setCasts((prev) => [...prev, newRecord]);
-        setLastPressResult({ key: pressedWoWKey, status: finalStatus });
-
-        // Update boss unit frame health
-        const isHitCorrect = ["perfect", "early", "late"].includes(finalStatus);
-        const totalCorrect = currentCasts.filter(c => ["perfect", "early", "late"].includes(c.status)).length + (isHitCorrect ? 1 : 0);
-        setBossHealth(Math.max(0, 100 - (totalCorrect / Math.max(1, steps.length)) * 100));
-
-        if (isResourceValid && ["perfect", "early", "late"].includes(finalStatus) && targetSpell) {
-          if (targetSpell.resourceCost) {
-            setSecondaryResourceVal(prev => Math.max(0, prev - targetSpell.resourceCost!.amount));
-          } else if (targetSpell.resourceGen) {
-            const gen = targetSpell.resourceGen;
-            const maxVal = getSpecResourceConfig().max;
-            setSecondaryResourceVal(prev => {
-              const prevVal = prev;
-              const nextVal = prevVal + gen.amount;
-              if (prevVal >= maxVal) {
-                setWastedResources(w => w + gen.amount);
-                return maxVal;
-              } else if (nextVal > maxVal) {
-                setWastedResources(w => w + (nextVal - maxVal));
-                return maxVal;
-              }
-              return nextVal;
-            });
+          let timeDiff = actualCastTime - (targetPromptTime || 0);
+          if (!selectedScenario.isProcReaction && targetStepIndex === 0) {
+            timeDiff = 0.2;
           }
-        }
+          const spellWithCustomBind = {
+            ...targetSpell,
+            keybind: expectedKeybind
+          };
+          const { status, reactionTimeMs } = evaluatePress(spellWithCustomBind, pressedWoWKey, timeDiff);
 
-        if (finalStatus === "perfect") {
-          setCombo((prev) => prev + 1);
-          playSound("perfect");
+          if (status === "incorrect") {
+            if (hcActive) {
+              setWipedReason("incorrect");
+              endGame();
+            } else {
+              registerIncorrectPress(pressedWoWKey);
+            }
+            return;
+          }
+
+          const actualSpellId = activeBuild 
+            ? (activeBuild.actionBars.flatMap(bar => bar.buttons).find(btn => btn.key === pressedWoWKey)?.id || null)
+            : (Object.values(DEMON_HUNTER_SPELLS).find((s) => s.keybind === pressedWoWKey)?.id || null);
+
+          setCurrentCast({
+            spellId: targetSpell.id,
+            name: targetSpell.name,
+            icon: targetSpell.icon,
+            startTime: elapsed,
+            duration: castTime,
+            targetId: null,
+            stepIndex: targetStepIndex,
+            evaluation: {
+              status,
+              reactionTimeMs,
+              pressedKey: pressedWoWKey,
+              actualSpellId,
+              expectedTime: !selectedScenario.isProcReaction ? steps[targetStepIndex]?.time : (targetPromptTime || 0),
+              actualTime: actualCastTime,
+            }
+          });
+
           setLastCastTime(actualCastTime);
-          
-          setBossFlash(true);
-          setTimeout(() => setBossFlash(false), 150);
-        } else if (finalStatus === "early" || finalStatus === "late") {
-          setCombo((prev) => prev + 1);
-          playSound("correct");
-          setLastCastTime(actualCastTime);
-        } else {
-          if (hcActive) {
-            setWipedReason("incorrect");
-            endGame();
+          setLastPressResult({ key: pressedWoWKey, status });
+
+          if (status === "perfect") {
+            setCombo((prev) => prev + 1);
+            playSound("perfect");
+          } else if (status === "early" || status === "late") {
+            setCombo((prev) => prev + 1);
+            playSound("correct");
           } else {
-            setCombo(0);
-            if (isResourceValid) {
+            if (hcActive) {
+              setWipedReason("incorrect");
+              endGame();
+            } else {
+              setCombo(0);
               playSound("incorrect");
             }
           }
-        }
-
-        // --- Advance step index and set dynamic expected time for rotation drills ---
-        if (!selectedScenario.isProcReaction) {
-          const nextIdx = targetStepIndex + 1;
-          if (nextIdx < steps.length) {
-            const nextStep = steps[nextIdx];
-            const gap = nextStep.time - steps[targetStepIndex].time;
-            const nextExpectedTime = actualCastTime + gap;
-
-            setActiveStepIndex(nextIdx);
-            setActiveSpell(getMappedSpell(nextStep.spellId));
-            setActivePromptTime(nextExpectedTime);
-          } else {
-            setActiveStepIndex(nextIdx);
-            setActiveSpell(null);
-            setActivePromptTime(null);
+        } else {
+          let timeDiff = actualCastTime - (targetPromptTime || 0);
+          if (!selectedScenario.isProcReaction && targetStepIndex === 0) {
+            timeDiff = 0.2;
           }
+          const spellWithCustomBind = {
+            ...targetSpell,
+            keybind: expectedKeybind
+          };
+          const { status, reactionTimeMs } = evaluatePress(spellWithCustomBind, pressedWoWKey, timeDiff);
+
+          let isResourceValid = true;
+          let finalStatus = status;
+
+          if (pressedWoWKey === expectedKeybind && targetSpell && targetSpell.resourceCost) {
+            const cost = targetSpell.resourceCost.amount;
+            if (currentResourceVal < cost) {
+              isResourceValid = false;
+              finalStatus = "incorrect";
+
+              const resLabel = getSpecResourceConfig().label;
+              setResourceErrorText(`Not enough ${resLabel}!`);
+              playSound("incorrect");
+
+              setTimeout(() => {
+                setResourceErrorText(null);
+              }, 1200);
+            }
+          }
+
+          const actualSpellId = activeBuild 
+            ? (activeBuild.actionBars.flatMap(bar => bar.buttons).find(btn => btn.key === pressedWoWKey)?.id || null)
+            : (Object.values(DEMON_HUNTER_SPELLS).find((s) => s.keybind === pressedWoWKey)?.id || null);
+
+          const evaluation = {
+            status: finalStatus,
+            reactionTimeMs,
+            pressedKey: pressedWoWKey,
+            actualSpellId,
+            expectedTime: !selectedScenario.isProcReaction ? steps[targetStepIndex]?.time : (targetPromptTime || 0),
+            actualTime: actualCastTime,
+          };
+
+          setLastPressResult({ key: pressedWoWKey, status: finalStatus });
+
+          if (finalStatus === "perfect") {
+            setCombo((prev) => prev + 1);
+            playSound("perfect");
+            setLastCastTime(actualCastTime);
+          } else if (finalStatus === "early" || finalStatus === "late") {
+            setCombo((prev) => prev + 1);
+            playSound("correct");
+            setLastCastTime(actualCastTime);
+          } else {
+            if (hcActive) {
+              setWipedReason("incorrect");
+              endGame();
+              return;
+            } else {
+              setCombo(0);
+              if (isResourceValid) {
+                playSound("incorrect");
+              }
+            }
+          }
+
+          completeRotationCast(targetSpell, targetStepIndex, evaluation);
         }
       } else {
         if (hcActive) {
@@ -2151,6 +2410,65 @@ export default function Train() {
   const gcdPercent = isGcdActive ? ((currentGcdMax - timeSinceLastCast) / currentGcdMax) * 100 : 0;
 
   // Spell Auditing Setup
+  const renderCastBar = () => {
+    if (!currentCast && !isInterrupted) return null;
+
+    let spellName = "";
+    let spellIcon = "";
+    let elapsedCast = 0;
+    let duration = 0;
+    let progressPercent = 0;
+    let isCastInterrupted = isInterrupted;
+
+    if (currentCast) {
+      spellName = currentCast.name;
+      spellIcon = getSpellIconUrl(currentCast.spellId);
+      duration = currentCast.duration;
+      elapsedCast = Math.min(duration, elapsedTime - currentCast.startTime);
+      progressPercent = (elapsedCast / duration) * 100;
+    } else {
+      spellName = "Interrupted";
+      progressPercent = 100;
+    }
+
+    return (
+      <div className="w-full max-w-sm bg-zinc-950/95 border-2 border-zinc-800 rounded-lg p-1 shadow-[0_4px_20px_rgba(0,0,0,0.8)] animate-fade-in-up mb-4 relative z-30 select-none">
+        <div className="flex items-center space-x-2 relative h-8">
+          {spellIcon ? (
+            <div className="w-8 h-8 rounded border border-zinc-700 overflow-hidden shrink-0">
+              <img src={spellIcon} alt={spellName} className="w-full h-full object-cover" />
+            </div>
+          ) : (
+            <div className="w-8 h-8 rounded border border-zinc-700 bg-rose-950 flex items-center justify-center shrink-0">
+              <span className="text-[10px]">🛑</span>
+            </div>
+          )}
+          
+          <div className="flex-grow h-full bg-zinc-900/90 rounded border border-zinc-850 overflow-hidden relative">
+            <div 
+              className={`h-full transition-all duration-75 ${
+                isCastInterrupted 
+                  ? "bg-gradient-to-r from-red-600 to-rose-700 animate-pulse" 
+                  : "bg-gradient-to-r from-yellow-600 via-amber-500 to-yellow-400"
+              }`}
+              style={{ width: `${progressPercent}%` }}
+            />
+            
+            <span className="absolute left-2.5 inset-y-0 flex items-center text-xs font-black text-white drop-shadow-[0_1.5px_2px_rgba(0,0,0,1)] uppercase tracking-wide">
+              {spellName}
+            </span>
+            
+            {!isCastInterrupted && duration > 0 && (
+              <span className="absolute right-2.5 inset-y-0 flex items-center text-[10px] font-mono font-black text-amber-200 drop-shadow-[0_1.5px_2px_rgba(0,0,0,1)]">
+                {elapsedCast.toFixed(1)} / {duration.toFixed(1)}s
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   const specKey = activeBuild ? `${activeBuild.class.toLowerCase().replace(' ', '')}_${activeBuild.spec.toLowerCase().replace(' ', '')}` : "demonhunter_havoc";
   const healerSpells = getHealerSpells(selectedClass, selectedSpec);
   const activeCoreSpells = trainingMode === "healer"
@@ -3415,6 +3733,7 @@ export default function Train() {
 
         {/* Bottom Panel: Visual WoW Action Bar */}
         <div className="w-full flex flex-col items-center space-y-4 pt-4 border-t border-zinc-900">
+          {renderCastBar()}
           {renderResourceHUD()}
           {gameState === "idle" && (
             <div className="flex justify-center">
