@@ -817,6 +817,9 @@ export default function Train() {
   };
 
   const getRemainingCooldown = (spellId: number): number => {
+    if (trainingMode === "healer") {
+      return healerSpellCooldowns[spellId] || 0;
+    }
     const lastCast = getLastCastTimeForSpell(spellId);
     const cdVal = SPELL_COOLDOWNS[spellId] || 0;
     if (lastCast === null || cdVal === 0) {
@@ -832,6 +835,18 @@ export default function Train() {
     }
     const remaining = (lastCast + cdVal) - elapsedTime;
     return Math.max(0, remaining);
+  };
+
+  const getCooldownPercent = (spellId: number, remainingCd: number): number => {
+    if (trainingMode === "healer") {
+      const hSpells = getHealerSpells(selectedClass, selectedSpec);
+      const hSpell = hSpells.find(s => s.id === spellId);
+      const total = hSpell?.cooldown || 0;
+      return total > 0 ? (remainingCd / total) * 100 : 0;
+    }
+    const cdVal = SPELL_COOLDOWNS[spellId] || 0;
+    if (cdVal === 0) return 0;
+    return (remainingCd / cdVal) * 100;
   };
 
   const getSpellKeybind = (spellId: number): string => {
@@ -3490,8 +3505,18 @@ export default function Train() {
 
                     {/* Cooldown Overlay & Text */}
                     {remainingCd > 0 ? (
-                      <div className="absolute inset-0 bg-black/65 rounded-xl flex flex-col items-center justify-center pointer-events-none select-none z-20">
-                        <span className="font-mono text-base font-black text-amber-400 drop-shadow-[0_1.5px_3px_rgba(0,0,0,0.85)]">
+                      <div className="absolute inset-0 rounded-xl flex flex-col items-center justify-center pointer-events-none select-none z-20 overflow-hidden">
+                        {/* Cooldown clock sweep background */}
+                        <div
+                          className="absolute inset-0 z-10"
+                          style={{
+                            background: `conic-gradient(rgba(0, 0, 0, 0.75) ${getCooldownPercent(coreSpell.id, remainingCd)}%, rgba(0, 0, 0, 0.25) ${getCooldownPercent(coreSpell.id, remainingCd)}%)`,
+                            transform: 'rotate(-90deg)',
+                            borderRadius: 'inherit',
+                          }}
+                        />
+                        {/* Numeric CD text */}
+                        <span className="font-mono text-base font-black text-amber-400 drop-shadow-[0_1.5px_3px_rgba(0,0,0,0.85)] z-20">
                           {remainingCd > 60 
                             ? `${Math.ceil(remainingCd / 60)}m` 
                             : remainingCd > 5 
