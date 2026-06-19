@@ -48,8 +48,10 @@ export interface Spell {
   icon: string; // Thematic identifier
   color: string; // Hex color for effects
   description: string;
-  resourceCost?: { type: string; amount: number };
-  resourceGen?: { type: string; amount: number };
+  resourceCost?: ResourceModifier;
+  resourceGen?: ResourceModifier;
+  extraCost?: ResourceModifier;
+  extraGen?: ResourceModifier;
   castTime?: number;
 }
 
@@ -79,10 +81,12 @@ export interface ResourceModifier {
 export function getSpellResourceInfo(spellId: number, spellName: string): {
   cost?: ResourceModifier;
   gen?: ResourceModifier;
+  extraCost?: ResourceModifier;
+  extraGen?: ResourceModifier;
 } | null {
   const name = spellName.toLowerCase();
   
-  // --- PALADIN (Holy Power) ---
+  // --- PALADIN (Holy Power & Mana) ---
   if (
     name.includes("holy shock") || 
     name.includes("crusader strike") || 
@@ -90,7 +94,10 @@ export function getSpellResourceInfo(spellId: number, spellName: string): {
     name.includes("hammer of wrath") || 
     name.includes("blade of justice")
   ) {
-    return { gen: { type: "holy_power", amount: 1 } };
+    return {
+      cost: { type: "mana", amount: 2000 },
+      gen: { type: "holy_power", amount: 1 }
+    };
   }
   if (
     name.includes("word of glory") || 
@@ -103,18 +110,25 @@ export function getSpellResourceInfo(spellId: number, spellName: string): {
     return { cost: { type: "holy_power", amount: 3 } };
   }
   
-  // --- ROGUE / FERAL DRUID (Combo Points) ---
+  // --- ROGUE / FERAL DRUID (Combo Points & Energy) ---
   if (
     name.includes("mutilate") || 
-    name.includes("garrote") || 
     name.includes("sinister strike") || 
     name.includes("ambush") || 
     name.includes("backstab") || 
-    name.includes("shred") || 
-    name.includes("rake")
+    name.includes("shred")
   ) {
-    const amount = (name.includes("mutilate") || name.includes("shred")) ? 2 : 1;
-    return { gen: { type: "combo_points", amount } };
+    const cpAmount = (name.includes("mutilate") || name.includes("shred")) ? 2 : 1;
+    return {
+      cost: { type: "energy", amount: 40 },
+      gen: { type: "combo_points", amount: cpAmount }
+    };
+  }
+  if (name.includes("garrote") || name.includes("rake")) {
+    return {
+      cost: { type: "energy", amount: 35 },
+      gen: { type: "combo_points", amount: 1 }
+    };
   }
   if (
     name.includes("envenom") || 
@@ -123,19 +137,23 @@ export function getSpellResourceInfo(spellId: number, spellName: string): {
     name.includes("kidney shot") || 
     name.includes("slice and dice") || 
     name.includes("ferocious bite") || 
-    (name.includes("rip") && !name.includes("riptide"))
+    (name.includes("rip") && !name.includes("riptide")) ||
+    name.includes("primal wrath")
   ) {
     return { cost: { type: "combo_points", amount: 5 } };
   }
   
-  // --- WARLOCK (Soul Shards) ---
+  // --- WARLOCK (Soul Shards & Mana) ---
   if (
     name.includes("incinerate") || 
-    name.includes("conflagrate") || 
     name.includes("shadow bolt") || 
-    name.includes("demonbolt")
+    name.includes("demonbolt") ||
+    name.includes("conflagrate")
   ) {
-    return { gen: { type: "soul_shards", amount: 1 } };
+    return {
+      cost: { type: "mana", amount: 1000 },
+      gen: { type: "soul_shards", amount: 1 }
+    };
   }
   if (
     name.includes("chaos bolt") || 
@@ -165,8 +183,9 @@ export function getSpellResourceInfo(spellId: number, spellName: string): {
   if (name.includes("mind blast")) {
     return { gen: { type: "insanity", amount: 8 } };
   }
-  if (name.includes("mind flay") || name.includes("mind spike")) {
-    return { gen: { type: "insanity", amount: 12 } };
+  if (name.includes("mind flay") || name.includes("mind spike") || name.includes("void torrent")) {
+    const amount = name.includes("void torrent") ? 30 : 12;
+    return { gen: { type: "insanity", amount } };
   }
   if (name.includes("vampiric touch") || name.includes("shadow word: pain")) {
     return { gen: { type: "insanity", amount: 4 } };
@@ -176,7 +195,10 @@ export function getSpellResourceInfo(spellId: number, spellName: string): {
   }
   
   // --- ELEMENTAL / ENHANCEMENT SHAMAN (Maelstrom) ---
-  if (name.includes("lightning bolt") || name.includes("stormstrike")) {
+  if (name.includes("lightning") && name.includes("bolt")) {
+    return { gen: { type: "maelstrom", amount: 8 } };
+  }
+  if (name.includes("stormstrike")) {
     return { gen: { type: "maelstrom", amount: 8 } };
   }
   if (name.includes("lava burst") || name.includes("lava lash")) {
@@ -226,12 +248,33 @@ export function getSpellResourceInfo(spellId: number, spellName: string): {
     return { cost: { type: "rage", amount } };
   }
 
-  // --- ROGUE / DRUID FERAL / MONK (Energy) ---
+  // --- MONK (Chi & Energy) ---
+  if (name.includes("tiger palm")) {
+    return {
+      cost: { type: "energy", amount: 50 },
+      gen: { type: "chi", amount: 2 }
+    };
+  }
+  if (name.includes("expel harm")) {
+    return {
+      cost: { type: "energy", amount: 15 },
+      gen: { type: "chi", amount: 1 }
+    };
+  }
   if (name.includes("keg smash")) {
     return { cost: { type: "energy", amount: 40 } };
   }
-  if (name.includes("tiger palm")) {
-    return { cost: { type: "energy", amount: 25 } };
+  if (
+    name.includes("rising sun kick") || 
+    name.includes("fists of fury") || 
+    name.includes("blackout kick") || 
+    name.includes("spinning crane kick") || 
+    name.includes("strike of the windlord")
+  ) {
+    let amount = 2;
+    if (name.includes("fists of fury")) amount = 3;
+    else if (name.includes("blackout kick")) amount = 1;
+    return { cost: { type: "chi", amount } };
   }
 
   // --- HUNTER (Focus) ---
@@ -269,9 +312,19 @@ export function getSpellResourceInfo(spellId: number, spellName: string): {
     name.includes("festering strike") || 
     name.includes("death and decay")
   ) {
-    let amount = 10;
-    if (name.includes("obliterate") || name.includes("marrowrend")) amount = 20;
-    return { gen: { type: "runic_power", amount } };
+    let runeCost = 1;
+    let rpGen = 10;
+    if (name.includes("obliterate") || name.includes("marrowrend") || name.includes("festering strike")) {
+      runeCost = 2;
+      rpGen = 20;
+    } else if (name.includes("heart strike")) {
+      runeCost = 1;
+      rpGen = 15;
+    }
+    return {
+      cost: { type: "runes", amount: runeCost },
+      gen: { type: "runic_power", amount: rpGen }
+    };
   }
   if (
     name.includes("death strike") || 
@@ -283,35 +336,27 @@ export function getSpellResourceInfo(spellId: number, spellName: string): {
     return { cost: { type: "runic_power", amount } };
   }
 
-  // --- MONK (Chi) ---
-  if (name.includes("expel harm")) {
-    return { gen: { type: "chi", amount: 1 } };
-  }
-  if (
-    name.includes("rising sun kick") || 
-    name.includes("fists of fury") || 
-    name.includes("blackout kick") || 
-    name.includes("spinning crane kick") || 
-    name.includes("strike of the windlord")
-  ) {
-    let amount = 2;
-    if (name.includes("fists of fury")) amount = 3;
-    else if (name.includes("blackout kick")) amount = 1;
-    return { cost: { type: "chi", amount } };
-  }
-
-  // --- ARCANE MAGE (Arcane Charges) ---
+  // --- ARCANE MAGE (Arcane Charges & Mana) ---
   if (
     name.includes("arcane blast") || 
     name.includes("arcane explosion")
   ) {
-    return { gen: { type: "arcane_charges", amount: 1 } };
+    return {
+      cost: { type: "mana", amount: 2000 },
+      gen: { type: "arcane_charges", amount: 1 }
+    };
   }
   if (name.includes("arcane barrage")) {
     return { cost: { type: "arcane_charges", amount: 4 } };
   }
+  if (name.includes("arcane surge")) {
+    return { cost: { type: "mana", amount: 5000 } };
+  }
+  if (name.includes("touch of the magi")) {
+    return { gen: { type: "arcane_charges", amount: 4 } };
+  }
 
-  // --- DEMON HUNTER (Fury & Pain) ---
+  // --- DEMON HUNTER (Fury & Pain & Soul Fragments) ---
   if (
     name.includes("demon's bite") || 
     name.includes("felblade") || 
@@ -332,26 +377,43 @@ export function getSpellResourceInfo(spellId: number, spellName: string): {
     else if (name.includes("blade dance") || name.includes("death sweep")) amount = 35;
     return { cost: { type: "fury", amount } };
   }
-  if (
-    name.includes("shear") || 
-    name.includes("fracture") || 
-    name.includes("sigil of flame")
-  ) {
-    const amount = name.includes("shear") ? 10 : 20;
-    return { gen: { type: "pain", amount } };
+  if (name.includes("shear") || name.includes("fracture")) {
+    const fragGen = name.includes("fracture") ? 2 : 1;
+    return {
+      gen: { type: "pain", amount: 20 },
+      extraGen: { type: "soul_fragments", amount: fragGen }
+    };
   }
-  if (
-    name.includes("soul cleave") || 
-    name.includes("spirit bomb")
-  ) {
-    return { cost: { type: "pain", amount: 30 } };
+  if (name.includes("sigil of flame")) {
+    return { gen: { type: "pain", amount: 20 } };
+  }
+  if (name.includes("soul cleave")) {
+    return {
+      cost: { type: "pain", amount: 30 },
+      extraCost: { type: "soul_fragments", amount: 2 }
+    };
+  }
+  if (name.includes("spirit bomb")) {
+    return {
+      cost: { type: "pain", amount: 30 },
+      extraCost: { type: "soul_fragments", amount: 4 }
+    };
+  }
+  if (name.includes("fiery brand")) {
+    return { gen: { type: "pain", amount: 15 } };
+  }
+  if (name.includes("fel devastation")) {
+    return { cost: { type: "pain", amount: 50 } };
   }
 
   // --- EVOKER (Essence) ---
   if (
     name.includes("disintegrate") || 
     name.includes("pyre") || 
-    name.includes("eruption")
+    name.includes("eruption") ||
+    name.includes("emerald blossom") ||
+    name.includes("spiritbloom") ||
+    name.includes("echo")
   ) {
     return { cost: { type: "essence", amount: 3 } };
   }

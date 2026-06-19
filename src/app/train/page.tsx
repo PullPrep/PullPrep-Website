@@ -662,6 +662,7 @@ export default function Train() {
   const [bossFlash, setBossFlash] = useState<boolean>(false);
   const [healerSpellCooldowns, setHealerSpellCooldowns] = useState<Record<number, number>>({});
   const [secondaryResourceVal, setSecondaryResourceVal] = useState<number>(0);
+  const [primaryResourceVal, setPrimaryResourceVal] = useState<number>(0);
   const [wastedResources, setWastedResources] = useState<number>(0);
   const [resourceErrorText, setResourceErrorText] = useState<string | null>(null);
 
@@ -699,6 +700,7 @@ export default function Train() {
     isKeybindModeActive,
     hoveredSpellId,
     secondaryResourceVal,
+    primaryResourceVal,
     wastedResources,
     currentCast,
     isInterrupted,
@@ -729,6 +731,7 @@ export default function Train() {
       isKeybindModeActive,
       hoveredSpellId,
       secondaryResourceVal,
+      primaryResourceVal,
       wastedResources,
       currentCast,
       isInterrupted,
@@ -736,7 +739,7 @@ export default function Train() {
     };
   }, [
     gameState, elapsedTime, activeStepIndex, activeSpell, activePromptTime, casts, combo, lastCastTime, activeAlert, isHardcore, isGuidedMode, orbTotalPossible, orbScoreEarned,
-    trainingMode, healerRoster, healerMana, mouseoverPlayerId, healerSpellCooldowns, isKeybindModeActive, hoveredSpellId, secondaryResourceVal, wastedResources,
+    trainingMode, healerRoster, healerMana, mouseoverPlayerId, healerSpellCooldowns, isKeybindModeActive, hoveredSpellId, secondaryResourceVal, primaryResourceVal, wastedResources,
     currentCast, isInterrupted, healerRaidSize
   ]);
 
@@ -915,314 +918,632 @@ export default function Train() {
     const c = (activeBuild?.class || selectedClass).toLowerCase().replace(/ /g, "");
     const s = (activeBuild?.spec || selectedSpec).toLowerCase().replace(/ /g, "");
     
-    if (c === "paladin") {
-      return { type: "holy_power" as const, max: 5, start: 0, label: "Holy Power" };
-    }
-    if (c === "rogue" || (c === "druid" && s === "feral")) {
-      return { type: "combo_points" as const, max: 5, start: 0, label: "Combo Points" };
-    }
-    if (c === "warlock") {
-      return { type: "soul_shards" as const, max: 5, start: 3, label: "Soul Shards" };
-    }
-    if (c === "druid" && s === "balance") {
-      return { type: "astral_power" as const, max: 100, start: 0, label: "Astral Power" };
-    }
-    if (c === "priest" && s === "shadow") {
-      return { type: "insanity" as const, max: 100, start: 0, label: "Insanity" };
-    }
-    if (c === "shaman" && (s === "elemental" || s === "enhancement")) {
-      return { type: "maelstrom" as const, max: 100, start: 0, label: "Maelstrom" };
-    }
-    if (c === "warrior" || (c === "druid" && s === "guardian")) {
-      return { type: "rage" as const, max: 100, start: 0, label: "Rage" };
-    }
-    if (c === "hunter") {
-      return { type: "focus" as const, max: 120, start: 120, label: "Focus" };
-    }
+    // Death Knight: Runes + Runic Power
     if (c === "deathknight") {
-      return { type: "runic_power" as const, max: 100, start: 0, label: "Runic Power" };
+      return {
+        primary: { type: "runic_power" as const, max: 100, start: 0, label: "Runic Power" },
+        secondary: { type: "runes" as const, max: 6, start: 6, label: "Runes" }
+      };
     }
-    if (c === "monk" && s === "windwalker") {
-      return { type: "chi" as const, max: 5, start: 0, label: "Chi" };
+    // Demon Hunter
+    if (c === "demonhunter") {
+      if (s === "havoc") {
+        return {
+          primary: { type: "fury" as const, max: 120, start: 0, label: "Fury" },
+          secondary: { type: "none" as const, max: 0, start: 0, label: "" }
+        };
+      }
+      if (s === "vengeance") {
+        return {
+          primary: { type: "pain" as const, max: 100, start: 0, label: "Pain" },
+          secondary: { type: "soul_fragments" as const, max: 5, start: 0, label: "Soul Fragments" }
+        };
+      }
     }
-    if (c === "monk" && s === "brewmaster") {
-      return { type: "energy" as const, max: 100, start: 100, label: "Energy" };
+    // Druid
+    if (c === "druid") {
+      if (s === "balance") {
+        return {
+          primary: { type: "astral_power" as const, max: 100, start: 0, label: "Astral Power" },
+          secondary: { type: "none" as const, max: 0, start: 0, label: "" }
+        };
+      }
+      if (s === "feral") {
+        return {
+          primary: { type: "energy" as const, max: 100, start: 100, label: "Energy" },
+          secondary: { type: "combo_points" as const, max: 5, start: 0, label: "Combo Points" }
+        };
+      }
+      if (s === "guardian") {
+        return {
+          primary: { type: "rage" as const, max: 100, start: 0, label: "Rage" },
+          secondary: { type: "none" as const, max: 0, start: 0, label: "" }
+        };
+      }
+      if (s === "restoration") {
+        return {
+          primary: { type: "mana" as const, max: 260000, start: 260000, label: "Mana" },
+          secondary: { type: "none" as const, max: 0, start: 0, label: "" }
+        };
+      }
     }
-    if (c === "mage" && s === "arcane") {
-      return { type: "arcane_charges" as const, max: 4, start: 0, label: "Arcane Charges" };
+    // Evoker
+    if (c === "evoker") {
+      if (s === "preservation") {
+        return {
+          primary: { type: "mana" as const, max: 260000, start: 260000, label: "Mana" },
+          secondary: { type: "essence" as const, max: 6, start: 6, label: "Essence" }
+        };
+      }
+      // Augmentation/Devastation: Essence + Mana (Mana max 50,000)
+      return {
+        primary: { type: "mana" as const, max: 50000, start: 50000, label: "Mana" },
+        secondary: { type: "essence" as const, max: 6, start: 6, label: "Essence" }
+      };
     }
-    if (c === "demonhunter" && s === "havoc") {
-      return { type: "fury" as const, max: 120, start: 0, label: "Fury" };
+    // Hunter
+    if (c === "hunter") {
+      return {
+        primary: { type: "focus" as const, max: 120, start: 120, label: "Focus" },
+        secondary: { type: "none" as const, max: 0, start: 0, label: "" }
+      };
     }
-    if (c === "demonhunter" && s === "vengeance") {
-      return { type: "pain" as const, max: 100, start: 0, label: "Pain" };
+    // Mage
+    if (c === "mage") {
+      if (s === "arcane") {
+        return {
+          primary: { type: "mana" as const, max: 50000, start: 50000, label: "Mana" },
+          secondary: { type: "arcane_charges" as const, max: 4, start: 0, label: "Arcane Charges" }
+        };
+      }
+      // Fire/Frost -> Mana
+      return {
+        primary: { type: "mana" as const, max: 50000, start: 50000, label: "Mana" },
+        secondary: { type: "none" as const, max: 0, start: 0, label: "" }
+      };
     }
-    if (c === "evoker" && (s === "augmentation" || s === "devastation")) {
-      return { type: "essence" as const, max: 6, start: 6, label: "Essence" };
+    // Monk
+    if (c === "monk") {
+      if (s === "brewmaster") {
+        return {
+          primary: { type: "energy" as const, max: 100, start: 100, label: "Energy" },
+          secondary: { type: "none" as const, max: 0, start: 0, label: "" }
+        };
+      }
+      if (s === "mistweaver") {
+        return {
+          primary: { type: "mana" as const, max: 260000, start: 260000, label: "Mana" },
+          secondary: { type: "chi" as const, max: 5, start: 0, label: "Chi" }
+        };
+      }
+      if (s === "windwalker") {
+        return {
+          primary: { type: "energy" as const, max: 100, start: 100, label: "Energy" },
+          secondary: { type: "chi" as const, max: 5, start: 0, label: "Chi" }
+        };
+      }
     }
-    return { type: "none" as const, max: 0, start: 0, label: "" };
+    // Paladin
+    if (c === "paladin") {
+      if (s === "holy") {
+        return {
+          primary: { type: "mana" as const, max: 260000, start: 260000, label: "Mana" },
+          secondary: { type: "holy_power" as const, max: 5, start: 0, label: "Holy Power" }
+        };
+      }
+      // Ret/Prot: Mana (50,000) + Holy Power
+      return {
+        primary: { type: "mana" as const, max: 50000, start: 50000, label: "Mana" },
+        secondary: { type: "holy_power" as const, max: 5, start: 0, label: "Holy Power" }
+      };
+    }
+    // Priest
+    if (c === "priest") {
+      if (s === "shadow") {
+        return {
+          primary: { type: "insanity" as const, max: 100, start: 0, label: "Insanity" },
+          secondary: { type: "none" as const, max: 0, start: 0, label: "" }
+        };
+      }
+      // Holy/Discipline -> Mana
+      return {
+        primary: { type: "mana" as const, max: 260000, start: 260000, label: "Mana" },
+        secondary: { type: "none" as const, max: 0, start: 0, label: "" }
+      };
+    }
+    // Rogue
+    if (c === "rogue") {
+      return {
+        primary: { type: "energy" as const, max: 100, start: 100, label: "Energy" },
+        secondary: { type: "combo_points" as const, max: 5, start: 0, label: "Combo Points" }
+      };
+    }
+    // Shaman
+    if (c === "shaman") {
+      if (s === "restoration") {
+        return {
+          primary: { type: "mana" as const, max: 260000, start: 260000, label: "Mana" },
+          secondary: { type: "none" as const, max: 0, start: 0, label: "" }
+        };
+      }
+      // Elemental/Enhancement -> Maelstrom
+      return {
+        primary: { type: "maelstrom" as const, max: 100, start: 0, label: "Maelstrom" },
+        secondary: { type: "none" as const, max: 0, start: 0, label: "" }
+      };
+    }
+    // Warlock
+    if (c === "warlock") {
+      return {
+        primary: { type: "mana" as const, max: 50000, start: 50000, label: "Mana" },
+        secondary: { type: "soul_shards" as const, max: 5, start: 3, label: "Soul Shards" }
+      };
+    }
+    // Warrior
+    if (c === "warrior") {
+      return {
+        primary: { type: "rage" as const, max: 100, start: 0, label: "Rage" },
+        secondary: { type: "none" as const, max: 0, start: 0, label: "" }
+      };
+    }
+    
+    // Default fallback
+    return {
+      primary: { type: "none" as const, max: 0, start: 0, label: "" },
+      secondary: { type: "none" as const, max: 0, start: 0, label: "" }
+    };
+  };
+
+  const getResourceState = (type: string) => {
+    if (type === "mana") {
+      return {
+        val: healerMana,
+        set: (fn: (prev: number) => number) => {
+          setHealerMana(prev => {
+            const next = fn(prev);
+            stateRef.current.healerMana = next;
+            return next;
+          });
+        }
+      };
+    }
+    
+    const config = getSpecResourceConfig();
+    if (config.primary.type === type) {
+      return {
+        val: primaryResourceVal,
+        set: (fn: (prev: number) => number) => {
+          setPrimaryResourceVal(prev => {
+            const next = fn(prev);
+            stateRef.current.primaryResourceVal = next;
+            return next;
+          });
+        }
+      };
+    }
+    
+    if (config.secondary.type === type) {
+      return {
+        val: secondaryResourceVal,
+        set: (fn: (prev: number) => number) => {
+          setSecondaryResourceVal(prev => {
+            const next = fn(prev);
+            stateRef.current.secondaryResourceVal = next;
+            return next;
+          });
+        }
+      };
+    }
+    
+    return null;
+  };
+
+  const hasRequiredResource = (cost?: { type: string; amount: number }, extraCost?: { type: string; amount: number }) => {
+    if (cost) {
+      const state = getResourceState(cost.type);
+      if (state && state.val < cost.amount) return false;
+    }
+    if (extraCost) {
+      const state = getResourceState(extraCost.type);
+      if (state && state.val < extraCost.amount) return false;
+    }
+    return true;
+  };
+
+  const getResourceLabel = (type: string) => {
+    const config = getSpecResourceConfig();
+    if (config.primary.type === type) return config.primary.label;
+    if (config.secondary.type === type) return config.secondary.label;
+    return type.toUpperCase();
+  };
+
+  const applyResourceCostAndGen = (
+    cost?: { type: string; amount: number },
+    gen?: { type: string; amount: number },
+    extraCost?: { type: string; amount: number },
+    extraGen?: { type: string; amount: number }
+  ) => {
+    const config = getSpecResourceConfig();
+    
+    const handleCost = (c: { type: string; amount: number }) => {
+      if (!(stateRef.current.trainingMode === "healer" && c.type === "mana")) {
+        const state = getResourceState(c.type);
+        if (state) {
+          state.set(prev => Math.max(0, prev - c.amount));
+        }
+      }
+    };
+    
+    const handleGen = (g: { type: string; amount: number }) => {
+      const state = getResourceState(g.type);
+      if (state) {
+        const maxVal = config.primary.type === g.type ? config.primary.max : config.secondary.max;
+        state.set(prev => {
+          const prevVal = prev;
+          const nextVal = prevVal + g.amount;
+          let finalVal = nextVal;
+          if (prevVal >= maxVal) {
+            setWastedResources(w => w + g.amount);
+            finalVal = maxVal;
+          } else if (nextVal > maxVal) {
+            setWastedResources(w => w + (nextVal - maxVal));
+            finalVal = maxVal;
+          }
+          return finalVal;
+        });
+      }
+    };
+
+    if (cost) handleCost(cost);
+    if (extraCost) handleCost(extraCost);
+    if (gen) handleGen(gen);
+    if (extraGen) handleGen(extraGen);
+  };
+
+  const tickPassiveRegen = (currentSec: number) => {
+    const config = getSpecResourceConfig();
+
+    // Regenerate Primary Resource
+    if (config.primary.type !== "none") {
+      const pType = config.primary.type;
+      const pMax = config.primary.max;
+      if (pType === "energy" || pType === "focus") {
+        setPrimaryResourceVal(prev => {
+          const next = Math.min(pMax, prev + 10);
+          stateRef.current.primaryResourceVal = next;
+          return next;
+        });
+      } else if (pType === "mana") {
+        const regenAmount = pMax === 260000 ? 2000 : 3000;
+        setHealerMana(prev => {
+          const next = Math.min(pMax, prev + regenAmount);
+          stateRef.current.healerMana = next;
+          return next;
+        });
+      }
+    }
+
+    // Regenerate Secondary Resource
+    if (config.secondary.type !== "none") {
+      const sType = config.secondary.type;
+      const sMax = config.secondary.max;
+      if (sType === "runes" && currentSec % 3 === 0) {
+        setSecondaryResourceVal(prev => {
+          const next = Math.min(sMax, prev + 1);
+          stateRef.current.secondaryResourceVal = next;
+          return next;
+        });
+      } else if (sType === "essence" && currentSec % 5 === 0) {
+        setSecondaryResourceVal(prev => {
+          const next = Math.min(sMax, prev + 1);
+          stateRef.current.secondaryResourceVal = next;
+          return next;
+        });
+      }
+    }
   };
 
   const renderResourceHUD = () => {
     if (gameState !== "running") return null;
     
     const config = getSpecResourceConfig();
-    if (config.type === "none") return null;
+    const primary = config.primary;
+    const secondary = config.secondary;
     
-    const val = secondaryResourceVal;
+    if (primary.type === "none" && secondary.type === "none") return null;
     
-    if (config.type === "holy_power") {
-      return (
-        <div className="flex flex-col items-center space-y-1.5 select-none animate-fade-in-up">
-          <div className="flex items-center space-x-1.5">
-            {[1, 2, 3, 4, 5].map((i) => {
-              const active = val >= i;
-              return (
-                <div 
-                  key={i} 
-                  className={`w-7 h-7 rotate-45 border transition-all duration-200 relative overflow-hidden ${
-                    active
-                      ? "bg-gradient-to-br from-amber-300 to-yellow-500 border-amber-300 shadow-[0_0_12px_#f59e0b] scale-105"
-                      : "bg-zinc-950/80 border-zinc-800"
-                  }`}
-                >
-                  {active && (
-                    <div className="absolute top-0 left-0 w-full h-1/2 bg-white/25 -rotate-45 translate-x-[-25%]" />
-                  )}
-                </div>
-              );
-            })}
+    const renderSecondary = () => {
+      if (secondary.type === "none") return null;
+      
+      const val = secondaryResourceVal;
+      
+      if (secondary.type === "holy_power") {
+        return (
+          <div className="flex flex-col items-center space-y-1 select-none animate-fade-in-up">
+            <div className="flex items-center space-x-1.5">
+              {[1, 2, 3, 4, 5].map((i) => {
+                const active = val >= i;
+                return (
+                  <div 
+                    key={i} 
+                    className={`w-6 h-6 rotate-45 border transition-all duration-200 relative overflow-hidden ${
+                      active
+                        ? "bg-gradient-to-br from-amber-300 to-yellow-500 border-amber-300 shadow-[0_0_10px_#f59e0b] scale-105"
+                        : "bg-zinc-950/80 border-zinc-800"
+                    }`}
+                  >
+                    {active && (
+                      <div className="absolute top-0 left-0 w-full h-1/2 bg-white/25 -rotate-45 translate-x-[-25%]" />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            <span className="text-[8.5px] font-black text-amber-500 uppercase tracking-widest font-mono">
+              Holy Power: {val} / 5
+            </span>
           </div>
-          <span className="text-[9px] font-black text-amber-500 uppercase tracking-widest font-mono">
-            Holy Power: {val} / 5
-          </span>
-        </div>
-      );
-    }
-    
-    if (config.type === "combo_points") {
-      return (
-        <div className="flex flex-col items-center space-y-1.5 select-none animate-fade-in-up">
-          <div className="flex items-center space-x-1.5 bg-zinc-950/90 border border-zinc-800/80 rounded-full px-2.5 py-1 backdrop-blur-sm">
-            {[1, 2, 3, 4, 5].map((i) => {
-              const active = val >= i;
-              return (
-                <div 
-                  key={i} 
-                  className={`w-4 h-4 rounded-full border transition-all duration-200 ${
-                    active
-                      ? "bg-gradient-to-br from-red-500 to-rose-600 border-red-400 shadow-[0_0_8px_#f43f5e] scale-110"
-                      : "bg-zinc-900 border-zinc-800"
-                  }`}
-                />
-              );
-            })}
+        );
+      }
+      
+      if (secondary.type === "combo_points") {
+        return (
+          <div className="flex flex-col items-center space-y-1 select-none animate-fade-in-up">
+            <div className="flex items-center space-x-1 bg-zinc-950/90 border border-zinc-800/80 rounded-full px-2 py-0.5 backdrop-blur-sm">
+              {[1, 2, 3, 4, 5].map((i) => {
+                const active = val >= i;
+                return (
+                  <div 
+                    key={i} 
+                    className={`w-3.5 h-3.5 rounded-full border transition-all duration-200 ${
+                      active
+                        ? "bg-gradient-to-br from-red-500 to-rose-600 border-red-400 shadow-[0_0_6px_#f43f5e] scale-110"
+                        : "bg-zinc-900 border-zinc-800"
+                    }`}
+                  />
+                );
+              })}
+            </div>
+            <span className="text-[8.5px] font-black text-rose-500 uppercase tracking-widest font-mono">
+              Combo Points: {val} / 5
+            </span>
           </div>
-          <span className="text-[9px] font-black text-rose-500 uppercase tracking-widest font-mono">
-            Combo Points: {val} / 5
-          </span>
-        </div>
-      );
-    }
-    
-    if (config.type === "soul_shards") {
-      return (
-        <div className="flex flex-col items-center space-y-1.5 select-none animate-fade-in-up">
-          <div className="flex items-center space-x-2">
-            {[1, 2, 3, 4, 5].map((i) => {
-              const active = val >= i;
-              return (
-                <div 
-                  key={i} 
-                  className={`w-6 h-8 border transition-all duration-300 relative overflow-hidden ${
-                    active
-                      ? "bg-gradient-to-b from-purple-500 to-indigo-700 border-purple-400 shadow-[0_0_10px_#a855f7] scale-102"
-                      : "bg-zinc-950/80 border-zinc-850"
-                  }`}
-                  style={{
-                    clipPath: "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)"
-                  }}
-                >
-                  {active && (
-                    <div className="absolute inset-0 bg-gradient-to-t from-violet-600/30 to-purple-400/50 animate-pulse" />
-                  )}
-                </div>
-              );
-            })}
+        );
+      }
+      
+      if (secondary.type === "soul_shards") {
+        return (
+          <div className="flex flex-col items-center space-y-1 select-none animate-fade-in-up">
+            <div className="flex items-center space-x-1.5">
+              {[1, 2, 3, 4, 5].map((i) => {
+                const active = val >= i;
+                return (
+                  <div 
+                    key={i} 
+                    className={`w-5 h-7 border transition-all duration-300 relative overflow-hidden ${
+                      active
+                        ? "bg-gradient-to-b from-purple-500 to-indigo-700 border-purple-400 shadow-[0_0_8px_#a855f7] scale-102"
+                        : "bg-zinc-950/80 border-zinc-850"
+                    }`}
+                    style={{
+                      clipPath: "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)"
+                    }}
+                  >
+                    {active && (
+                      <div className="absolute inset-0 bg-gradient-to-t from-violet-600/30 to-purple-400/50 animate-pulse" />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            <span className="text-[8.5px] font-black text-purple-400 uppercase tracking-widest font-mono">
+              Soul Shards: {val} / 5
+            </span>
           </div>
-          <span className="text-[9px] font-black text-purple-400 uppercase tracking-widest font-mono">
-            Soul Shards: {val} / 5
-          </span>
-        </div>
-      );
-    }
+        );
+      }
 
-    if (config.type === "chi") {
-      return (
-        <div className="flex flex-col items-center space-y-1.5 select-none animate-fade-in-up">
-          <div className="flex items-center space-x-1.5 bg-zinc-950/90 border border-zinc-800/80 rounded-full px-2.5 py-1 backdrop-blur-sm">
-            {[1, 2, 3, 4, 5].map((i) => {
-              const active = val >= i;
-              return (
-                <div 
-                  key={i} 
-                  className={`w-4 h-4 rounded-full border transition-all duration-200 ${
-                    active
-                      ? "bg-gradient-to-br from-emerald-400 to-teal-500 border-emerald-300 shadow-[0_0_8px_#34d399] scale-110"
-                      : "bg-zinc-900 border-zinc-800"
-                  }`}
-                />
-              );
-            })}
+      if (secondary.type === "chi") {
+        return (
+          <div className="flex flex-col items-center space-y-1 select-none animate-fade-in-up">
+            <div className="flex items-center space-x-1 bg-zinc-950/90 border border-zinc-800/80 rounded-full px-2 py-0.5 backdrop-blur-sm">
+              {[1, 2, 3, 4, 5].map((i) => {
+                const active = val >= i;
+                return (
+                  <div 
+                    key={i} 
+                    className={`w-3.5 h-3.5 rounded-full border transition-all duration-200 ${
+                      active
+                        ? "bg-gradient-to-br from-emerald-400 to-teal-500 border-emerald-300 shadow-[0_0_6px_#34d399] scale-110"
+                        : "bg-zinc-900 border-zinc-800"
+                    }`}
+                  />
+                );
+              })}
+            </div>
+            <span className="text-[8.5px] font-black text-emerald-400 uppercase tracking-widest font-mono">
+              Chi: {val} / 5
+            </span>
           </div>
-          <span className="text-[9px] font-black text-emerald-400 uppercase tracking-widest font-mono">
-            Chi: {val} / 5
-          </span>
-        </div>
-      );
-    }
+        );
+      }
 
-    if (config.type === "arcane_charges") {
-      return (
-        <div className="flex flex-col items-center space-y-1.5 select-none animate-fade-in-up">
-          <div className="flex items-center space-x-1.5">
-            {[1, 2, 3, 4].map((i) => {
-              const active = val >= i;
-              return (
-                <div 
-                  key={i} 
-                  className={`w-5 h-5 rounded border transition-all duration-200 ${
-                    active
-                      ? "bg-gradient-to-br from-cyan-400 to-blue-500 border-cyan-300 shadow-[0_0_8px_#38bdf8] scale-105"
-                      : "bg-zinc-950/80 border-zinc-850"
-                  }`}
-                />
-              );
-            })}
+      if (secondary.type === "arcane_charges") {
+        return (
+          <div className="flex flex-col items-center space-y-1 select-none animate-fade-in-up">
+            <div className="flex items-center space-x-1.5">
+              {[1, 2, 3, 4].map((i) => {
+                const active = val >= i;
+                return (
+                  <div 
+                    key={i} 
+                    className={`w-4.5 h-4.5 rounded border transition-all duration-200 ${
+                      active
+                        ? "bg-gradient-to-br from-cyan-400 to-blue-500 border-cyan-300 shadow-[0_0_6px_#38bdf8] scale-105"
+                        : "bg-zinc-950/80 border-zinc-850"
+                    }`}
+                  />
+                );
+              })}
+            </div>
+            <span className="text-[8.5px] font-black text-cyan-400 uppercase tracking-widest font-mono">
+              Arcane Charges: {val} / 4
+            </span>
           </div>
-          <span className="text-[9px] font-black text-cyan-400 uppercase tracking-widest font-mono">
-            Arcane Charges: {val} / 4
-          </span>
-        </div>
-      );
-    }
+        );
+      }
 
-    if (config.type === "essence") {
-      return (
-        <div className="flex flex-col items-center space-y-1.5 select-none animate-fade-in-up">
-          <div className="flex items-center space-x-2">
-            {[1, 2, 3, 4, 5, 6].map((i) => {
-              const active = val >= i;
-              return (
-                <div 
-                  key={i} 
-                  className={`w-4 h-6 border transition-all duration-300 relative overflow-hidden ${
-                    active
-                      ? "bg-gradient-to-b from-teal-400 to-emerald-600 border-teal-300 shadow-[0_0_8px_#2dd4bf] scale-102"
-                      : "bg-zinc-950/80 border-zinc-850"
-                  }`}
-                  style={{
-                    clipPath: "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)"
-                  }}
-                >
-                  {active && (
-                    <div className="absolute inset-0 bg-gradient-to-t from-teal-500/20 to-emerald-400/45 animate-pulse" />
-                  )}
-                </div>
-              );
-            })}
+      if (secondary.type === "essence") {
+        return (
+          <div className="flex flex-col items-center space-y-1 select-none animate-fade-in-up">
+            <div className="flex items-center space-x-1.5">
+              {[1, 2, 3, 4, 5, 6].map((i) => {
+                const active = val >= i;
+                return (
+                  <div 
+                    key={i} 
+                    className={`w-3.5 h-5 border transition-all duration-300 relative overflow-hidden ${
+                      active
+                        ? "bg-gradient-to-b from-teal-400 to-emerald-600 border-teal-300 shadow-[0_0_6px_#2dd4bf] scale-102"
+                        : "bg-zinc-950/80 border-zinc-850"
+                    }`}
+                    style={{
+                      clipPath: "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)"
+                    }}
+                  >
+                    {active && (
+                      <div className="absolute inset-0 bg-gradient-to-t from-teal-500/20 to-emerald-400/45 animate-pulse" />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+            <span className="text-[8.5px] font-black text-teal-400 uppercase tracking-widest font-mono">
+              Essence: {val} / 6
+            </span>
           </div>
-          <span className="text-[9px] font-black text-teal-400 uppercase tracking-widest font-mono">
-            Essence: {val} / 6
-          </span>
-        </div>
-      );
-    }
+        );
+      }
 
-    if (config.type === "runes") {
-      return (
-        <div className="flex flex-col items-center space-y-1.5 select-none animate-fade-in-up">
-          <div className="flex items-center space-x-1.5">
-            {[1, 2, 3, 4, 5, 6].map((i) => {
-              const active = val >= i;
-              return (
-                <div 
-                  key={i} 
-                  className={`w-5 h-5 rotate-45 border transition-all duration-200 ${
-                    active
-                      ? "bg-gradient-to-br from-cyan-500 to-blue-600 border-cyan-400 shadow-[0_0_8px_#06b6d4] scale-105"
-                      : "bg-zinc-950/80 border-zinc-800"
-                  }`}
-                />
-              );
-            })}
+      if (secondary.type === "runes") {
+        return (
+          <div className="flex flex-col items-center space-y-1 select-none animate-fade-in-up">
+            <div className="flex items-center space-x-1">
+              {[1, 2, 3, 4, 5, 6].map((i) => {
+                const active = val >= i;
+                return (
+                  <div 
+                    key={i} 
+                    className={`w-4 h-4 rotate-45 border transition-all duration-200 ${
+                      active
+                        ? "bg-gradient-to-br from-cyan-500 to-blue-600 border-cyan-400 shadow-[0_0_6px_#06b6d4] scale-105"
+                        : "bg-zinc-950/80 border-zinc-800"
+                    }`}
+                  />
+                );
+              })}
+            </div>
+            <span className="text-[8.5px] font-black text-cyan-400 uppercase tracking-widest font-mono">
+              Runes: {val} / 6
+            </span>
           </div>
-          <span className="text-[9px] font-black text-cyan-400 uppercase tracking-widest font-mono">
-            Runes: {val} / 6
-          </span>
-        </div>
-      );
-    }
+        );
+      }
+
+      if (secondary.type === "soul_fragments") {
+        return (
+          <div className="flex flex-col items-center space-y-1 select-none animate-fade-in-up">
+            <div className="flex items-center space-x-1 bg-zinc-950/90 border border-zinc-800/80 rounded-full px-2 py-0.5 backdrop-blur-sm">
+              {[1, 2, 3, 4, 5].map((i) => {
+                const active = val >= i;
+                return (
+                  <div 
+                    key={i} 
+                    className={`w-3.5 h-3.5 rounded border rotate-45 transition-all duration-200 ${
+                      active
+                        ? "bg-gradient-to-br from-emerald-400 to-teal-500 border-emerald-300 shadow-[0_0_6px_#34d399] scale-110"
+                        : "bg-zinc-900 border-zinc-800"
+                    }`}
+                  />
+                );
+              })}
+            </div>
+            <span className="text-[8.5px] font-black text-emerald-400 uppercase tracking-widest font-mono">
+              Soul Fragments: {val} / 5
+            </span>
+          </div>
+        );
+      }
+      
+      return null;
+    };
     
-    if (
-      config.type === "astral_power" || 
-      config.type === "insanity" || 
-      config.type === "maelstrom" || 
-      config.type === "rage" || 
-      config.type === "energy" || 
-      config.type === "focus" || 
-      config.type === "runic_power" || 
-      config.type === "fury" || 
-      config.type === "pain"
-    ) {
+    const renderPrimary = () => {
+      if (primary.type === "none") return null;
+      // If primary is Mana and trainingMode is Healer, Healer Grid already renders a large Mana bar
+      if (primary.type === "mana" && trainingMode === "healer") return null;
+      
+      const val = primary.type === "mana" ? healerMana : primaryResourceVal;
+      
       let gradient = "from-cyan-500 to-blue-600";
       let textColor = "text-cyan-400";
       
-      if (config.type === "insanity") {
+      if (primary.type === "mana") {
+        gradient = "from-sky-500 to-cyan-400";
+        textColor = "text-sky-400";
+      } else if (primary.type === "insanity") {
         gradient = "from-purple-600 to-fuchsia-800";
         textColor = "text-fuchsia-400";
-      } else if (config.type === "maelstrom") {
+      } else if (primary.type === "maelstrom") {
         gradient = "from-blue-500 to-indigo-600";
         textColor = "text-blue-400";
-      } else if (config.type === "rage") {
+      } else if (primary.type === "rage") {
         gradient = "from-red-600 to-red-800";
         textColor = "text-red-500";
-      } else if (config.type === "energy") {
+      } else if (primary.type === "energy") {
         gradient = "from-yellow-400 to-amber-500";
         textColor = "text-yellow-400";
-      } else if (config.type === "focus") {
+      } else if (primary.type === "focus") {
         gradient = "from-orange-500 to-amber-600";
         textColor = "text-orange-400";
-      } else if (config.type === "runic_power") {
+      } else if (primary.type === "runic_power") {
         gradient = "from-cyan-400 to-teal-600";
         textColor = "text-cyan-400";
-      } else if (config.type === "fury") {
+      } else if (primary.type === "fury") {
         gradient = "from-purple-500 to-pink-600";
         textColor = "text-purple-400";
-      } else if (config.type === "pain") {
+      } else if (primary.type === "pain") {
         gradient = "from-purple-600 to-rose-700";
         textColor = "text-rose-400";
+      } else if (primary.type === "astral_power") {
+        gradient = "from-cyan-500 to-blue-600";
+        textColor = "text-cyan-400";
       }
       
       return (
         <div className="flex flex-col items-center space-y-1 select-none animate-fade-in-up w-64">
-          <div className="w-full h-4 bg-zinc-950/90 border border-zinc-800 rounded-md overflow-hidden relative backdrop-blur-sm">
+          <div className="w-full h-3.5 bg-zinc-950/90 border border-zinc-800 rounded-md overflow-hidden relative backdrop-blur-sm">
             <div 
               className={`h-full bg-gradient-to-r ${gradient} transition-all duration-200`}
-              style={{ width: `${(val / config.max) * 100}%` }}
+              style={{ width: `${(val / primary.max) * 100}%` }}
             />
-            <span className="absolute inset-0 flex items-center justify-center text-[9px] font-mono font-black text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.9)]">
-              {val} / {config.max}
+            <span className="absolute inset-0 flex items-center justify-center text-[8.5px] font-mono font-black text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.9)]">
+              {Math.round(val).toLocaleString()} / {primary.max.toLocaleString()}
             </span>
           </div>
-          <span className={`text-[8.5px] font-black uppercase tracking-widest font-mono ${textColor}`}>
-            {config.label}
+          <span className={`text-[8px] font-black uppercase tracking-widest font-mono ${textColor}`}>
+            {primary.label}
           </span>
         </div>
       );
-    }
-    
-    return null;
+    };
+
+    return (
+      <div className="flex flex-col items-center justify-center space-y-3 w-full animate-fade-in-up">
+        {renderSecondary()}
+        {renderPrimary()}
+      </div>
+    );
   };
 
   const getRawMappedSpell = (spellId: number): Spell => {
@@ -1295,6 +1616,8 @@ export default function Train() {
     if (resInfo) {
       if (resInfo.cost) baseSpell.resourceCost = resInfo.cost;
       if (resInfo.gen) baseSpell.resourceGen = resInfo.gen;
+      if (resInfo.extraCost) baseSpell.extraCost = resInfo.extraCost;
+      if (resInfo.extraGen) baseSpell.extraGen = resInfo.extraGen;
     }
     return baseSpell;
   };
@@ -1505,7 +1828,6 @@ export default function Train() {
   const completeHealerCast = (spell: HealerSpell, targetId: string | null) => {
     const elapsed = stateRef.current.elapsedTime;
     const currentMana = stateRef.current.healerMana;
-    const currentResourceVal = stateRef.current.secondaryResourceVal;
 
     if (currentMana < spell.manaCost) {
       playSound("incorrect");
@@ -1517,17 +1839,14 @@ export default function Train() {
       return;
     }
 
-    if (spell.resourceCost) {
-      const cost = spell.resourceCost.amount;
-      if (currentResourceVal < cost) {
-        const resLabel = getSpecResourceConfig().label;
-        setResourceErrorText(`Not enough ${resLabel}!`);
-        playSound("incorrect");
-        setTimeout(() => {
-          setResourceErrorText(null);
-        }, 1200);
-        return;
-      }
+    if (!hasRequiredResource(spell.resourceCost, spell.extraCost)) {
+      const resLabel = spell.resourceCost ? getResourceLabel(spell.resourceCost.type) : "Resource";
+      setResourceErrorText(`Not enough ${resLabel}!`);
+      playSound("incorrect");
+      setTimeout(() => {
+        setResourceErrorText(null);
+      }, 1200);
+      return;
     }
 
     setHealerMana(m => {
@@ -1544,30 +1863,7 @@ export default function Train() {
       });
     }
 
-    if (spell.resourceCost) {
-      setSecondaryResourceVal(prev => {
-        const val = Math.max(0, prev - spell.resourceCost!.amount);
-        stateRef.current.secondaryResourceVal = val;
-        return val;
-      });
-    } else if (spell.resourceGen) {
-      const gen = spell.resourceGen;
-      const maxVal = getSpecResourceConfig().max;
-      setSecondaryResourceVal(prev => {
-        const prevVal = prev;
-        const nextVal = prevVal + gen.amount;
-        let finalVal = nextVal;
-        if (prevVal >= maxVal) {
-          setWastedResources(w => w + gen.amount);
-          finalVal = maxVal;
-        } else if (nextVal > maxVal) {
-          setWastedResources(w => w + (nextVal - maxVal));
-          finalVal = maxVal;
-        }
-        stateRef.current.secondaryResourceVal = finalVal;
-        return finalVal;
-      });
-    }
+    applyResourceCostAndGen(spell.resourceCost, spell.resourceGen, spell.extraCost, spell.extraGen);
 
     if (spell.isAoE) {
       setHealerRoster((prev) => {
@@ -1646,7 +1942,6 @@ export default function Train() {
   const completeRotationCast = (spell: Spell, stepIndex: number, evaluation: any) => {
     const elapsed = stateRef.current.elapsedTime;
     const currentCasts = stateRef.current.casts;
-    const currentResourceVal = stateRef.current.secondaryResourceVal;
     const steps = selectedScenario.steps;
 
     const newRecord: CastRecord = {
@@ -1666,30 +1961,7 @@ export default function Train() {
     setBossHealth(Math.max(0, 100 - (totalCorrect / Math.max(1, steps.length)) * 100));
 
     if (isHitCorrect) {
-      if (spell.resourceCost) {
-        setSecondaryResourceVal(prev => {
-          const val = Math.max(0, prev - spell.resourceCost!.amount);
-          stateRef.current.secondaryResourceVal = val;
-          return val;
-        });
-      } else if (spell.resourceGen) {
-        const gen = spell.resourceGen;
-        const maxVal = getSpecResourceConfig().max;
-        setSecondaryResourceVal(prev => {
-          const prevVal = prev;
-          const nextVal = prevVal + gen.amount;
-          let finalVal = nextVal;
-          if (prevVal >= maxVal) {
-            setWastedResources(w => w + gen.amount);
-            finalVal = maxVal;
-          } else if (nextVal > maxVal) {
-            setWastedResources(w => w + (nextVal - maxVal));
-            finalVal = maxVal;
-          }
-          stateRef.current.secondaryResourceVal = finalVal;
-          return finalVal;
-        });
-      }
+      applyResourceCostAndGen(spell.resourceCost, spell.resourceGen, spell.extraCost, spell.extraGen);
     }
 
     if (evaluation.status === "perfect") {
@@ -1753,7 +2025,17 @@ export default function Train() {
     synthRef.current?.startHeartbeat(isMuted);
 
     const resConfig = getSpecResourceConfig();
-    setSecondaryResourceVal(resConfig.start);
+    if (resConfig.primary.type === "mana") {
+      setHealerMana(resConfig.primary.start);
+      stateRef.current.healerMana = resConfig.primary.start;
+      setPrimaryResourceVal(0);
+      stateRef.current.primaryResourceVal = 0;
+    } else {
+      setPrimaryResourceVal(resConfig.primary.start);
+      stateRef.current.primaryResourceVal = resConfig.primary.start;
+    }
+    setSecondaryResourceVal(resConfig.secondary.start);
+    stateRef.current.secondaryResourceVal = resConfig.secondary.start;
     setWastedResources(0);
 
     let steps = [...selectedScenario.steps];
@@ -1845,7 +2127,7 @@ export default function Train() {
         if (currentSec > lastSecTick) {
           lastSecTick = currentSec;
           
-          setHealerMana((prev) => Math.min(260000, prev + 2000));
+          tickPassiveRegen(currentSec);
 
           setHealerSpellCooldowns((prev) => {
             const nextCd: Record<number, number> = {};
@@ -2001,22 +2283,7 @@ export default function Train() {
         const currentSec = Math.floor(currentElapsed);
         if (currentSec > lastSecTick) {
           lastSecTick = currentSec;
-          const config = getSpecResourceConfig();
-          if (config.type === "energy" || config.type === "focus") {
-            setSecondaryResourceVal(prev => {
-              const val = Math.min(config.max, prev + 10);
-              stateRef.current.secondaryResourceVal = val;
-              return val;
-            });
-          } else if (config.type === "essence") {
-            if (currentSec % 5 === 0) {
-              setSecondaryResourceVal(prev => {
-                const val = Math.min(config.max, prev + 1);
-                stateRef.current.secondaryResourceVal = val;
-                return val;
-              });
-            }
-          }
+          tickPassiveRegen(currentSec);
         }
 
         // 1. Tick mechanic alerts
@@ -2344,17 +2611,14 @@ export default function Train() {
           }
 
           // Resource gating check
-          if (spell.resourceCost) {
-            const cost = spell.resourceCost.amount;
-            if (currentResourceVal < cost) {
-              const resLabel = getSpecResourceConfig().label;
-              setResourceErrorText(`Not enough ${resLabel}!`);
-              playSound("incorrect");
-              setTimeout(() => {
-                setResourceErrorText(null);
-              }, 1200);
-              return;
-            }
+          if (!hasRequiredResource(spell.resourceCost, spell.extraCost)) {
+            const resLabel = spell.resourceCost ? getResourceLabel(spell.resourceCost.type) : "Resource";
+            setResourceErrorText(`Not enough ${resLabel}!`);
+            playSound("incorrect");
+            setTimeout(() => {
+              setResourceErrorText(null);
+            }, 1200);
+            return;
           }
 
           const castTime = spell.castTime || 0;
@@ -2484,11 +2748,10 @@ export default function Train() {
         const castTime = getSpellCastTime(targetSpell.id, targetSpell.name);
         if (castTime > 0) {
           let isResourceValid = true;
-          if (pressedWoWKey === expectedKeybind && targetSpell && targetSpell.resourceCost) {
-            const cost = targetSpell.resourceCost.amount;
-            if (currentResourceVal < cost) {
+          if (pressedWoWKey === expectedKeybind && targetSpell) {
+            if (!hasRequiredResource(targetSpell.resourceCost, targetSpell.extraCost)) {
               isResourceValid = false;
-              const resLabel = getSpecResourceConfig().label;
+              const resLabel = targetSpell.resourceCost ? getResourceLabel(targetSpell.resourceCost.type) : "Resource";
               setResourceErrorText(`Not enough ${resLabel}!`);
               playSound("incorrect");
               setTimeout(() => {
@@ -2572,13 +2835,12 @@ export default function Train() {
           let isResourceValid = true;
           let finalStatus = status;
 
-          if (pressedWoWKey === expectedKeybind && targetSpell && targetSpell.resourceCost) {
-            const cost = targetSpell.resourceCost.amount;
-            if (currentResourceVal < cost) {
+          if (pressedWoWKey === expectedKeybind && targetSpell) {
+            if (!hasRequiredResource(targetSpell.resourceCost, targetSpell.extraCost)) {
               isResourceValid = false;
               finalStatus = "incorrect";
 
-              const resLabel = getSpecResourceConfig().label;
+              const resLabel = targetSpell.resourceCost ? getResourceLabel(targetSpell.resourceCost.type) : "Resource";
               setResourceErrorText(`Not enough ${resLabel}!`);
               playSound("incorrect");
 
