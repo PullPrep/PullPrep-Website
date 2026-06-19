@@ -2958,7 +2958,7 @@ export default function Train() {
 
   // Spell Auditing Setup
   const renderCastBar = () => {
-    if (!currentCast && !isInterrupted) return null;
+    const isVisible = !!(currentCast || isInterrupted);
 
     let spellName = "";
     let spellIcon = "";
@@ -2973,45 +2973,49 @@ export default function Train() {
       duration = currentCast.duration;
       elapsedCast = Math.min(duration, elapsedTime - currentCast.startTime);
       progressPercent = (elapsedCast / duration) * 100;
-    } else {
+    } else if (isInterrupted) {
       spellName = "Interrupted";
       progressPercent = 100;
     }
 
     return (
-      <div className="w-full max-w-sm bg-zinc-950/95 border-2 border-zinc-800 rounded-lg p-1 shadow-[0_4px_20px_rgba(0,0,0,0.8)] animate-fade-in-up mb-4 relative z-30 select-none">
-        <div className="flex items-center space-x-2 relative h-8">
-          {spellIcon ? (
-            <div className="w-8 h-8 rounded border border-zinc-700 overflow-hidden shrink-0">
-              <img src={spellIcon} alt={spellName} className="w-full h-full object-cover" />
+      <div className="w-full max-w-sm h-12 mb-4 relative z-30 select-none flex items-center justify-center">
+        {isVisible && (
+          <div className="w-full bg-zinc-950/95 border-2 border-zinc-800 rounded-lg p-1 shadow-[0_4px_20px_rgba(0,0,0,0.8)] animate-fade-in-up">
+            <div className="flex items-center space-x-2 relative h-8">
+              {spellIcon ? (
+                <div className="w-8 h-8 rounded border border-zinc-700 overflow-hidden shrink-0">
+                  <img src={spellIcon} alt={spellName} className="w-full h-full object-cover" />
+                </div>
+              ) : (
+                <div className="w-8 h-8 rounded border border-zinc-700 bg-rose-950 flex items-center justify-center shrink-0">
+                  <span className="text-[10px]">🛑</span>
+                </div>
+              )}
+              
+              <div className="flex-grow h-full bg-zinc-900/90 rounded border border-zinc-850 overflow-hidden relative">
+                <div 
+                  className={`h-full transition-all duration-75 ${
+                    isCastInterrupted 
+                      ? "bg-gradient-to-r from-red-600 to-rose-700 animate-pulse" 
+                      : "bg-gradient-to-r from-yellow-600 via-amber-500 to-yellow-400"
+                  }`}
+                  style={{ width: `${progressPercent}%` }}
+                />
+                
+                <span className="absolute left-2.5 inset-y-0 flex items-center text-xs font-black text-white drop-shadow-[0_1.5px_2px_rgba(0,0,0,1)] uppercase tracking-wide">
+                  {spellName}
+                </span>
+                
+                {!isCastInterrupted && duration > 0 && (
+                  <span className="absolute right-2.5 inset-y-0 flex items-center text-[10px] font-mono font-black text-amber-200 drop-shadow-[0_1.5px_2px_rgba(0,0,0,1)]">
+                    {elapsedCast.toFixed(1)} / {duration.toFixed(1)}s
+                  </span>
+                )}
+              </div>
             </div>
-          ) : (
-            <div className="w-8 h-8 rounded border border-zinc-700 bg-rose-950 flex items-center justify-center shrink-0">
-              <span className="text-[10px]">🛑</span>
-            </div>
-          )}
-          
-          <div className="flex-grow h-full bg-zinc-900/90 rounded border border-zinc-850 overflow-hidden relative">
-            <div 
-              className={`h-full transition-all duration-75 ${
-                isCastInterrupted 
-                  ? "bg-gradient-to-r from-red-600 to-rose-700 animate-pulse" 
-                  : "bg-gradient-to-r from-yellow-600 via-amber-500 to-yellow-400"
-              }`}
-              style={{ width: `${progressPercent}%` }}
-            />
-            
-            <span className="absolute left-2.5 inset-y-0 flex items-center text-xs font-black text-white drop-shadow-[0_1.5px_2px_rgba(0,0,0,1)] uppercase tracking-wide">
-              {spellName}
-            </span>
-            
-            {!isCastInterrupted && duration > 0 && (
-              <span className="absolute right-2.5 inset-y-0 flex items-center text-[10px] font-mono font-black text-amber-200 drop-shadow-[0_1.5px_2px_rgba(0,0,0,1)]">
-                {elapsedCast.toFixed(1)} / {duration.toFixed(1)}s
-              </span>
-            )}
           </div>
-        </div>
+        )}
       </div>
     );
   };
