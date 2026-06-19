@@ -1828,6 +1828,10 @@ export default function Train() {
   };
 
   const completeHealerCast = (spell: HealerSpell, targetId: string | null) => {
+    if (!targetId) {
+      playSound("incorrect");
+      return;
+    }
     const elapsed = stateRef.current.elapsedTime;
     const currentMana = stateRef.current.healerMana;
 
@@ -2603,6 +2607,10 @@ export default function Train() {
         const spell = hSpells.find(s => s.keybind.toUpperCase() === pressedWoWKey);
         
         if (spell) {
+          if (!currentTargetId) {
+            playSound("incorrect");
+            return;
+          }
           if (currentMana < spell.manaCost) {
             playSound("incorrect");
             return;
