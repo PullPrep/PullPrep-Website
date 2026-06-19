@@ -155,7 +155,7 @@ const getHealerSpells = (cls: string, spec: string): HealerSpell[] => {
   });
 };
 
-const generateHealerRoster = (size: number): HealerPlayer[] => {
+const generateHealerRoster = (size: number, playerClass?: string): HealerPlayer[] => {
   const roster: HealerPlayer[] = [];
   let numTanks = 1;
   let numHealers = 1;
@@ -209,7 +209,7 @@ const generateHealerRoster = (size: number): HealerPlayer[] => {
       name: i === 0 ? "You" : getName(),
       role: "healer",
       subRole: "ranged",
-      class: "priest",
+      class: i === 0 ? (playerClass ? playerClass.toLowerCase().replace(/\s+/g, "") : "priest") : "priest",
       health: 100,
       maxHealth: 100,
       buffs: []
@@ -771,7 +771,15 @@ export default function Train() {
   const handleClassChange = (className: string) => {
     setSelectedClass(className);
     const cls = WOW_CLASSES_SPECS.find(c => c.name === className);
-    const firstSpec = cls && cls.specs.length > 0 ? cls.specs[0] : "";
+    let firstSpec = "";
+    if (cls && cls.specs.length > 0) {
+      if (trainingMode === "healer") {
+        const healerSpec = cls.specs.find(s => HEALER_SPECS.some(h => h.className === className && h.specName === s));
+        firstSpec = healerSpec || cls.specs[0];
+      } else {
+        firstSpec = cls.specs[0];
+      }
+    }
     setSelectedSpec(firstSpec);
     if (className && firstSpec) {
       const newBuild = generateDefaultBuild(className, firstSpec);
@@ -1284,6 +1292,7 @@ export default function Train() {
     
     setIsInterrupted(true);
     setCurrentCast(null);
+    stateRef.current.currentCast = null;
     playSound("incorrect");
     
     setTimeout(() => {
@@ -1357,10 +1366,18 @@ export default function Train() {
       }
     }
 
-    setHealerMana(m => Math.max(0, m - spell.manaCost));
+    setHealerMana(m => {
+      const nm = Math.max(0, m - spell.manaCost);
+      stateRef.current.healerMana = nm;
+      return nm;
+    });
     if (spell.cooldown !== undefined) {
       const cdVal = spell.cooldown;
-      setHealerSpellCooldowns(prev => ({ ...prev, [spell.id]: cdVal }));
+      setHealerSpellCooldowns(prev => {
+        const next = { ...prev, [spell.id]: cdVal };
+        stateRef.current.healerSpellCooldowns = next;
+        return next;
+      });
     }
 
     if (spell.resourceCost) {
@@ -1584,11 +1601,14 @@ export default function Train() {
     }
 
     if (trainingMode === "healer") {
-      const initialRoster = generateHealerRoster(healerRaidSize);
+      const initialRoster = generateHealerRoster(healerRaidSize, selectedClass);
       setHealerRoster(initialRoster);
       setHealerMana(100);
       setFloatingHeals([]);
       setHealerSpellCooldowns({});
+      stateRef.current.healerSpellCooldowns = {};
+      stateRef.current.currentCast = null;
+      stateRef.current.lastCastTime = null;
     }
 
     setBossHealth(100);
@@ -1623,6 +1643,7 @@ export default function Train() {
       if (activeC) {
         if (currentElapsed >= activeC.startTime + activeC.duration) {
           setCurrentCast(null);
+          stateRef.current.currentCast = null;
           
           if (stateRef.current.trainingMode === "healer") {
             const hSpells = getHealerSpells(selectedClass, selectedSpec);
@@ -1656,6 +1677,7 @@ export default function Train() {
                 nextCd[Number(idStr)] = val - 1;
               }
             });
+            stateRef.current.healerSpellCooldowns = nextCd;
             return nextCd;
           });
 
@@ -1682,7 +1704,7 @@ export default function Train() {
 
         // Random raid damage spikes
         if (currentElapsed >= nextDamageTime) {
-          nextDamageTime = currentElapsed + 1.2 + Math.random() * 1.2;
+          nextDamageTime = currentElapsed + 1.8 + Math.random() * 1.8;
 
           setHealerRoster((prevRoster) => {
             if (prevRoster.length === 0) return prevRoster;
@@ -1699,9 +1721,9 @@ export default function Train() {
               
               let dmg = 0;
               if (target.role === "tank") {
-                dmg = Math.floor(Math.random() * 13) + 10;
+                dmg = Math.floor(Math.random() * 7) + 5;
               } else {
-                dmg = Math.floor(Math.random() * 31) + 15;
+                dmg = Math.floor(Math.random() * 16) + 10;
               }
 
               updated[idx] = {
@@ -1714,7 +1736,7 @@ export default function Train() {
             const tanks = updated.filter(p => p.role === "tank" && p.health > 0);
             tanks.forEach((tank) => {
               const idx = updated.findIndex(p => p.id === tank.id);
-              const autoDmg = Math.floor(Math.random() * 6) + 4;
+              const autoDmg = Math.floor(Math.random() * 3) + 2;
               updated[idx] = {
                 ...updated[idx],
                 health: Math.max(0, updated[idx].health - autoDmg)
@@ -1970,6 +1992,9 @@ export default function Train() {
     setCurrentCast(null);
     setIsInterrupted(false);
     synthRef.current?.stopHeartbeat();
+    stateRef.current.healerSpellCooldowns = {};
+    stateRef.current.currentCast = null;
+    stateRef.current.lastCastTime = null;
   };
 
   // Keyboard events
@@ -2087,7 +2112,7 @@ export default function Train() {
 
           const castTime = spell.castTime || 0;
           if (castTime > 0) {
-            setCurrentCast({
+            const newCast = {
               spellId: spell.id,
               name: spell.name,
               icon: spell.icon,
@@ -2095,8 +2120,11 @@ export default function Train() {
               duration: castTime,
               targetId: currentTargetId,
               stepIndex: -1
-            });
+            };
+            setCurrentCast(newCast);
+            stateRef.current.currentCast = newCast;
             setLastCastTime(elapsed);
+            stateRef.current.lastCastTime = elapsed;
           } else {
             completeHealerCast(spell, currentTargetId);
           }
