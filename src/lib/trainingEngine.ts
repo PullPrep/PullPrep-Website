@@ -1409,8 +1409,6 @@ export const WOW_CLASSES_SPECS = [
 ];
 
 export function isRealSpell(spellId: number, name: string): boolean {
-  if (spellId < 1000) return false;
-  
   const lowerName = name.toLowerCase();
   const blacklistedNames = [
     "invoke external buff",
@@ -1451,7 +1449,39 @@ export function isRealSpell(spellId: number, name: string): boolean {
     "mount"
   ];
   
-  return !blacklistedNames.some(blacklisted => lowerName.includes(blacklisted));
+  if (blacklistedNames.some(blacklisted => lowerName.includes(blacklisted))) {
+    return false;
+  }
+
+  // Allow known real low-ID spells
+  const allowedLowIds = new Set([
+    17,   // Power Word: Shield
+    53,   // Backstab
+    100,  // Charge
+    116,  // Frostbolt
+    120,  // Cone of Cold
+    133,  // Fireball
+    172,  // Corruption
+    348,  // Immolate
+    465,  // Devotion Aura
+    585,  // Smite
+    589,  // Shadow Word: Pain
+    642,  // Divine Shield
+    686,  // Shadow Bolt
+    688,  // Summon Imp
+    703,  // Garrote
+    772,  // Rend
+    845,  // Sweeping Strikes
+    853,  // Hammer of Justice
+    871,  // Shield Wall
+    980,  // Agony
+  ]);
+
+  if (spellId < 1000 && !allowedLowIds.has(spellId)) {
+    return false;
+  }
+  
+  return true;
 }
 
 export function generateDefaultBuild(className: string, specName: string): ImportedBuild {
