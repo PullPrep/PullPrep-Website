@@ -1704,7 +1704,7 @@ export default function Train() {
 
         // Random raid damage spikes
         if (currentElapsed >= nextDamageTime) {
-          nextDamageTime = currentElapsed + 1.8 + Math.random() * 1.8;
+          nextDamageTime = currentElapsed + 1.5 + Math.random() * 1.5;
 
           setHealerRoster((prevRoster) => {
             if (prevRoster.length === 0) return prevRoster;
@@ -1721,9 +1721,9 @@ export default function Train() {
               
               let dmg = 0;
               if (target.role === "tank") {
-                dmg = Math.floor(Math.random() * 7) + 5;
+                dmg = Math.floor(Math.random() * 9) + 7;
               } else {
-                dmg = Math.floor(Math.random() * 16) + 10;
+                dmg = Math.floor(Math.random() * 21) + 12;
               }
 
               updated[idx] = {
@@ -1736,7 +1736,7 @@ export default function Train() {
             const tanks = updated.filter(p => p.role === "tank" && p.health > 0);
             tanks.forEach((tank) => {
               const idx = updated.findIndex(p => p.id === tank.id);
-              const autoDmg = Math.floor(Math.random() * 3) + 2;
+              const autoDmg = Math.floor(Math.random() * 4) + 3;
               updated[idx] = {
                 ...updated[idx],
                 health: Math.max(0, updated[idx].health - autoDmg)

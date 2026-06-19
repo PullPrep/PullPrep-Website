@@ -105,7 +105,7 @@ export function getSpellResourceInfo(spellId: number, spellName: string): {
     name.includes("kidney shot") || 
     name.includes("slice and dice") || 
     name.includes("ferocious bite") || 
-    name.includes("rip")
+    (name.includes("rip") && !name.includes("riptide"))
   ) {
     return { cost: { type: "combo_points", amount: 5 } };
   }
