@@ -2468,7 +2468,7 @@ export default function Train() {
 
     if (wastedResources > 0) {
       const resConfig = getSpecResourceConfig();
-      stats.feedback.push(`Resource Waste: You generated ${wastedResources} excess ${resConfig.label} while already at maximum capacity. Try to cast your spenders before overflowing!`);
+      stats.feedback.push(`Resource Waste: You generated ${wastedResources} excess ${resConfig.primary.label} while already at maximum capacity. Try to cast your spenders before overflowing!`);
     }
 
     setFinalStats(stats);
