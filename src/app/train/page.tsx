@@ -701,7 +701,8 @@ export default function Train() {
     secondaryResourceVal,
     wastedResources,
     currentCast,
-    isInterrupted
+    isInterrupted,
+    healerRaidSize
   });
 
   // Update ref to read latest states inside timers/listeners
@@ -730,12 +731,13 @@ export default function Train() {
       secondaryResourceVal,
       wastedResources,
       currentCast,
-      isInterrupted
+      isInterrupted,
+      healerRaidSize
     };
   }, [
     gameState, elapsedTime, activeStepIndex, activeSpell, activePromptTime, casts, combo, lastCastTime, activeAlert, isHardcore, isGuidedMode, orbTotalPossible, orbScoreEarned,
     trainingMode, healerRoster, healerMana, mouseoverPlayerId, healerSpellCooldowns, isKeybindModeActive, hoveredSpellId, secondaryResourceVal, wastedResources,
-    currentCast, isInterrupted
+    currentCast, isInterrupted, healerRaidSize
   ]);
 
   // Lazy initialize Synthesizer
@@ -1704,12 +1706,60 @@ export default function Train() {
 
         // Random raid damage spikes
         if (currentElapsed >= nextDamageTime) {
-          nextDamageTime = currentElapsed + 1.5 + Math.random() * 1.5;
+          const currentSize = stateRef.current.healerRaidSize;
+          
+          let spikeMin = 1.5;
+          let spikeRand = 1.5;
+          let minSpiked = 1;
+          let maxSpiked = 3;
+          let tankDmgBase = 7;
+          let tankDmgRand = 9;
+          let nonTankDmgBase = 12;
+          let nonTankDmgRand = 21;
+          let autoDmgBase = 3;
+          let autoDmgRand = 4;
+
+          if (currentSize === 5) {
+            spikeMin = 1.6;
+            spikeRand = 1.6;
+            minSpiked = 1;
+            maxSpiked = 2;
+            tankDmgBase = 9;
+            tankDmgRand = 11;
+            nonTankDmgBase = 15;
+            nonTankDmgRand = 21;
+            autoDmgBase = 4;
+            autoDmgRand = 5;
+          } else if (currentSize === 15) {
+            spikeMin = 1.1;
+            spikeRand = 1.1;
+            minSpiked = 2;
+            maxSpiked = 4;
+            tankDmgBase = 8;
+            tankDmgRand = 10;
+            nonTankDmgBase = 14;
+            nonTankDmgRand = 22;
+            autoDmgBase = 4;
+            autoDmgRand = 4;
+          } else if (currentSize === 20) {
+            spikeMin = 0.75;
+            spikeRand = 0.75;
+            minSpiked = 3;
+            maxSpiked = 6;
+            tankDmgBase = 10;
+            tankDmgRand = 13;
+            nonTankDmgBase = 17;
+            nonTankDmgRand = 23;
+            autoDmgBase = 5;
+            autoDmgRand = 5;
+          }
+
+          nextDamageTime = currentElapsed + spikeMin + Math.random() * spikeRand;
 
           setHealerRoster((prevRoster) => {
             if (prevRoster.length === 0) return prevRoster;
 
-            const numTargets = Math.floor(Math.random() * 3) + 1;
+            const numTargets = Math.floor(Math.random() * (maxSpiked - minSpiked + 1)) + minSpiked;
             const updated = [...prevRoster];
 
             for (let t = 0; t < numTargets; t++) {
@@ -1721,9 +1771,9 @@ export default function Train() {
               
               let dmg = 0;
               if (target.role === "tank") {
-                dmg = Math.floor(Math.random() * 9) + 7;
+                dmg = Math.floor(Math.random() * tankDmgRand) + tankDmgBase;
               } else {
-                dmg = Math.floor(Math.random() * 21) + 12;
+                dmg = Math.floor(Math.random() * nonTankDmgRand) + nonTankDmgBase;
               }
 
               updated[idx] = {
@@ -1736,7 +1786,7 @@ export default function Train() {
             const tanks = updated.filter(p => p.role === "tank" && p.health > 0);
             tanks.forEach((tank) => {
               const idx = updated.findIndex(p => p.id === tank.id);
-              const autoDmg = Math.floor(Math.random() * 4) + 3;
+              const autoDmg = Math.floor(Math.random() * autoDmgRand) + autoDmgBase;
               updated[idx] = {
                 ...updated[idx],
                 health: Math.max(0, updated[idx].health - autoDmg)
