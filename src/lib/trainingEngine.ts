@@ -54,7 +54,25 @@ export interface Spell {
 }
 
 export interface ResourceModifier {
-  type: "holy_power" | "combo_points" | "soul_shards" | "astral_power" | "insanity" | "maelstrom";
+  type: 
+    | "mana" 
+    | "rage" 
+    | "energy" 
+    | "focus" 
+    | "runes" 
+    | "runic_power" 
+    | "holy_power" 
+    | "combo_points" 
+    | "astral_power" 
+    | "maelstrom" 
+    | "chi" 
+    | "insanity" 
+    | "soul_shards" 
+    | "arcane_charges" 
+    | "fury" 
+    | "pain" 
+    | "essence" 
+    | "soul_fragments";
   amount: number;
 }
 
@@ -157,18 +175,185 @@ export function getSpellResourceInfo(spellId: number, spellName: string): {
     return { cost: { type: "insanity", amount: 50 } };
   }
   
-  // --- ELEMENTAL SHAMAN (Maelstrom) ---
-  if (name.includes("lightning bolt")) {
+  // --- ELEMENTAL / ENHANCEMENT SHAMAN (Maelstrom) ---
+  if (name.includes("lightning bolt") || name.includes("stormstrike")) {
     return { gen: { type: "maelstrom", amount: 8 } };
   }
-  if (name.includes("lava burst")) {
+  if (name.includes("lava burst") || name.includes("lava lash")) {
     return { gen: { type: "maelstrom", amount: 10 } };
   }
-  if (name.includes("earth shock") || name.includes("elemental blast")) {
+  if (name.includes("earth shock") || name.includes("elemental blast") || name.includes("crash lightning")) {
     return { cost: { type: "maelstrom", amount: 60 } };
   }
   if (name.includes("earthquake")) {
     return { cost: { type: "maelstrom", amount: 60 } };
+  }
+
+  // --- WARRIOR / GUARDIAN DRUID (Rage) ---
+  if (
+    name.includes("shield slam") || 
+    name.includes("mangle") || 
+    name.includes("bloodthirst") || 
+    name.includes("bloodbath") || 
+    name.includes("raging blow") || 
+    name.includes("crushing blow") || 
+    name.includes("charge") || 
+    name.includes("thunder clap") || 
+    name.includes("thunder blast") || 
+    name.includes("thrash")
+  ) {
+    let amount = 10;
+    if (name.includes("shield slam")) amount = 15;
+    else if (name.includes("mangle")) amount = 10;
+    else if (name.includes("bloodthirst") || name.includes("bloodbath")) amount = 8;
+    else if (name.includes("raging blow") || name.includes("crushing blow")) amount = 12;
+    else if (name.includes("charge")) amount = 20;
+    else if (name.includes("thunder clap") || name.includes("thunder blast") || name.includes("thrash")) amount = 5;
+    return { gen: { type: "rage", amount } };
+  }
+  if (
+    name.includes("rampage") || 
+    name.includes("shield block") || 
+    name.includes("ignore pain") || 
+    name.includes("ironfur") || 
+    name.includes("execute") || 
+    name.includes("revenge")
+  ) {
+    let amount = 20;
+    if (name.includes("rampage")) amount = 80;
+    else if (name.includes("ignore pain") || name.includes("ironfur")) amount = 40;
+    else if (name.includes("shield block")) amount = 30;
+    return { cost: { type: "rage", amount } };
+  }
+
+  // --- ROGUE / DRUID FERAL / MONK (Energy) ---
+  if (name.includes("keg smash")) {
+    return { cost: { type: "energy", amount: 40 } };
+  }
+  if (name.includes("tiger palm")) {
+    return { cost: { type: "energy", amount: 25 } };
+  }
+
+  // --- HUNTER (Focus) ---
+  if (
+    name.includes("steady shot") || 
+    name.includes("barbed shot")
+  ) {
+    const amount = name.includes("steady shot") ? 10 : 20;
+    return { gen: { type: "focus", amount } };
+  }
+  if (
+    name.includes("cobra shot") || 
+    name.includes("arcane shot") || 
+    name.includes("multi-shot") || 
+    name.includes("aimed shot") || 
+    name.includes("raptor strike") || 
+    name.includes("carve") ||
+    name.includes("kill command")
+  ) {
+    let amount = 30;
+    if (name.includes("cobra shot")) amount = 35;
+    else if (name.includes("arcane shot") || name.includes("multi-shot")) amount = 40;
+    else if (name.includes("aimed shot")) amount = 35;
+    else if (name.includes("carve")) amount = 35;
+    return { cost: { type: "focus", amount } };
+  }
+
+  // --- DEATH KNIGHT (Runes & Runic Power) ---
+  if (
+    name.includes("marrowrend") || 
+    name.includes("heart strike") || 
+    name.includes("obliterate") || 
+    name.includes("howling blast") || 
+    name.includes("scourge strike") || 
+    name.includes("festering strike") || 
+    name.includes("death and decay")
+  ) {
+    let amount = 10;
+    if (name.includes("obliterate") || name.includes("marrowrend")) amount = 20;
+    return { gen: { type: "runic_power", amount } };
+  }
+  if (
+    name.includes("death strike") || 
+    name.includes("death coil") || 
+    name.includes("frost strike") || 
+    name.includes("epidemic")
+  ) {
+    const amount = name.includes("death strike") ? 40 : 30;
+    return { cost: { type: "runic_power", amount } };
+  }
+
+  // --- MONK (Chi) ---
+  if (name.includes("expel harm")) {
+    return { gen: { type: "chi", amount: 1 } };
+  }
+  if (
+    name.includes("rising sun kick") || 
+    name.includes("fists of fury") || 
+    name.includes("blackout kick") || 
+    name.includes("spinning crane kick") || 
+    name.includes("strike of the windlord")
+  ) {
+    let amount = 2;
+    if (name.includes("fists of fury")) amount = 3;
+    else if (name.includes("blackout kick")) amount = 1;
+    return { cost: { type: "chi", amount } };
+  }
+
+  // --- ARCANE MAGE (Arcane Charges) ---
+  if (
+    name.includes("arcane blast") || 
+    name.includes("arcane explosion")
+  ) {
+    return { gen: { type: "arcane_charges", amount: 1 } };
+  }
+  if (name.includes("arcane barrage")) {
+    return { cost: { type: "arcane_charges", amount: 4 } };
+  }
+
+  // --- DEMON HUNTER (Fury & Pain) ---
+  if (
+    name.includes("demon's bite") || 
+    name.includes("felblade") || 
+    name.includes("immolation aura")
+  ) {
+    const amount = name.includes("felblade") ? 40 : 20;
+    return { gen: { type: "fury", amount } };
+  }
+  if (
+    name.includes("chaos strike") || 
+    name.includes("annihilation") || 
+    name.includes("blade dance") || 
+    name.includes("death sweep") || 
+    name.includes("eye beam")
+  ) {
+    let amount = 30;
+    if (name.includes("chaos strike") || name.includes("annihilation")) amount = 40;
+    else if (name.includes("blade dance") || name.includes("death sweep")) amount = 35;
+    return { cost: { type: "fury", amount } };
+  }
+  if (
+    name.includes("shear") || 
+    name.includes("fracture") || 
+    name.includes("sigil of flame")
+  ) {
+    const amount = name.includes("shear") ? 10 : 20;
+    return { gen: { type: "pain", amount } };
+  }
+  if (
+    name.includes("soul cleave") || 
+    name.includes("spirit bomb")
+  ) {
+    return { cost: { type: "pain", amount: 30 } };
+  }
+
+  // --- EVOKER (Essence) ---
+  if (
+    name.includes("disintegrate") || 
+    name.includes("pyre") || 
+    name.includes("eruption")
+  ) {
+    return { cost: { type: "essence", amount: 3 } };
   }
   
   return null;
@@ -196,6 +381,7 @@ export function getSpellCastTime(spellId: number, spellName: string): number {
   if (name.includes("healing surge")) return 1.5;
   if (name.includes("healing wave")) return 2.5;
   if (name.includes("chain heal")) return 2.5;
+  if (name.includes("healing rain")) return 2.0;
   if (name.includes("lightning") && name.includes("bolt")) return 2.0;
   if (name.includes("lava burst")) return 2.0;
   

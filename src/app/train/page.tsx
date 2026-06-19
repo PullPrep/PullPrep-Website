@@ -64,60 +64,60 @@ interface FloatingHeal {
 
 const HEALER_SPELLS_BY_SPEC: Record<string, HealerSpell[]> = {
   "Priest_Holy": [
-    { id: 2061, name: "Flash Heal", keybind: "1", icon: "flash-heal", color: "#38bdf8", description: "A fast but expensive heal.", manaCost: 5, healAmount: 30 },
-    { id: 2060, name: "Heal", keybind: "2", icon: "heal", color: "#0284c7", description: "A slow but efficient heal.", manaCost: 3, healAmount: 45 },
-    { id: 139, name: "Renew", keybind: "3", icon: "renew", color: "#34d399", description: "Heals over time (15s).", manaCost: 2.5, healAmount: 8, hotDuration: 15 },
-    { id: 596, name: "Prayer of Healing", keybind: "4", icon: "prayer-of-healing", color: "#a855f7", description: "Heals the 5 lowest raid members.", manaCost: 10, healAmount: 18, isAoE: true },
-    { id: 2050, name: "HW: Serenity", keybind: "5", icon: "holy-word-serenity", color: "#fbbf24", description: "A massive instant heal. 8s cooldown.", manaCost: 5, healAmount: 80, cooldown: 8 },
-    { id: 47788, name: "Guardian Spirit", keybind: "E", icon: "guardian-spirit", color: "#f43f5e", description: "Saves target from death & heals 100%. 25s cooldown.", manaCost: 8, healAmount: 100, cooldown: 25 }
+    { id: 2061, name: "Flash Heal", keybind: "1", icon: "flash-heal", color: "#38bdf8", description: "A fast but expensive heal.", manaCost: 11000, healAmount: 30 },
+    { id: 2060, name: "Heal", keybind: "2", icon: "heal", color: "#0284c7", description: "A slow but efficient heal.", manaCost: 6000, healAmount: 45 },
+    { id: 139, name: "Renew", keybind: "3", icon: "renew", color: "#34d399", description: "Heals over time (15s).", manaCost: 6000, healAmount: 8, hotDuration: 15 },
+    { id: 596, name: "Prayer of Healing", keybind: "4", icon: "prayer-of-healing", color: "#a855f7", description: "Heals the 5 lowest raid members.", manaCost: 20000, healAmount: 18, isAoE: true },
+    { id: 2050, name: "HW: Serenity", keybind: "5", icon: "holy-word-serenity", color: "#fbbf24", description: "A massive instant heal. 8s cooldown.", manaCost: 6250, healAmount: 80, cooldown: 8 },
+    { id: 47788, name: "Guardian Spirit", keybind: "E", icon: "guardian-spirit", color: "#f43f5e", description: "Saves target from death & heals 100%. 25s cooldown.", manaCost: 2250, healAmount: 100, cooldown: 25 }
   ],
   "Priest_Discipline": [
-    { id: 2061, name: "Flash Heal", keybind: "1", icon: "flash-heal", color: "#38bdf8", description: "A fast but expensive heal.", manaCost: 5, healAmount: 30 },
-    { id: 17, name: "Shield", keybind: "2", icon: "shield", color: "#eab308", description: "Shields target for 35% health.", manaCost: 4, healAmount: 35 },
-    { id: 139, name: "Renew", keybind: "3", icon: "renew", color: "#34d399", description: "Heals over time (15s).", manaCost: 2.5, healAmount: 8, hotDuration: 15 },
-    { id: 596, name: "Radiance", keybind: "4", icon: "radiance", color: "#a855f7", description: "Heals the 5 lowest raid members.", manaCost: 10, healAmount: 18, isAoE: true },
-    { id: 2050, name: "Penance", keybind: "5", icon: "penance", color: "#fbbf24", description: "Channel to heal a target. 8s cooldown.", manaCost: 5, healAmount: 60, cooldown: 8 },
-    { id: 47788, name: "Pain Suppression", keybind: "E", icon: "pain-suppression", color: "#f43f5e", description: "Reduces damage taken & heals target 100%. 25s cooldown.", manaCost: 8, healAmount: 100, cooldown: 25 }
+    { id: 2061, name: "Flash Heal", keybind: "1", icon: "flash-heal", color: "#38bdf8", description: "A fast but expensive heal.", manaCost: 11000, healAmount: 30 },
+    { id: 17, name: "Shield", keybind: "2", icon: "shield", color: "#eab308", description: "Shields target for 35% health.", manaCost: 6000, healAmount: 35 },
+    { id: 139, name: "Renew", keybind: "3", icon: "renew", color: "#34d399", description: "Heals over time (15s).", manaCost: 6000, healAmount: 8, hotDuration: 15 },
+    { id: 596, name: "Radiance", keybind: "4", icon: "radiance", color: "#a855f7", description: "Heals the 5 lowest raid members.", manaCost: 32500, healAmount: 18, isAoE: true },
+    { id: 2050, name: "Penance", keybind: "5", icon: "penance", color: "#fbbf24", description: "Channel to heal a target. 8s cooldown.", manaCost: 8000, healAmount: 60, cooldown: 8 },
+    { id: 47788, name: "Pain Suppression", keybind: "E", icon: "pain-suppression", color: "#f43f5e", description: "Reduces damage taken & heals target 100%. 25s cooldown.", manaCost: 4000, healAmount: 100, cooldown: 25 }
   ],
   "Druid_Restoration": [
-    { id: 8936, name: "Regrowth", keybind: "1", icon: "regrowth", color: "#10b981", description: "Heals instantly and leaves a short HoT.", manaCost: 4.5, healAmount: 25, hotDuration: 6 },
-    { id: 50464, name: "Nourish", keybind: "2", icon: "nourish", color: "#059669", description: "Efficient heal, stronger on targets with HoTs.", manaCost: 3, healAmount: 40 },
-    { id: 774, name: "Rejuvenation", keybind: "3", icon: "rejuvenation", color: "#34d399", description: "Classic heal over time (12s).", manaCost: 3.5, healAmount: 6, hotDuration: 12 },
-    { id: 48438, name: "Wild Growth", keybind: "4", icon: "wild-growth", color: "#6ee7b7", description: "Heals up to 5 injured targets over 7s.", manaCost: 9, healAmount: 15, isAoE: true, hotDuration: 7 },
-    { id: 18562, name: "Swiftmend", keybind: "5", icon: "swiftmend", color: "#10b981", description: "Consumes a HoT to heal instantly. 6s cooldown.", manaCost: 4, healAmount: 60, cooldown: 6 },
-    { id: 102342, name: "Ironbark", keybind: "E", icon: "ironbark", color: "#f59e0b", description: "Reduces damage taken & heals target 100%. 25s cooldown.", manaCost: 5, healAmount: 100, cooldown: 25 }
+    { id: 8936, name: "Regrowth", keybind: "1", icon: "regrowth", color: "#10b981", description: "Heals instantly and leaves a short HoT.", manaCost: 12000, healAmount: 25, hotDuration: 6 },
+    { id: 50464, name: "Nourish", keybind: "2", icon: "nourish", color: "#059669", description: "Efficient heal, stronger on targets with HoTs.", manaCost: 6000, healAmount: 40 },
+    { id: 774, name: "Rejuvenation", keybind: "3", icon: "rejuvenation", color: "#34d399", description: "Classic heal over time (12s).", manaCost: 8000, healAmount: 6, hotDuration: 12 },
+    { id: 48438, name: "Wild Growth", keybind: "4", icon: "wild-growth", color: "#6ee7b7", description: "Heals up to 5 injured targets over 7s.", manaCost: 22000, healAmount: 15, isAoE: true, hotDuration: 7, cooldown: 7 },
+    { id: 18562, name: "Swiftmend", keybind: "5", icon: "swiftmend", color: "#10b981", description: "Consumes a HoT to heal instantly. 6s cooldown.", manaCost: 4000, healAmount: 60, cooldown: 6 },
+    { id: 102342, name: "Ironbark", keybind: "E", icon: "ironbark", color: "#f59e0b", description: "Reduces damage taken & heals target 100%. 25s cooldown.", manaCost: 4000, healAmount: 100, cooldown: 25 }
   ],
   "Paladin_Holy": [
-    { id: 19750, name: "Flash of Light", keybind: "1", icon: "flash-of-light", color: "#fef08a", description: "A quick, costly beam of healing light.", manaCost: 5, healAmount: 28 },
-    { id: 82326, name: "Holy Light", keybind: "2", icon: "holy-light", color: "#eab308", description: "A large, slow, efficient healing spell.", manaCost: 3, healAmount: 45 },
-    { id: 20473, name: "Holy Shock", keybind: "3", icon: "holy-shock", color: "#facc15", description: "Instant shock that heals or damages. 5s cooldown.", manaCost: 3, healAmount: 30, cooldown: 5 },
-    { id: 85673, name: "Word of Glory", keybind: "4", icon: "word-of-glory", color: "#fbbf24", description: "Consumes Holy Power to heal a target.", manaCost: 2, healAmount: 50 },
-    { id: 85222, name: "Light of Dawn", keybind: "5", icon: "light-of-dawn", color: "#fef08a", description: "Sends a wave of healing to 5 allies.", manaCost: 8, healAmount: 18, isAoE: true },
-    { id: 633, name: "Lay on Hands", keybind: "E", icon: "lay-on-hands", color: "#fbbf24", description: "Heals target for 100% of their health. 30s cooldown.", manaCost: 10, healAmount: 100, cooldown: 30 }
+    { id: 19750, name: "Flash of Light", keybind: "1", icon: "flash-of-light", color: "#fef08a", description: "A quick, costly beam of healing light.", manaCost: 11000, healAmount: 28 },
+    { id: 82326, name: "Holy Light", keybind: "2", icon: "holy-light", color: "#eab308", description: "A large, slow, efficient healing spell.", manaCost: 6000, healAmount: 45 },
+    { id: 20473, name: "Holy Shock", keybind: "3", icon: "holy-shock", color: "#facc15", description: "Instant shock that heals or damages. 5s cooldown.", manaCost: 7000, healAmount: 30, cooldown: 5 },
+    { id: 85673, name: "Word of Glory", keybind: "4", icon: "word-of-glory", color: "#fbbf24", description: "Consumes Holy Power to heal a target.", manaCost: 0, healAmount: 50 },
+    { id: 85222, name: "Light of Dawn", keybind: "5", icon: "light-of-dawn", color: "#fef08a", description: "Sends a wave of healing to 5 allies.", manaCost: 0, healAmount: 18, isAoE: true },
+    { id: 633, name: "Lay on Hands", keybind: "E", icon: "lay-on-hands", color: "#fbbf24", description: "Heals target for 100% of their health. 30s cooldown.", manaCost: 0, healAmount: 100, cooldown: 30 }
   ],
   "Shaman_Restoration": [
-    { id: 8004, name: "Healing Surge", keybind: "1", icon: "healing-surge", color: "#38bdf8", description: "Fast, high-cost wave of water healing.", manaCost: 5.2, healAmount: 32 },
-    { id: 77472, name: "Healing Wave", keybind: "2", icon: "healing-wave", color: "#0284c7", description: "Slow, low-cost water healing.", manaCost: 2.8, healAmount: 42 },
-    { id: 61295, name: "Riptide", keybind: "3", icon: "riptide", color: "#22d3ee", description: "Instant heal and HoT (15s). 6s cooldown.", manaCost: 3.5, healAmount: 12, cooldown: 6, hotDuration: 15 },
-    { id: 1064, name: "Chain Heal", keybind: "4", icon: "chain-heal", color: "#06b6d4", description: "Heals target, then jumps to 4 nearby allies.", manaCost: 9.5, healAmount: 20, isAoE: true },
-    { id: 73920, name: "Healing Rain", keybind: "5", icon: "healing-rain", color: "#38bdf8", description: "Heals all allies standing in target area.", manaCost: 7.5, healAmount: 15, isAoE: true },
-    { id: 98008, name: "Spirit Link", keybind: "E", icon: "spirit-link", color: "#10b981", description: "Redistributes health and heals target. 25s cooldown.", manaCost: 8, healAmount: 100, cooldown: 25 }
+    { id: 8004, name: "Healing Surge", keybind: "1", icon: "healing-surge", color: "#38bdf8", description: "Fast, high-cost wave of water healing.", manaCost: 11000, healAmount: 32 },
+    { id: 77472, name: "Healing Wave", keybind: "2", icon: "healing-wave", color: "#0284c7", description: "Slow, low-cost water healing.", manaCost: 6000, healAmount: 42 },
+    { id: 61295, name: "Riptide", keybind: "3", icon: "riptide", color: "#22d3ee", description: "Instant heal and HoT (15s). 6s cooldown.", manaCost: 4000, healAmount: 12, cooldown: 6, hotDuration: 15 },
+    { id: 1064, name: "Chain Heal", keybind: "4", icon: "chain-heal", color: "#06b6d4", description: "Heals target, then jumps to 4 nearby allies.", manaCost: 20000, healAmount: 20, isAoE: true },
+    { id: 73920, name: "Healing Rain", keybind: "5", icon: "healing-rain", color: "#38bdf8", description: "Heals up to 5 allies standing in target area. 10s cooldown.", manaCost: 10800, healAmount: 15, isAoE: true, cooldown: 10 },
+    { id: 98008, name: "Spirit Link", keybind: "E", icon: "spirit-link", color: "#10b981", description: "Redistributes health and heals target. 25s cooldown.", manaCost: 5000, healAmount: 100, cooldown: 25 }
   ],
   "Monk_Mistweaver": [
-    { id: 116670, name: "Vivify", keybind: "1", icon: "vivify", color: "#34d399", description: "Heals target and all targets with Renewing Mist.", manaCost: 4.8, healAmount: 30 },
-    { id: 115175, name: "Soothing Mist", keybind: "2", icon: "soothing-mist", color: "#059669", description: "Channels healing over time.", manaCost: 2.5, healAmount: 35 },
-    { id: 119611, name: "Renewing Mist", keybind: "3", icon: "renewing-mist", color: "#6ee7b7", description: "HoT that jumps to others if target is healed. 8s cooldown.", manaCost: 3, healAmount: 8, cooldown: 8, hotDuration: 15 },
-    { id: 124682, name: "Enveloping Mist", keybind: "4", icon: "enveloping-mist", color: "#10b981", description: "Strong HoT (6s) that increases other healing.", manaCost: 6.5, healAmount: 48, hotDuration: 6 },
-    { id: 191837, name: "Essence Font", keybind: "5", icon: "essence-font", color: "#a7f3d0", description: "Channels healing to up to 6 targets.", manaCost: 10, healAmount: 16, isAoE: true },
-    { id: 116849, name: "Life Cocoon", keybind: "E", icon: "life-cocoon", color: "#34d399", description: "Envelops target in a shield & heals 100%. 25s cooldown.", manaCost: 8, healAmount: 100, cooldown: 25 }
+    { id: 116670, name: "Vivify", keybind: "1", icon: "vivify", color: "#34d399", description: "Heals target and all targets with Renewing Mist.", manaCost: 8500, healAmount: 30 },
+    { id: 115175, name: "Soothing Mist", keybind: "2", icon: "soothing-mist", color: "#059669", description: "Channels healing over time.", manaCost: 8000, healAmount: 35 },
+    { id: 119611, name: "Renewing Mist", keybind: "3", icon: "renewing-mist", color: "#6ee7b7", description: "HoT that jumps to others if target is healed. 8s cooldown.", manaCost: 4500, healAmount: 8, cooldown: 8, hotDuration: 15 },
+    { id: 124682, name: "Enveloping Mist", keybind: "4", icon: "enveloping-mist", color: "#10b981", description: "Strong HoT (6s) that increases other healing.", manaCost: 13000, healAmount: 48, hotDuration: 6 },
+    { id: 191837, name: "Essence Font", keybind: "5", icon: "essence-font", color: "#a7f3d0", description: "Channels healing to up to 6 targets.", manaCost: 18000, healAmount: 16, isAoE: true },
+    { id: 116849, name: "Life Cocoon", keybind: "E", icon: "life-cocoon", color: "#34d399", description: "Envelops target in a shield & heals 100%. 25s cooldown.", manaCost: 6000, healAmount: 100, cooldown: 25 }
   ],
   "Evoker_Preservation": [
-    { id: 361469, name: "Living Flame", keybind: "1", icon: "living-flame", color: "#f87171", description: "Fires a blast of flame that heals an ally.", manaCost: 4, healAmount: 28 },
-    { id: 366155, name: "Reversion", keybind: "2", icon: "reversion", color: "#f87171", description: "Heals an ally over 12s. Critical heals extend it.", manaCost: 3.5, healAmount: 8, hotDuration: 12 },
-    { id: 364343, name: "Echo", keybind: "3", icon: "echo", color: "#c084fc", description: "Echoes your next healing spell.", manaCost: 4.5, healAmount: 10 },
-    { id: 355936, name: "Emerald Blossom", keybind: "4", icon: "emerald-blossom", color: "#34d399", description: "Spawns a seed that heals up to 5 allies after 2s.", manaCost: 7, healAmount: 22, isAoE: true },
-    { id: 367226, name: "Spiritbloom", keybind: "5", icon: "spiritbloom", color: "#10b981", description: "Channeled heal that targets up to 4 allies. 12s cooldown.", manaCost: 7.8, healAmount: 50, cooldown: 12 },
-    { id: 357170, name: "Time Dilation", keybind: "E", icon: "time-dilation", color: "#fb7185", description: "Delays damage taken and heals target 100%. 25s cooldown.", manaCost: 8, healAmount: 100, cooldown: 25 }
+    { id: 361469, name: "Living Flame", keybind: "1", icon: "living-flame", color: "#f87171", description: "Fires a blast of flame that heals an ally.", manaCost: 5000, healAmount: 28 },
+    { id: 366155, name: "Reversion", keybind: "2", icon: "reversion", color: "#f87171", description: "Heals an ally over 12s. Critical heals extend it.", manaCost: 5000, healAmount: 8, hotDuration: 12 },
+    { id: 364343, name: "Echo", keybind: "3", icon: "echo", color: "#c084fc", description: "Echoes your next healing spell.", manaCost: 12000, healAmount: 10 },
+    { id: 355936, name: "Emerald Blossom", keybind: "4", icon: "emerald-blossom", color: "#34d399", description: "Spawns a seed that heals up to 5 allies after 2s.", manaCost: 12000, healAmount: 22, isAoE: true },
+    { id: 367226, name: "Spiritbloom", keybind: "5", icon: "spiritbloom", color: "#10b981", description: "Channeled heal that targets up to 4 allies. 12s cooldown.", manaCost: 9500, healAmount: 50, cooldown: 12 },
+    { id: 357170, name: "Time Dilation", keybind: "E", icon: "time-dilation", color: "#fb7185", description: "Delays damage taken and heals target 100%. 25s cooldown.", manaCost: 4000, healAmount: 100, cooldown: 25 }
   ]
 };
 
@@ -653,7 +653,7 @@ export default function Train() {
   const [selectedArena, setSelectedArena] = useState<string>("none");
   const [healerRaidSize, setHealerRaidSize] = useState<number>(10);
   const [healerRoster, setHealerRoster] = useState<HealerPlayer[]>([]);
-  const [healerMana, setHealerMana] = useState<number>(100);
+  const [healerMana, setHealerMana] = useState<number>(260000);
   const [mouseoverPlayerId, setMouseoverPlayerId] = useState<string | null>(null);
   const [floatingHeals, setFloatingHeals] = useState<FloatingHeal[]>([]);
   const [isKeybindModeActive, setIsKeybindModeActive] = useState<boolean>(false);
@@ -912,8 +912,8 @@ export default function Train() {
   };
 
   const getSpecResourceConfig = () => {
-    const c = (activeBuild?.class || selectedClass).toLowerCase();
-    const s = (activeBuild?.spec || selectedSpec).toLowerCase();
+    const c = (activeBuild?.class || selectedClass).toLowerCase().replace(/ /g, "");
+    const s = (activeBuild?.spec || selectedSpec).toLowerCase().replace(/ /g, "");
     
     if (c === "paladin") {
       return { type: "holy_power" as const, max: 5, start: 0, label: "Holy Power" };
@@ -930,8 +930,35 @@ export default function Train() {
     if (c === "priest" && s === "shadow") {
       return { type: "insanity" as const, max: 100, start: 0, label: "Insanity" };
     }
-    if (c === "shaman" && s === "elemental") {
+    if (c === "shaman" && (s === "elemental" || s === "enhancement")) {
       return { type: "maelstrom" as const, max: 100, start: 0, label: "Maelstrom" };
+    }
+    if (c === "warrior" || (c === "druid" && s === "guardian")) {
+      return { type: "rage" as const, max: 100, start: 0, label: "Rage" };
+    }
+    if (c === "hunter") {
+      return { type: "focus" as const, max: 120, start: 120, label: "Focus" };
+    }
+    if (c === "deathknight") {
+      return { type: "runic_power" as const, max: 100, start: 0, label: "Runic Power" };
+    }
+    if (c === "monk" && s === "windwalker") {
+      return { type: "chi" as const, max: 5, start: 0, label: "Chi" };
+    }
+    if (c === "monk" && s === "brewmaster") {
+      return { type: "energy" as const, max: 100, start: 100, label: "Energy" };
+    }
+    if (c === "mage" && s === "arcane") {
+      return { type: "arcane_charges" as const, max: 4, start: 0, label: "Arcane Charges" };
+    }
+    if (c === "demonhunter" && s === "havoc") {
+      return { type: "fury" as const, max: 120, start: 0, label: "Fury" };
+    }
+    if (c === "demonhunter" && s === "vengeance") {
+      return { type: "pain" as const, max: 100, start: 0, label: "Pain" };
+    }
+    if (c === "evoker" && (s === "augmentation" || s === "devastation")) {
+      return { type: "essence" as const, max: 6, start: 6, label: "Essence" };
     }
     return { type: "none" as const, max: 0, start: 0, label: "" };
   };
@@ -1029,8 +1056,125 @@ export default function Train() {
         </div>
       );
     }
+
+    if (config.type === "chi") {
+      return (
+        <div className="flex flex-col items-center space-y-1.5 select-none animate-fade-in-up">
+          <div className="flex items-center space-x-1.5 bg-zinc-950/90 border border-zinc-800/80 rounded-full px-2.5 py-1 backdrop-blur-sm">
+            {[1, 2, 3, 4, 5].map((i) => {
+              const active = val >= i;
+              return (
+                <div 
+                  key={i} 
+                  className={`w-4 h-4 rounded-full border transition-all duration-200 ${
+                    active
+                      ? "bg-gradient-to-br from-emerald-400 to-teal-500 border-emerald-300 shadow-[0_0_8px_#34d399] scale-110"
+                      : "bg-zinc-900 border-zinc-800"
+                  }`}
+                />
+              );
+            })}
+          </div>
+          <span className="text-[9px] font-black text-emerald-400 uppercase tracking-widest font-mono">
+            Chi: {val} / 5
+          </span>
+        </div>
+      );
+    }
+
+    if (config.type === "arcane_charges") {
+      return (
+        <div className="flex flex-col items-center space-y-1.5 select-none animate-fade-in-up">
+          <div className="flex items-center space-x-1.5">
+            {[1, 2, 3, 4].map((i) => {
+              const active = val >= i;
+              return (
+                <div 
+                  key={i} 
+                  className={`w-5 h-5 rounded border transition-all duration-200 ${
+                    active
+                      ? "bg-gradient-to-br from-cyan-400 to-blue-500 border-cyan-300 shadow-[0_0_8px_#38bdf8] scale-105"
+                      : "bg-zinc-950/80 border-zinc-850"
+                  }`}
+                />
+              );
+            })}
+          </div>
+          <span className="text-[9px] font-black text-cyan-400 uppercase tracking-widest font-mono">
+            Arcane Charges: {val} / 4
+          </span>
+        </div>
+      );
+    }
+
+    if (config.type === "essence") {
+      return (
+        <div className="flex flex-col items-center space-y-1.5 select-none animate-fade-in-up">
+          <div className="flex items-center space-x-2">
+            {[1, 2, 3, 4, 5, 6].map((i) => {
+              const active = val >= i;
+              return (
+                <div 
+                  key={i} 
+                  className={`w-4 h-6 border transition-all duration-300 relative overflow-hidden ${
+                    active
+                      ? "bg-gradient-to-b from-teal-400 to-emerald-600 border-teal-300 shadow-[0_0_8px_#2dd4bf] scale-102"
+                      : "bg-zinc-950/80 border-zinc-850"
+                  }`}
+                  style={{
+                    clipPath: "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)"
+                  }}
+                >
+                  {active && (
+                    <div className="absolute inset-0 bg-gradient-to-t from-teal-500/20 to-emerald-400/45 animate-pulse" />
+                  )}
+                </div>
+              );
+            })}
+          </div>
+          <span className="text-[9px] font-black text-teal-400 uppercase tracking-widest font-mono">
+            Essence: {val} / 6
+          </span>
+        </div>
+      );
+    }
+
+    if (config.type === "runes") {
+      return (
+        <div className="flex flex-col items-center space-y-1.5 select-none animate-fade-in-up">
+          <div className="flex items-center space-x-1.5">
+            {[1, 2, 3, 4, 5, 6].map((i) => {
+              const active = val >= i;
+              return (
+                <div 
+                  key={i} 
+                  className={`w-5 h-5 rotate-45 border transition-all duration-200 ${
+                    active
+                      ? "bg-gradient-to-br from-cyan-500 to-blue-600 border-cyan-400 shadow-[0_0_8px_#06b6d4] scale-105"
+                      : "bg-zinc-950/80 border-zinc-800"
+                  }`}
+                />
+              );
+            })}
+          </div>
+          <span className="text-[9px] font-black text-cyan-400 uppercase tracking-widest font-mono">
+            Runes: {val} / 6
+          </span>
+        </div>
+      );
+    }
     
-    if (config.type === "astral_power" || config.type === "insanity" || config.type === "maelstrom") {
+    if (
+      config.type === "astral_power" || 
+      config.type === "insanity" || 
+      config.type === "maelstrom" || 
+      config.type === "rage" || 
+      config.type === "energy" || 
+      config.type === "focus" || 
+      config.type === "runic_power" || 
+      config.type === "fury" || 
+      config.type === "pain"
+    ) {
       let gradient = "from-cyan-500 to-blue-600";
       let textColor = "text-cyan-400";
       
@@ -1040,6 +1184,24 @@ export default function Train() {
       } else if (config.type === "maelstrom") {
         gradient = "from-blue-500 to-indigo-600";
         textColor = "text-blue-400";
+      } else if (config.type === "rage") {
+        gradient = "from-red-600 to-red-800";
+        textColor = "text-red-500";
+      } else if (config.type === "energy") {
+        gradient = "from-yellow-400 to-amber-500";
+        textColor = "text-yellow-400";
+      } else if (config.type === "focus") {
+        gradient = "from-orange-500 to-amber-600";
+        textColor = "text-orange-400";
+      } else if (config.type === "runic_power") {
+        gradient = "from-cyan-400 to-teal-600";
+        textColor = "text-cyan-400";
+      } else if (config.type === "fury") {
+        gradient = "from-purple-500 to-pink-600";
+        textColor = "text-purple-400";
+      } else if (config.type === "pain") {
+        gradient = "from-purple-600 to-rose-700";
+        textColor = "text-rose-400";
       }
       
       return (
@@ -1047,10 +1209,10 @@ export default function Train() {
           <div className="w-full h-4 bg-zinc-950/90 border border-zinc-800 rounded-md overflow-hidden relative backdrop-blur-sm">
             <div 
               className={`h-full bg-gradient-to-r ${gradient} transition-all duration-200`}
-              style={{ width: `${val}%` }}
+              style={{ width: `${(val / config.max) * 100}%` }}
             />
             <span className="absolute inset-0 flex items-center justify-center text-[9px] font-mono font-black text-white drop-shadow-[0_1px_1px_rgba(0,0,0,0.9)]">
-              {val} / 100
+              {val} / {config.max}
             </span>
           </div>
           <span className={`text-[8.5px] font-black uppercase tracking-widest font-mono ${textColor}`}>
@@ -1383,21 +1545,27 @@ export default function Train() {
     }
 
     if (spell.resourceCost) {
-      setSecondaryResourceVal(prev => Math.max(0, prev - spell.resourceCost!.amount));
+      setSecondaryResourceVal(prev => {
+        const val = Math.max(0, prev - spell.resourceCost!.amount);
+        stateRef.current.secondaryResourceVal = val;
+        return val;
+      });
     } else if (spell.resourceGen) {
       const gen = spell.resourceGen;
       const maxVal = getSpecResourceConfig().max;
       setSecondaryResourceVal(prev => {
         const prevVal = prev;
         const nextVal = prevVal + gen.amount;
+        let finalVal = nextVal;
         if (prevVal >= maxVal) {
           setWastedResources(w => w + gen.amount);
-          return maxVal;
+          finalVal = maxVal;
         } else if (nextVal > maxVal) {
           setWastedResources(w => w + (nextVal - maxVal));
-          return maxVal;
+          finalVal = maxVal;
         }
-        return nextVal;
+        stateRef.current.secondaryResourceVal = finalVal;
+        return finalVal;
       });
     }
 
@@ -1499,21 +1667,27 @@ export default function Train() {
 
     if (isHitCorrect) {
       if (spell.resourceCost) {
-        setSecondaryResourceVal(prev => Math.max(0, prev - spell.resourceCost!.amount));
+        setSecondaryResourceVal(prev => {
+          const val = Math.max(0, prev - spell.resourceCost!.amount);
+          stateRef.current.secondaryResourceVal = val;
+          return val;
+        });
       } else if (spell.resourceGen) {
         const gen = spell.resourceGen;
         const maxVal = getSpecResourceConfig().max;
         setSecondaryResourceVal(prev => {
           const prevVal = prev;
           const nextVal = prevVal + gen.amount;
+          let finalVal = nextVal;
           if (prevVal >= maxVal) {
             setWastedResources(w => w + gen.amount);
-            return maxVal;
+            finalVal = maxVal;
           } else if (nextVal > maxVal) {
             setWastedResources(w => w + (nextVal - maxVal));
-            return maxVal;
+            finalVal = maxVal;
           }
-          return nextVal;
+          stateRef.current.secondaryResourceVal = finalVal;
+          return finalVal;
         });
       }
     }
@@ -1605,7 +1779,8 @@ export default function Train() {
     if (trainingMode === "healer") {
       const initialRoster = generateHealerRoster(healerRaidSize, selectedClass);
       setHealerRoster(initialRoster);
-      setHealerMana(100);
+      setHealerMana(260000);
+      stateRef.current.healerMana = 260000;
       setFloatingHeals([]);
       setHealerSpellCooldowns({});
       stateRef.current.healerSpellCooldowns = {};
@@ -1670,7 +1845,7 @@ export default function Train() {
         if (currentSec > lastSecTick) {
           lastSecTick = currentSec;
           
-          setHealerMana((prev) => Math.min(100, prev + 1.2));
+          setHealerMana((prev) => Math.min(260000, prev + 2000));
 
           setHealerSpellCooldowns((prev) => {
             const nextCd: Record<number, number> = {};
@@ -1822,6 +1997,28 @@ export default function Train() {
 
       } else {
         // --- Normal DPS / Tank Rotation loop ---
+        // Passive resource regeneration
+        const currentSec = Math.floor(currentElapsed);
+        if (currentSec > lastSecTick) {
+          lastSecTick = currentSec;
+          const config = getSpecResourceConfig();
+          if (config.type === "energy" || config.type === "focus") {
+            setSecondaryResourceVal(prev => {
+              const val = Math.min(config.max, prev + 10);
+              stateRef.current.secondaryResourceVal = val;
+              return val;
+            });
+          } else if (config.type === "essence") {
+            if (currentSec % 5 === 0) {
+              setSecondaryResourceVal(prev => {
+                const val = Math.min(config.max, prev + 1);
+                stateRef.current.secondaryResourceVal = val;
+                return val;
+              });
+            }
+          }
+        }
+
         // 1. Tick mechanic alerts
         const { activeAlert: curAlert } = stateRef.current;
         if (curAlert) {
@@ -3137,13 +3334,13 @@ export default function Train() {
                   <div className="flex justify-between items-center bg-zinc-950/95 border border-zinc-800 rounded-xl p-3 backdrop-blur-md">
                     <div className="flex items-center space-x-3">
                       <span className="text-xs text-zinc-500 font-extrabold uppercase tracking-widest block">Mana</span>
-                      <div className="w-44 h-4 bg-zinc-900 border border-zinc-800 rounded overflow-hidden relative">
+                      <div className="w-48 h-4 bg-zinc-900 border border-zinc-800 rounded overflow-hidden relative">
                         <div 
                           className="h-full bg-gradient-to-r from-sky-500 to-cyan-400 transition-all duration-200"
-                          style={{ width: `${healerMana}%` }}
+                          style={{ width: `${(healerMana / 260000) * 100}%` }}
                         />
                         <span className="absolute inset-0 flex items-center justify-center text-[10px] font-mono font-black text-white">
-                          {healerMana.toFixed(0)}%
+                          {Math.round(healerMana).toLocaleString()} / 260,000
                         </span>
                       </div>
                     </div>
