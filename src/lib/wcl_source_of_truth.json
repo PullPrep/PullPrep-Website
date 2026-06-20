@@ -1,0 +1,334 @@
+{
+  "Priest_Holy": {
+    "base_max_mana": 250000,
+    "spells": {
+      "Flash Heal": {
+        "id": 2061,
+        "base_mana_percent": 4.4,
+        "absolute_cost": 11000,
+        "cast_time": 1.5,
+        "cooldown": 0
+      },
+      "Heal": {
+        "id": 2060,
+        "base_mana_percent": 2.4,
+        "absolute_cost": 6000,
+        "cast_time": 2.5,
+        "cooldown": 0
+      },
+      "Renew": {
+        "id": 139,
+        "base_mana_percent": 2.4,
+        "absolute_cost": 6000,
+        "cast_time": 0.0,
+        "cooldown": 0
+      },
+      "Prayer of Healing": {
+        "id": 596,
+        "base_mana_percent": 8.0,
+        "absolute_cost": 20000,
+        "cast_time": 2.0,
+        "cooldown": 0
+      },
+      "HW: Serenity": {
+        "id": 2050,
+        "base_mana_percent": 2.5,
+        "absolute_cost": 6250,
+        "cast_time": 0.0,
+        "cooldown": 8
+      },
+      "Guardian Spirit": {
+        "id": 47788,
+        "base_mana_percent": 0.9,
+        "absolute_cost": 2250,
+        "cast_time": 0.0,
+        "cooldown": 25
+      }
+    }
+  },
+  "Priest_Discipline": {
+    "base_max_mana": 250000,
+    "spells": {
+      "Flash Heal": {
+        "id": 2061,
+        "base_mana_percent": 4.4,
+        "absolute_cost": 11000,
+        "cast_time": 1.5,
+        "cooldown": 0
+      },
+      "Shield": {
+        "id": 17,
+        "base_mana_percent": 2.4,
+        "absolute_cost": 6000,
+        "cast_time": 0.0,
+        "cooldown": 0
+      },
+      "Renew": {
+        "id": 139,
+        "base_mana_percent": 2.4,
+        "absolute_cost": 6000,
+        "cast_time": 0.0,
+        "cooldown": 0
+      },
+      "Radiance": {
+        "id": 596,
+        "base_mana_percent": 13.0,
+        "absolute_cost": 32500,
+        "cast_time": 2.0,
+        "cooldown": 0
+      },
+      "Penance": {
+        "id": 2050,
+        "base_mana_percent": 3.2,
+        "absolute_cost": 8000,
+        "cast_time": 0.0,
+        "cooldown": 8
+      },
+      "Pain Suppression": {
+        "id": 47788,
+        "base_mana_percent": 1.6,
+        "absolute_cost": 4000,
+        "cast_time": 0.0,
+        "cooldown": 25
+      }
+    },
+    "max_mana_with_enchant": 260000
+  },
+  "Druid_Restoration": {
+    "base_max_mana": 250000,
+    "spells": {
+      "Regrowth": {
+        "id": 8936,
+        "base_mana_percent": 4.8,
+        "absolute_cost": 12000,
+        "cast_time": 1.5,
+        "cooldown": 0
+      },
+      "Nourish": {
+        "id": 50464,
+        "base_mana_percent": 2.4,
+        "absolute_cost": 6000,
+        "cast_time": 2.0,
+        "cooldown": 0
+      },
+      "Rejuvenation": {
+        "id": 774,
+        "base_mana_percent": 3.2,
+        "absolute_cost": 8000,
+        "cast_time": 0.0,
+        "cooldown": 0
+      },
+      "Wild Growth": {
+        "id": 48438,
+        "base_mana_percent": 8.8,
+        "absolute_cost": 22000,
+        "cast_time": 0.0,
+        "cooldown": 7
+      },
+      "Swiftmend": {
+        "id": 18562,
+        "base_mana_percent": 1.6,
+        "absolute_cost": 4000,
+        "cast_time": 0.0,
+        "cooldown": 6
+      },
+      "Ironbark": {
+        "id": 102342,
+        "base_mana_percent": 1.6,
+        "absolute_cost": 4000,
+        "cast_time": 0.0,
+        "cooldown": 25
+      }
+    }
+  },
+  "Paladin_Holy": {
+    "base_max_mana": 250000,
+    "spells": {
+      "Flash of Light": {
+        "id": 19750,
+        "base_mana_percent": 4.4,
+        "absolute_cost": 11000,
+        "cast_time": 1.5,
+        "cooldown": 0
+      },
+      "Holy Light": {
+        "id": 82326,
+        "base_mana_percent": 2.4,
+        "absolute_cost": 6000,
+        "cast_time": 2.0,
+        "cooldown": 0
+      },
+      "Holy Shock": {
+        "id": 20473,
+        "base_mana_percent": 2.8,
+        "absolute_cost": 7000,
+        "cast_time": 0.0,
+        "cooldown": 5
+      },
+      "Word of Glory": {
+        "id": 85673,
+        "base_mana_percent": 0.0,
+        "absolute_cost": 0,
+        "cast_time": 0.0,
+        "cooldown": 0
+      },
+      "Light of Dawn": {
+        "id": 85222,
+        "base_mana_percent": 0.0,
+        "absolute_cost": 0,
+        "cast_time": 0.0,
+        "cooldown": 0
+      },
+      "Lay on Hands": {
+        "id": 633,
+        "base_mana_percent": 0.0,
+        "absolute_cost": 0,
+        "cast_time": 0.0,
+        "cooldown": 30
+      }
+    },
+    "max_mana_with_enchant": 260000
+  },
+  "Shaman_Restoration": {
+    "base_max_mana": 250000,
+    "spells": {
+      "Healing Surge": {
+        "id": 8004,
+        "base_mana_percent": 4.4,
+        "absolute_cost": 11000,
+        "cast_time": 1.5,
+        "cooldown": 0
+      },
+      "Healing Wave": {
+        "id": 77472,
+        "base_mana_percent": 2.4,
+        "absolute_cost": 6000,
+        "cast_time": 2.5,
+        "cooldown": 0
+      },
+      "Riptide": {
+        "id": 61295,
+        "base_mana_percent": 1.6,
+        "absolute_cost": 4000,
+        "cast_time": 0.0,
+        "cooldown": 6
+      },
+      "Chain Heal": {
+        "id": 1064,
+        "base_mana_percent": 8.0,
+        "absolute_cost": 20000,
+        "cast_time": 2.5,
+        "cooldown": 0
+      },
+      "Healing Rain": {
+        "id": 73920,
+        "base_mana_percent": 4.32,
+        "absolute_cost": 10800,
+        "cast_time": 2.0,
+        "cooldown": 10
+      },
+      "Spirit Link": {
+        "id": 98008,
+        "base_mana_percent": 2.0,
+        "absolute_cost": 5000,
+        "cast_time": 0.0,
+        "cooldown": 25
+      }
+    }
+  },
+  "Monk_Mistweaver": {
+    "base_max_mana": 250000,
+    "spells": {
+      "Vivify": {
+        "id": 116670,
+        "base_mana_percent": 3.4,
+        "absolute_cost": 8500,
+        "cast_time": 1.5,
+        "cooldown": 0
+      },
+      "Soothing Mist": {
+        "id": 115175,
+        "base_mana_percent": 3.2,
+        "absolute_cost": 8000,
+        "cast_time": 0.0,
+        "cooldown": 0
+      },
+      "Renewing Mist": {
+        "id": 119611,
+        "base_mana_percent": 1.8,
+        "absolute_cost": 4500,
+        "cast_time": 0.0,
+        "cooldown": 8
+      },
+      "Enveloping Mist": {
+        "id": 124682,
+        "base_mana_percent": 5.2,
+        "absolute_cost": 13000,
+        "cast_time": 2.0,
+        "cooldown": 0
+      },
+      "Essence Font": {
+        "id": 191837,
+        "base_mana_percent": 7.2,
+        "absolute_cost": 18000,
+        "cast_time": 0.0,
+        "cooldown": 0
+      },
+      "Life Cocoon": {
+        "id": 116849,
+        "base_mana_percent": 2.4,
+        "absolute_cost": 6000,
+        "cast_time": 0.0,
+        "cooldown": 25
+      }
+    }
+  },
+  "Evoker_Preservation": {
+    "base_max_mana": 250000,
+    "spells": {
+      "Living Flame": {
+        "id": 361469,
+        "base_mana_percent": 2.0,
+        "absolute_cost": 5000,
+        "cast_time": 2.0,
+        "cooldown": 0
+      },
+      "Reversion": {
+        "id": 366155,
+        "base_mana_percent": 2.0,
+        "absolute_cost": 5000,
+        "cast_time": 0.0,
+        "cooldown": 0
+      },
+      "Echo": {
+        "id": 364343,
+        "base_mana_percent": 4.8,
+        "absolute_cost": 12000,
+        "cast_time": 0.0,
+        "cooldown": 0
+      },
+      "Emerald Blossom": {
+        "id": 355936,
+        "base_mana_percent": 4.8,
+        "absolute_cost": 12000,
+        "cast_time": 0.0,
+        "cooldown": 0
+      },
+      "Spiritbloom": {
+        "id": 367226,
+        "base_mana_percent": 3.8,
+        "absolute_cost": 9500,
+        "cast_time": 0.0,
+        "cooldown": 12
+      },
+      "Time Dilation": {
+        "id": 357170,
+        "base_mana_percent": 1.6,
+        "absolute_cost": 4000,
+        "cast_time": 0.0,
+        "cooldown": 25
+      }
+    },
+    "max_mana_with_enchant": 260000
+  }
+}
